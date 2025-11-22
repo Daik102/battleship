@@ -1,1 +1,1 @@
-# battleship
+This is the battleship project for the Odin Project.
