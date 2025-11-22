@@ -12,26 +12,49 @@ function ship(length) {
     type = 'submarine';
   }
 
-  const hit = (index) => {
-    shipList[index].damage += 1;
-        
-    if (shipList[index].length === shipList[index].damage) {
-      isSunk(index);
+  const hit = (index, playerNo) => {
+    if (playerOne.playerNo === playerNo) {
+      shipListOfPlayerOne[index].damage += 1;
+
+      if (shipListOfPlayerOne[index].length === shipListOfPlayerOne[index].damage) {
+        isSunk(index, playerNo);
+      }
+    } else {
+      shipListOfPlayerTwo[index].damage += 1;
+
+      if (shipListOfPlayerTwo[index].length === shipListOfPlayerTwo[index].damage) {
+        isSunk(index, playerNo);
+      }
     }
   };
 
-  const isSunk = (index) => {
-    shipList[index].sunk = true;
-    let sunkCounter = 0;
+  const isSunk = (index, playerNo) => {
+    if (playerOne.playerNo === playerNo) {
+      shipListOfPlayerOne[index].sunk = true;
+      let sunkCounterOfPlayerOne = 0;
 
-    for (const ship of shipList) {
-      if (ship.sunk === true) {
-        sunkCounter += 1;
-      } 
-    }
+      for (const ship of shipListOfPlayerOne) {
+        if (ship.sunk === true) {
+          sunkCounterOfPlayerOne += 1;
+        } 
+      }
 
-    if (sunkCounter === totalShips) {
-      console.log('You lose');
+      if (sunkCounterOfPlayerOne === totalShips) {
+        console.log('Player one lose');
+      }
+    } else {
+      shipListOfPlayerTwo[index].sunk = true;
+      let sunkCounterOfPlayerTwo = 0;
+
+      for (const ship of shipListOfPlayerTwo) {
+        if (ship.sunk === true) {
+          sunkCounterOfPlayerTwo += 1;
+        }
+      }
+
+      if (sunkCounterOfPlayerTwo === totalShips) {
+        console.log('Player two lose');
+      }
     }
   };
 
@@ -69,21 +92,21 @@ function gameBoard() {
     }
   };
 
-  const receiveAttack = (x, y) => {
-    if (board[x][y] === 'B') {
-      shipList[0].hit(0);
-    } else if (board[x][y] === 'C') {
-      shipList[1].hit(1);
-    } else if (board[x][y] === 'D') {
-      shipList[2].hit(2);
-    } else if (board[x][y] === 'S') {
-      shipList[3].hit(3);
-    }
-
-    if (board[x][y] === 'B' || board[x][y] === 'C' ||board[x][y] === 'D' || board[x][y] === 'S') {
-      board[x][y] = 'X';
-    } else {
+  const receiveAttack = (x, y, playerNo) => {
+    if (board[x][y] === 0) {
       board[x][y] = 1;
+    } else {
+      if (board[x][y] === 'B') {
+        shipList[0].hit(0, playerNo);
+      } else if (board[x][y] === 'C') {
+        shipList[1].hit(1, playerNo);
+      } else if (board[x][y] === 'D') {
+        shipList[2].hit(2, playerNo);
+      } else if (board[x][y] === 'S') {
+        shipList[3].hit(3, playerNo);
+      }
+      
+      board[x][y] = 'X';
     }
   };
 
@@ -99,33 +122,53 @@ function gameBoard() {
   };
 }
 
-const board = gameBoard();
+function player(playerNo, playerType) {
+  return {
+    playerNo,
+    playerType,
+    board: gameBoard(),
+  };
+}
 
-board.deployShip(0, 0, 4, 'horizontal');
-board.deployShip(2, 2, 3, 'vertical');
-board.deployShip(4, 4, 2, 'horizontal');
-board.deployShip(6, 6, 1);
+const playerOne = player(1, 'human');
+const playerTwo = player(2, 'computer');
 
-const shipList = board.getShipList();
-const currentBoard = board.getBoard();
+playerOne.board.deployShip(0, 0, 4, 'horizontal');
+playerOne.board.deployShip(2, 2, 3, 'vertical');
+playerOne.board.deployShip(4, 4, 2, 'horizontal');
+playerOne.board.deployShip(6, 6, 1);
 
-board.receiveAttack(1, 2);
-board.receiveAttack(2, 2);
-board.receiveAttack(3, 2);
-board.receiveAttack(4, 2);
-board.receiveAttack(0, 0);
-board.receiveAttack(0, 1);
-board.receiveAttack(0, 2);
-board.receiveAttack(0, 3);
-board.receiveAttack(4, 4);
-board.receiveAttack(4, 5);
-board.receiveAttack(1, 3);
-board.receiveAttack(2, 3);
-board.receiveAttack(2, 4);
-board.receiveAttack(6, 5);
-board.receiveAttack(6, 6);
+playerTwo.board.deployShip(5, 2, 4, 'horizontal');
+playerTwo.board.deployShip(2, 7, 3, 'vertical');
+playerTwo.board.deployShip(1, 4, 2, 'horizontal');
+playerTwo.board.deployShip(7, 3, 1);
 
-console.log(shipList);
-console.log(currentBoard);
+const shipListOfPlayerOne = playerOne.board.getShipList();
+const currentBoardOfPlayerOne = playerOne.board.getBoard();
+const shipListOfPlayerTwo = playerTwo.board.getShipList();
+const currentBoardOfPlayerTwo = playerTwo.board.getBoard();
+
+playerOne.board.receiveAttack(1, 2, 1);
+playerTwo.board.receiveAttack(0, 1, 2);
+playerOne.board.receiveAttack(2, 2, 1);
+playerTwo.board.receiveAttack(2, 7, 2);
+playerOne.board.receiveAttack(3, 2, 1);
+playerTwo.board.receiveAttack(7, 3, 2);
+playerOne.board.receiveAttack(4, 2, 1);
+playerTwo.board.receiveAttack(7, 4, 2);
+playerOne.board.receiveAttack(0, 0, 1);
+playerOne.board.receiveAttack(0, 1, 1);
+playerOne.board.receiveAttack(0, 2, 1);
+playerOne.board.receiveAttack(0, 3, 1);
+playerOne.board.receiveAttack(4, 4, 1);
+playerOne.board.receiveAttack(4, 5, 1);
+playerOne.board.receiveAttack(1, 3, 1);
+playerOne.board.receiveAttack(2, 3, 1);
+playerOne.board.receiveAttack(2, 4, 1);
+playerOne.board.receiveAttack(6, 5, 1);
+// playerOne.board.receiveAttack(6, 6, 1);
+
+console.log(shipListOfPlayerTwo);
+console.log(currentBoardOfPlayerTwo);
 
 module.exports = gameBoard;
