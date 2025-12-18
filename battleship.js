@@ -12,47 +12,18 @@ function ship(length) {
     type = 'submarine';
   }
 
-  const hit = (index, playerNo) => {
-    if (playerOne.playerNo === playerNo) {
-      shipListOfPlayerOne[index].damage += 1;
-
-      if (shipListOfPlayerOne[index].length === shipListOfPlayerOne[index].damage) {
-        isSunk(index, playerNo);
-      }
-    } else {
-      shipListOfPlayerTwo[index].damage += 1;
-
-      if (shipListOfPlayerTwo[index].length === shipListOfPlayerTwo[index].damage) {
-        isSunk(index, playerNo);
-      }
-    }
+  const hit = (playerNo, index) => {
+    shipLists[playerNo - 1][index].damage += 1;
   };
 
-  const isSunk = (index, playerNo) => {
-    if (playerOne.playerNo === playerNo) {
-      shipListOfPlayerOne[index].sunk = true;
-      let sunkCounterOfPlayerOne = 0;
-
-      for (const ship of shipListOfPlayerOne) {
-        if (ship.sunk === true) {
-          sunkCounterOfPlayerOne += 1;
-        } 
-      }
-
-      if (sunkCounterOfPlayerOne === totalShips) {
+  const isSunk = (playerNo, index) => {
+    shipLists[playerNo - 1][index].sunk = true;
+    const sunkCounter = shipLists[playerNo - 1].reduce((acc, curr) => acc + curr.sunk, 0);
+    
+    if (sunkCounter === totalShips) {
+      if (playerNo === 1) {
         console.log('Player one lose');
-      }
-    } else {
-      shipListOfPlayerTwo[index].sunk = true;
-      let sunkCounterOfPlayerTwo = 0;
-
-      for (const ship of shipListOfPlayerTwo) {
-        if (ship.sunk === true) {
-          sunkCounterOfPlayerTwo += 1;
-        }
-      }
-
-      if (sunkCounterOfPlayerTwo === totalShips) {
+      } else {
         console.log('Player two lose');
       }
     }
@@ -64,6 +35,7 @@ function ship(length) {
     damage: 0,
     sunk: false,
     hit,
+    isSunk,
   };
 }
 
@@ -71,7 +43,7 @@ function gameBoard() {
   const row = 8;
   const column = 8;
   const shipList = [];
-  const board = Array.from({ length: row}, () => Array(column).fill(0));
+  const board = Array.from({ length: row }, () => Array(column).fill(0));
   
   const deployShip = (x, y, length, direction) => {
     const newShip = ship(length);
@@ -79,40 +51,85 @@ function gameBoard() {
     let lengthCounter = 0;
     shipList.push(newShip);
 
-    if (direction === 'horizontal') {
-      while (lengthCounter < length) {
+    while (lengthCounter < length) {
+      if (direction === 'horizontal') {
         board[x][y + lengthCounter] = type;
-        lengthCounter += 1;
-      }
-    } else {
-      while (lengthCounter < length) {
+      } else {
         board[x + lengthCounter][y] = type;
-        lengthCounter += 1;
       }
+      
+      lengthCounter += 1;
     }
   };
 
   const receiveAttack = (x, y, playerNo) => {
-    if (board[x][y] === 0) {
-      board[x][y] = 1;
-    } else {
-      if (board[x][y] === 'B') {
-        shipList[0].hit(0, playerNo);
-      } else if (board[x][y] === 'C') {
-        shipList[1].hit(1, playerNo);
-      } else if (board[x][y] === 'D') {
-        shipList[2].hit(2, playerNo);
-      } else if (board[x][y] === 'S') {
-        shipList[3].hit(3, playerNo);
-      }
-      
-      board[x][y] = 'X';
+    const location = currentBoards[playerNo - 1][x][y];
+    let index = 0;
+    
+    if (location === 'C') {
+      index = 1;
+    } else if (location === 'D') {
+      index = 2;
+    } else if (location === 'S') {
+      index = 3;
     }
+
+    if (location === 0) {
+      currentBoards[playerNo - 1][x][y] = 1;
+    } else {
+      shipLists[playerNo - 1][index].hit(playerNo, index);
+      currentBoards[playerNo - 1][x][y] = 'X';
+
+      if (currentBoards[playerNo - 1][x - 1]) {
+        if (currentBoards[playerNo - 1][x - 1][y - 1] === 0) {
+          currentBoards[playerNo - 1][x - 1][y - 1] = 2;
+        }
+
+        if (currentBoards[playerNo - 1][x - 1][y + 1] === 0) {
+          currentBoards[playerNo - 1][x - 1][y + 1] = 2;
+        }
+      }
+
+      if (currentBoards[playerNo - 1][x + 1]) {
+        if (currentBoards[playerNo - 1][x + 1][y - 1] === 0) {
+          currentBoards[playerNo - 1][x + 1][y - 1] = 2;
+        }
+
+        if (currentBoards[playerNo - 1][x + 1][y + 1] === 0) {
+          currentBoards[playerNo - 1][x + 1][y + 1] = 2;
+        }
+      }
+
+      if (shipLists[playerNo - 1][index].length === shipLists[playerNo - 1][index].damage) {
+        shipLists[playerNo - 1][index].isSunk(playerNo, index);
+
+        if (currentBoards[playerNo - 1][x - 1]) {
+          if (currentBoards[playerNo - 1][x - 1][y] === 0) {
+            currentBoards[playerNo - 1][x - 1][y] = 2;
+          }
+        }
+
+        if (currentBoards[playerNo - 1][x][y - 1] === 0) {
+          currentBoards[playerNo - 1][x][y - 1] = 2;
+        }
+      
+        if (currentBoards[playerNo - 1][x][y + 1] === 0) {
+          currentBoards[playerNo - 1][x][y + 1] = 2;
+        }
+
+        if (currentBoards[playerNo - 1][x + 1]) {
+          if (currentBoards[playerNo - 1][x + 1][y] === 0) {
+            currentBoards[playerNo - 1][x + 1][y] = 2;
+          }
+        }
+      }
+    }
+
+    renderBoard();
   };
 
   const getShipList = () => shipList;
   const getBoard = () => board;
-  
   
   return {
     deployShip,
@@ -130,6 +147,45 @@ function player(playerNo, playerType) {
   };
 }
 
+export function renderBoard(row = 8, column = 8) {
+  const boardContainerOne = document.querySelector('.board-container-one');
+  const boardContainerTwo = document.querySelector('.board-container-two');
+  boardContainerOne.innerHTML = '';
+  boardContainerTwo.innerHTML = '';
+
+  for (let i = 0; i < row; i++) {
+    for (let j = 0; j < column; j++) {
+      const squareOne = document.createElement('div');
+      const squareTwo = document.createElement('div');
+      squareOne.classList.add('square');
+      squareTwo.classList.add('square');
+
+      if (currentBoards[0][i][j] === 1) {
+        squareOne.classList.add('miss');
+      } else if (currentBoards[0][i][j] === 2) {
+        squareOne.classList.add('splash');
+      } else if (currentBoards[0][i][j] === 'X') {
+        squareOne.classList.add('hit');
+      } else if (currentBoards[0][i][j] !== 0) {
+        squareOne.classList.add('ship');
+      }
+
+      if (currentBoards[1][i][j] === 1) {
+        squareTwo.classList.add('miss');
+      } else if (currentBoards[1][i][j] === 2) {
+        squareTwo.classList.add('splash');
+      } else if (currentBoards[1][i][j] === 'X') {
+        squareTwo.classList.add('hit');
+      } else if (currentBoards[1][i][j] !== 0) {
+        squareTwo.classList.add('ship');
+      }
+
+      boardContainerOne.appendChild(squareOne);
+      boardContainerTwo.appendChild(squareTwo);
+    }
+  } 
+}
+
 const playerOne = player(1, 'human');
 const playerTwo = player(2, 'computer');
 
@@ -143,32 +199,31 @@ playerTwo.board.deployShip(2, 7, 3, 'vertical');
 playerTwo.board.deployShip(1, 4, 2, 'horizontal');
 playerTwo.board.deployShip(7, 3, 1);
 
-const shipListOfPlayerOne = playerOne.board.getShipList();
-const currentBoardOfPlayerOne = playerOne.board.getBoard();
-const shipListOfPlayerTwo = playerTwo.board.getShipList();
-const currentBoardOfPlayerTwo = playerTwo.board.getBoard();
+const shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
+const currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
 
 playerOne.board.receiveAttack(1, 2, 1);
 playerTwo.board.receiveAttack(0, 1, 2);
 playerOne.board.receiveAttack(2, 2, 1);
 playerTwo.board.receiveAttack(2, 7, 2);
+playerOne.board.receiveAttack(0, 3, 1);
+playerTwo.board.receiveAttack(7, 2, 2);
 playerOne.board.receiveAttack(3, 2, 1);
 playerTwo.board.receiveAttack(7, 3, 2);
 playerOne.board.receiveAttack(4, 2, 1);
-playerTwo.board.receiveAttack(7, 4, 2);
+playerTwo.board.receiveAttack(7, 5, 2);
 playerOne.board.receiveAttack(0, 0, 1);
 playerOne.board.receiveAttack(0, 1, 1);
 playerOne.board.receiveAttack(0, 2, 1);
-playerOne.board.receiveAttack(0, 3, 1);
 playerOne.board.receiveAttack(4, 4, 1);
 playerOne.board.receiveAttack(4, 5, 1);
-playerOne.board.receiveAttack(1, 3, 1);
-playerOne.board.receiveAttack(2, 3, 1);
 playerOne.board.receiveAttack(2, 4, 1);
 playerOne.board.receiveAttack(6, 5, 1);
-// playerOne.board.receiveAttack(6, 6, 1);
+playerOne.board.receiveAttack(6, 6, 1);
 
-console.log(shipListOfPlayerTwo);
-console.log(currentBoardOfPlayerTwo);
+console.log(shipLists[0]);
+console.log(currentBoards[0]);
+console.log(shipLists[1]);
+console.log(currentBoards[1]);
 
-module.exports = gameBoard;
+// module.exports = ship;
