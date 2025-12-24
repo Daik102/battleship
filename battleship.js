@@ -62,6 +62,107 @@ function gameBoard() {
     }
   };
 
+  const rotateShip = (x, y) => {
+    const type = currentBoards[0][x][y];
+    const nextSquare = currentBoards[0][x][y + 1];
+    const shipTypesList = ['B', 'C', 'D', 'S'];
+    let length = 0;
+    let lengthCounter = 1;
+
+    if (type === 'S') {
+      return console.log('Can\'t move');
+    }
+
+    if (type === 'B') {
+      length = 4;
+    } else if (type === 'C') {
+      length = 3;
+    } else if (type === 'D') {
+      length = 2;
+    }
+
+    while (lengthCounter < length) {
+      if (type === nextSquare) {
+        // Check if it's possible to rotate vertically.
+
+        let bottomSquare;
+        let bottomLeftSquare;
+        let bottomRightSquare;
+
+        if (board[x + lengthCounter]) {
+          if (board[x + lengthCounter + 1]) {
+            bottomSquare = board[x + lengthCounter + 1][y];
+            bottomLeftSquare = board[x + lengthCounter + 1][y - 1];
+            bottomRightSquare = board[x + lengthCounter + 1][y + 1];
+
+            for (let i = 0; i < shipTypesList.length; i++) {
+              const type = shipTypesList[i];
+
+              if (bottomSquare === type || bottomLeftSquare === type || bottomRightSquare === type) {
+                return console.log('Can\'t move');
+              }
+            }
+          }
+        } else {
+          return console.log('Can\'t move');
+        }
+      } else {
+        // Check if it's possible to rotate horizontally.
+
+        const rotatedSquare = board[x][y + lengthCounter];
+        const rightSquare = board[x][y + lengthCounter + 1];
+        let topRightSquare;
+        let bottomRightSquare;
+
+        if (rotatedSquare === undefined) {
+          return console.log('Can\'t move');
+        }
+        
+        if (board[x - 1]) {
+          topRightSquare = board[x - 1][y + lengthCounter + 1];
+        }
+
+        if (board[x + 1]) {
+          bottomRightSquare = board[x + 1][y + lengthCounter + 1];
+        }
+
+        for (let i = 0; i < shipTypesList.length; i++) {
+          const type = shipTypesList[i];
+
+          if (rightSquare === type || topRightSquare === type || bottomRightSquare === type) {
+            return console.log('Can\'t move');
+          }
+        }
+      }
+      
+      lengthCounter += 1;
+    }
+
+    lengthCounter = 0;
+    
+    while (lengthCounter < length) {
+      if (type === nextSquare) {
+        board[x + lengthCounter][y] = type;
+      } else {
+        board[x][y + lengthCounter] = type;
+      }
+      
+      lengthCounter += 1;
+    }
+
+    lengthCounter = 1;
+
+    while (lengthCounter < length) {
+      if (type === nextSquare) {
+        board[x][y + lengthCounter] = 0;
+      } else {
+        board[x + lengthCounter][y] = 0;
+      }
+      
+      lengthCounter += 1;
+    }
+  };
+
   const receiveAttack = (x, y, playerNo) => {
     const location = currentBoards[playerNo - 1][x][y];
     let index = 0;
@@ -133,6 +234,7 @@ function gameBoard() {
   
   return {
     deployShip,
+    rotateShip,
     receiveAttack,
     getShipList,
     getBoard,
@@ -189,10 +291,10 @@ export function renderBoard(row = 8, column = 8) {
 const playerOne = player(1, 'human');
 const playerTwo = player(2, 'computer');
 
-playerOne.board.deployShip(0, 0, 4, 'horizontal');
-playerOne.board.deployShip(2, 2, 3, 'vertical');
-playerOne.board.deployShip(4, 4, 2, 'horizontal');
-playerOne.board.deployShip(6, 6, 1);
+playerOne.board.deployShip(3, 2, 4, 'horizontal');
+playerOne.board.deployShip(5, 7, 3, 'vertical');
+playerOne.board.deployShip(7, 4, 2, 'horizontal');
+playerOne.board.deployShip(0, 7, 1);
 
 playerTwo.board.deployShip(5, 2, 4, 'horizontal');
 playerTwo.board.deployShip(2, 7, 3, 'vertical');
@@ -202,6 +304,11 @@ playerTwo.board.deployShip(7, 3, 1);
 const shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
 const currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
 
+playerOne.board.rotateShip(3, 2);
+
+console.log(currentBoards[0]);
+
+/*
 playerOne.board.receiveAttack(1, 2, 1);
 playerTwo.board.receiveAttack(0, 1, 2);
 playerOne.board.receiveAttack(2, 2, 1);
@@ -222,8 +329,10 @@ playerOne.board.receiveAttack(6, 5, 1);
 playerOne.board.receiveAttack(6, 6, 1);
 
 console.log(shipLists[0]);
-console.log(currentBoards[0]);
+
 console.log(shipLists[1]);
 console.log(currentBoards[1]);
+*/
+console.log(currentBoards[0]);
 
 // module.exports = ship;
