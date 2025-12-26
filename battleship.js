@@ -1,7 +1,7 @@
 function ship(length) {
   const totalShips = 4;
   let type = '';
-  let bow = [];
+  let body = [];
   let direction = '';
 
   if (length === 4) {
@@ -34,7 +34,7 @@ function ship(length) {
   return {
     type,
     length,
-    bow,
+    body,
     direction,
     damage: 0,
     sunk: false,
@@ -47,14 +47,22 @@ function gameBoard() {
   const row = 8;
   const column = 8;
   const shipList = [];
-  const board = Array.from({ length: row }, () => Array(column).fill(0));
+  let board = Array.from({ length: row }, () => Array(column).fill(0));
   
   const deployShip = (x, y, length, direction) => {
     const newShip = ship(length);
     const type = newShip.type.slice(0, 1).toUpperCase();
-    
-    newShip.bow.push(x, y);
+
     newShip.direction = direction;
+
+    for (let i = 0; i < length; i++) {
+      if (direction === 'horizontal') {
+        newShip.body.push([x, y + i]);
+      } else {
+        newShip.body.push([x + 1, y + i]);
+      }
+    }
+    
     shipList.push(newShip);
 
     for (let i = 0; i < length; i++) {
@@ -75,7 +83,7 @@ function gameBoard() {
     
     for (let i = 0; i < shipLists[0].length; i++) {
       const ship = shipLists[0][i];
-      const bow = ship.bow;
+      const bow = ship.body[0];
       
       if (bow[0] === x && bow[1] === y) {
         currentShip = ship
@@ -109,8 +117,6 @@ function gameBoard() {
                 return console.log('Can\'t rotate');
               }
             }
-
-            currentShip.direction = 'vertical';
           }
         } else {
           return console.log('Can\'t rotate');
@@ -142,35 +148,37 @@ function gameBoard() {
             return console.log('Can\'t rotate');
           }
         }
-
-        currentShip.direction = 'horizontal';
       }
+    }
+
+    if (currentShip.direction === 'horizontal') {
+      currentShip.direction = 'vertical';
+    } else {
+      currentShip.direction = 'horizontal';
     }
     
     // Rotate ship to new direction and erase previous location
 
-    for (let i = 0; i < length; i++) {
+    for (let i = 1; i < length; i++) {
       if (direction === 'horizontal') {
         board[x + i][y] = currentType;
-        board[x][y + i + 1] = 0;
+        board[x][y + i] = 0;
       } else {
         board[x][y + i] = currentType;
-        board[x + i + 1][y] = 0;
+        board[x + i][y] = 0;
       }
     }
   };
 
-  const moveShip = (x, y, x2, y2) => {
-    const currentType = currentBoards[0][x][y];
-    const shipTypesList = ['B', 'C', 'D', 'S'];
+  const moveShip = (x, y, x2, y2, randomDirection) => {
     let currentShip;
     let length = 0;
     let direction = '';
     let cannotMove;
-    
+
     for (let i = 0; i < shipLists[0].length; i++) {
       const ship = shipLists[0][i];
-      const bow = ship.bow;
+      const bow = ship.body[0];
       
       if (bow[0] === x && bow[1] === y) {
         currentShip = ship
@@ -179,14 +187,23 @@ function gameBoard() {
       }
     }
 
-    for (let i = 0; i < length; i++) {
-      if (direction === 'horizontal') {
-        board[x][y + i] = 0;
-      } else {
-        board[x + i][y] = 0;
+    if (randomDirection) {
+      direction = randomDirection;
+    } else {
+      // Delete previous ship. It needs to avoid running to prevent accidental deletion when deploying randomly.
+
+      for (let i = 0; i < length; i++) {
+        if (direction === 'horizontal') {
+          board[x][y + i] = 0;
+        } else {
+          if (board[x + 1]) {
+            board[x + i][y] = 0;
+          }
+        }
       }
     }
 
+    const shipTypesList = ['B', 'C', 'D', 'S'];
     let topLeftSquare;
     let topSquare;
     let topRightSquare;
@@ -264,8 +281,18 @@ function gameBoard() {
       }
     }
 
+    let currentType = currentBoards[0][x][y];
+
+    if (currentType === 0) {
+      currentType = 'S';
+    }
+
     if (cannotMove) {
       console.log('Can\'t move');
+
+      if (randomDirection) {
+        return cannotMove;
+      }
 
       for (let i = 0; i < length; i++) {
         if (direction === 'horizontal') {
@@ -286,11 +313,53 @@ function gameBoard() {
       }
     }
 
-    currentShip.bow = [x2, y2];
+    for (let i = 0; i < length; i++) {
+      if (direction === 'horizontal') {
+        currentShip.body[i] = [x2, y2 + i];
+      } else {
+        currentShip.body[i] = [x2 + i, y2];
+      }
+    }
   };
 
   const deployRandom = () => {
+    board = Array.from({ length: row }, () => Array(column).fill(0));
 
+    for (let i = 0; i < shipLists[0].length; i++) {
+      const currentShip = shipLists[0][i];
+      const bow = currentShip.body[0];
+      let x = bow[0];
+      let y = bow[1];
+      let x2 = Math.floor(Math.random() * row);
+      let y2 = Math.floor(Math.random() * column);
+      let zeroOrOne = Math.floor(Math.random() * 2);
+      let direction = '';
+    
+      if (zeroOrOne === 0) {
+        direction = 'horizontal';
+      } else {
+        direction = 'vertical';
+      }
+      
+      let cannotMove = playerOne.board.moveShip(x, y, x2, y2, direction);
+      currentShip.direction = direction;
+      
+      while (cannotMove) {
+        x2 = Math.floor(Math.random() * row);
+        y2 = Math.floor(Math.random() * column);
+        zeroOrOne = Math.floor(Math.random() * 2);
+    
+      if (zeroOrOne === 0) {
+        direction = 'horizontal';
+      } else {
+        direction = 'vertical'; 
+      }
+        cannotMove = playerOne.board.moveShip(x, y, x2, y2, direction);
+        currentShip.direction = direction;
+      }
+    }
+
+    return board;
   };
 
   const receiveAttack = (x, y, playerNo) => {
@@ -382,17 +451,20 @@ function player(playerNo, playerType) {
 }
 
 export function renderBoard(row = 8, column = 8) {
-  const boardContainerOne = document.querySelector('.board-container-one');
-  const boardContainerTwo = document.querySelector('.board-container-two');
   boardContainerOne.innerHTML = '';
   boardContainerTwo.innerHTML = '';
 
   for (let i = 0; i < row; i++) {
     for (let j = 0; j < column; j++) {
-      const squareOne = document.createElement('div');
-      const squareTwo = document.createElement('div');
+      const squareOne = document.createElement('li');
       squareOne.classList.add('square');
+      squareOne.setAttribute('x', i);
+      squareOne.setAttribute('y', j);
+
+      const squareTwo = document.createElement('li');
       squareTwo.classList.add('square');
+      squareTwo.setAttribute('x', i);
+      squareTwo.setAttribute('y', j);
 
       if (currentBoards[0][i][j] === 1) {
         squareOne.classList.add('miss');
@@ -424,24 +496,55 @@ const playerOne = player(1, 'human');
 const playerTwo = player(2, 'computer');
 
 playerOne.board.deployShip(0, 1, 4, 'horizontal');
-playerOne.board.deployShip(4, 6, 3, 'vertical');
-playerOne.board.deployShip(7, 4, 2, 'horizontal');
-playerOne.board.deployShip(6, 0, 1);
+playerOne.board.deployShip(5, 3, 3, 'vertical');
+playerOne.board.deployShip(2, 6, 2, 'horizontal');
+playerOne.board.deployShip(6, 1, 1, 'vertical');
 
 playerTwo.board.deployShip(5, 2, 4, 'horizontal');
 playerTwo.board.deployShip(2, 7, 3, 'vertical');
 playerTwo.board.deployShip(1, 4, 2, 'horizontal');
-playerTwo.board.deployShip(7, 3, 1);
+playerTwo.board.deployShip(7, 3, 1, 'vertical');
 
 const shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
 const currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
 
-playerOne.board.rotateShip(0, 1);
-playerOne.board.rotateShip(0, 1);
+const randomBtn = document.querySelector('.random-btn');
+randomBtn.addEventListener('click', () => {
+  currentBoards[0] = playerOne.board.deployRandom();
+  renderBoard();
+  console.log(shipLists[0]);
+  console.log(currentBoards[0]);
+});
+
+const boardContainerOne = document.querySelector('.board-container-one');
+const boardContainerTwo = document.querySelector('.board-container-two');
+
+boardContainerOne.addEventListener('click', (e) => {
+  const target = e.target
+  const x = Number(target.getAttribute('x'));
+  const y = Number(target.getAttribute('y'));
+  
+  for (let i = 0; i < shipLists[0].length; i++) {
+    const ship = shipLists[0][i]
+    const bow = ship.body[0];
+    
+    if (x === bow[0] && y === bow[1]) {
+      playerOne.board.rotateShip(x, y);
+      renderBoard();
+      console.log(shipLists[0]);
+      console.log(currentBoards[0]);
+    }
+  }
+});
+
+/*
+playerOne.board.rotateShip(4, 2);
 
 playerOne.board.moveShip(0, 1, 1, 2);
 playerOne.board.moveShip(7, 4, 3, 0);
 playerOne.board.moveShip(4, 6, 5, 6);
+*/
+
 
 /*
 playerOne.board.receiveAttack(1, 2, 1);
