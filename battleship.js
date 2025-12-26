@@ -54,17 +54,17 @@ function gameBoard() {
     const type = newShip.type.slice(0, 1).toUpperCase();
 
     newShip.direction = direction;
-
+    
     for (let i = 0; i < length; i++) {
       if (direction === 'horizontal') {
         newShip.body.push([x, y + i]);
       } else {
-        newShip.body.push([x + 1, y + i]);
+        newShip.body.push([x + i, y]);
       }
     }
     
     shipList.push(newShip);
-
+    
     for (let i = 0; i < length; i++) {
       if (direction === 'horizontal') {
         board[x][y + i] = type;
@@ -80,6 +80,7 @@ function gameBoard() {
     let currentShip;
     let length = 0;
     let direction = '';
+    let cannotRotate;
     
     for (let i = 0; i < shipLists[0].length; i++) {
       const ship = shipLists[0][i];
@@ -114,12 +115,14 @@ function gameBoard() {
               const type = shipTypesList[i];
 
               if (bottomSquare === type || bottomLeftSquare === type || bottomRightSquare === type) {
-                return console.log('Can\'t rotate');
+                console.log('Can\'t rotate');
+                return cannotRotate = true;
               }
             }
           }
         } else {
-          return console.log('Can\'t rotate');
+          console.log('Can\'t rotate');
+          return cannotRotate = true;
         }
       } else {
         // Check if it's possible to rotate horizontally.
@@ -130,7 +133,8 @@ function gameBoard() {
         let bottomRightSquare;
 
         if (rotatedSquare === undefined) {
-          return console.log('Can\'t rotate');
+          console.log('Can\'t rotate');
+          return cannotRotate = true;
         }
         
         if (board[x - 1]) {
@@ -145,7 +149,8 @@ function gameBoard() {
           const type = shipTypesList[i];
 
           if (rightSquare === type || topRightSquare === type || bottomRightSquare === type) {
-            return console.log('Can\'t rotate');
+            console.log('Can\'t rotate');
+            return cannotRotate = true;
           }
         }
       }
@@ -155,6 +160,16 @@ function gameBoard() {
       currentShip.direction = 'vertical';
     } else {
       currentShip.direction = 'horizontal';
+    }
+
+    // Update ship's body(location).
+
+    for (let i = 0; i < length; i++) {
+      if (direction === 'horizontal') {
+        currentShip.body[i] = [x + i, y];
+      } else {
+        currentShip.body[i] = [x, y + i];
+      }
     }
     
     // Rotate ship to new direction and erase previous location
@@ -457,12 +472,12 @@ export function renderBoard(row = 8, column = 8) {
   for (let i = 0; i < row; i++) {
     for (let j = 0; j < column; j++) {
       const squareOne = document.createElement('li');
-      squareOne.classList.add('square');
+      squareOne.classList.add('square-one');
       squareOne.setAttribute('x', i);
       squareOne.setAttribute('y', j);
 
       const squareTwo = document.createElement('li');
-      squareTwo.classList.add('square');
+      squareTwo.classList.add('square-two');
       squareTwo.setAttribute('x', i);
       squareTwo.setAttribute('y', j);
 
@@ -523,28 +538,54 @@ boardContainerOne.addEventListener('click', (e) => {
   const target = e.target
   const x = Number(target.getAttribute('x'));
   const y = Number(target.getAttribute('y'));
+  const squares = document.querySelectorAll('.square-one');
   
   for (let i = 0; i < shipLists[0].length; i++) {
     const ship = shipLists[0][i]
     const bow = ship.body[0];
-    
-    if (x === bow[0] && y === bow[1]) {
-      playerOne.board.rotateShip(x, y);
-      renderBoard();
-      console.log(shipLists[0]);
-      console.log(currentBoards[0]);
+
+    for (let j = 0; j < ship.body.length; j++) {
+      let body = ship.body[j];
+      let bodyX = body[0];
+      let bodyY = body[1];
+      
+      if (x === bodyX && y === bodyY) {
+        const cannotRotate = playerOne.board.rotateShip(bow[0], bow[1]);
+
+        if (cannotRotate) {
+          for (let k = 0; k < ship.body.length; k++) {
+            body = ship.body[k];
+            bodyX = body[0];
+            bodyY = body[1];
+            
+            squares.forEach((square) => {
+              const squareX = Number(square.getAttribute('x'));
+              const squareY = Number(square.getAttribute('y'));
+
+              if (squareX === bodyX && squareY === bodyY) {
+                square.classList.toggle('caution');
+
+                setTimeout(() => {
+                  square.classList.toggle('caution');
+                }, 150);
+              }
+            });
+          }
+        } else {
+          renderBoard();
+          console.log(shipLists[0]);
+          console.log(currentBoards[0]);
+        }
+      }
     }
   }
 });
 
 /*
-playerOne.board.rotateShip(4, 2);
-
 playerOne.board.moveShip(0, 1, 1, 2);
 playerOne.board.moveShip(7, 4, 3, 0);
 playerOne.board.moveShip(4, 6, 5, 6);
 */
-
 
 /*
 playerOne.board.receiveAttack(1, 2, 1);
@@ -565,8 +606,6 @@ playerOne.board.receiveAttack(4, 5, 1);
 playerOne.board.receiveAttack(2, 4, 1);
 playerOne.board.receiveAttack(6, 5, 1);
 playerOne.board.receiveAttack(6, 6, 1);
-
-
 
 console.log(shipLists[1]);
 console.log(currentBoards[1]);
