@@ -1,3 +1,7 @@
+let gameStart;
+let gameOver;
+let initial = true;
+
 function ship(length) {
   const totalShips = 4;
   let type = '';
@@ -24,10 +28,15 @@ function ship(length) {
     
     if (sunkCounter === totalShips) {
       if (playerNo === 1) {
-        console.log('Player one lose');
+        message.textContent = 'You lose';
       } else {
-        console.log('Player two lose');
+        message.textContent = 'You win!';
       }
+
+      gameOver = true;
+      randomBtn.textContent = 'Reset';
+      randomBtn.classList.remove('opacity');
+      randomBtn.classList.add('reset-btn');
     }
   };
 
@@ -185,14 +194,14 @@ function gameBoard() {
     }
   };
 
-  const moveShip = (x, y, x2, y2, randomDirection) => {
+  const moveShip = (x, y, x2, y2, randomDirection, player) => {
     let currentShip;
     let length = 0;
     let direction = '';
     let cannotMove;
 
-    for (let i = 0; i < shipLists[0].length; i++) {
-      const ship = shipLists[0][i];
+    for (let i = 0; i < shipLists[player - 1].length; i++) {
+      const ship = shipLists[player - 1][i];
       const bow = ship.body[0];
       
       if (bow[0] === x && bow[1] === y) {
@@ -296,7 +305,7 @@ function gameBoard() {
       }
     }
 
-    let currentType = currentBoards[0][x][y];
+    let currentType = currentBoards[player - 1][x][y];
 
     if (currentType === 0) {
       currentType = 'S';
@@ -337,11 +346,11 @@ function gameBoard() {
     }
   };
 
-  const deployRandom = () => {
+  const deployRandom = (player) => {
     board = Array.from({ length: row }, () => Array(column).fill(0));
 
-    for (let i = 0; i < shipLists[0].length; i++) {
-      const currentShip = shipLists[0][i];
+    for (let i = 0; i < shipLists[player - 1].length; i++) {
+      const currentShip = shipLists[player - 1][i];
       const bow = currentShip.body[0];
       let x = bow[0];
       let y = bow[1];
@@ -356,7 +365,14 @@ function gameBoard() {
         direction = 'vertical';
       }
       
-      let cannotMove = playerOne.board.moveShip(x, y, x2, y2, direction);
+      let cannotMove;
+
+      if (player === 1) {
+        cannotMove = playerOne.board.moveShip(x, y, x2, y2, direction, 1);
+      } else {
+        cannotMove = playerTwo.board.moveShip(x, y, x2, y2, direction, 2);
+      }
+
       currentShip.direction = direction;
       
       while (cannotMove) {
@@ -364,12 +380,18 @@ function gameBoard() {
         y2 = Math.floor(Math.random() * column);
         zeroOrOne = Math.floor(Math.random() * 2);
     
-      if (zeroOrOne === 0) {
-        direction = 'horizontal';
-      } else {
-        direction = 'vertical'; 
-      }
-        cannotMove = playerOne.board.moveShip(x, y, x2, y2, direction);
+        if (zeroOrOne === 0) {
+          direction = 'horizontal';
+        } else {
+          direction = 'vertical'; 
+        }
+        
+        if (player === 1) {
+          cannotMove = playerOne.board.moveShip(x, y, x2, y2, direction, 1);
+        } else {
+          cannotMove = playerTwo.board.moveShip(x, y, x2, y2, direction, 2);
+        }
+        
         currentShip.direction = direction;
       }
     }
@@ -380,6 +402,7 @@ function gameBoard() {
   const receiveAttack = (x, y, playerNo) => {
     const location = currentBoards[playerNo - 1][x][y];
     let index = 0;
+    let notFinished;
     
     if (location === 'C') {
       index = 1;
@@ -389,12 +412,15 @@ function gameBoard() {
       index = 3;
     }
 
-    if (location === 0) {
+    if (location === 1 || location === 2 || location === 'X') {
+      notFinished = true;
+      return notFinished;
+    } else if (location === 0) {
       currentBoards[playerNo - 1][x][y] = 1;
     } else {
       shipLists[playerNo - 1][index].hit(playerNo, index);
       currentBoards[playerNo - 1][x][y] = 'X';
-
+      
       if (currentBoards[playerNo - 1][x - 1]) {
         if (currentBoards[playerNo - 1][x - 1][y - 1] === 0) {
           currentBoards[playerNo - 1][x - 1][y - 1] = 2;
@@ -417,34 +443,48 @@ function gameBoard() {
 
       if (shipLists[playerNo - 1][index].length === shipLists[playerNo - 1][index].damage) {
         shipLists[playerNo - 1][index].isSunk(playerNo, index);
+        console.log(shipLists[playerNo - 1][index].body);
 
-        if (currentBoards[playerNo - 1][x - 1]) {
-          if (currentBoards[playerNo - 1][x - 1][y] === 0) {
-            currentBoards[playerNo - 1][x - 1][y] = 2;
+        // Put splash after sinking
+
+        for (let i = 0; i < shipLists[playerNo - 1][index].length; i++) {
+          const body = shipLists[playerNo - 1][index].body[i];
+          const bodyX = body[0];
+          const bodyY = body[1];
+
+          if (currentBoards[playerNo - 1][bodyX - 1]) {
+            if (currentBoards[playerNo - 1][bodyX - 1][bodyY] === 0) {
+              currentBoards[playerNo - 1][bodyX - 1][bodyY] = 2;
+            }
           }
-        }
 
-        if (currentBoards[playerNo - 1][x][y - 1] === 0) {
-          currentBoards[playerNo - 1][x][y - 1] = 2;
-        }
-      
-        if (currentBoards[playerNo - 1][x][y + 1] === 0) {
-          currentBoards[playerNo - 1][x][y + 1] = 2;
-        }
+          if (currentBoards[playerNo - 1][bodyX][bodyY - 1] === 0) {
+            currentBoards[playerNo - 1][bodyX][bodyY - 1] = 2;
+          }
+        
+          if (currentBoards[playerNo - 1][bodyX][bodyY + 1] === 0) {
+            currentBoards[playerNo - 1][bodyX][bodyY + 1] = 2;
+          }
 
-        if (currentBoards[playerNo - 1][x + 1]) {
-          if (currentBoards[playerNo - 1][x + 1][y] === 0) {
-            currentBoards[playerNo - 1][x + 1][y] = 2;
+          if (currentBoards[playerNo - 1][bodyX + 1]) {
+            if (currentBoards[playerNo - 1][bodyX + 1][bodyY] === 0) {
+              currentBoards[playerNo - 1][bodyX + 1][bodyY] = 2;
+            }
           }
         }
       }
+
+      notFinished = true
     }
 
     renderBoard();
+    return notFinished;
   };
 
   const getShipList = () => shipList;
   const getBoard = () => board;
+  const getRow = () => row;
+  const getColumn = () => column;
   
   return {
     deployShip,
@@ -454,6 +494,8 @@ function gameBoard() {
     receiveAttack,
     getShipList,
     getBoard,
+    getRow,
+    getColumn,
   };
 }
 
@@ -465,7 +507,56 @@ function player(playerNo, playerType) {
   };
 }
 
-export function renderBoard(row = 8, column = 8) {
+const squaresArray = Array.from({ length: 64}, (_, i) => i);
+
+function getComputerMove() {
+  message.textContent = 'Computer\'s turn';
+  const row = playerTwo.board.getRow();
+  const column = playerTwo.board.getColumn();
+
+  const randomIndex = Math.floor(Math.random() * squaresArray.length);
+  const targetSquare = squaresArray[randomIndex];
+  const x = Math.floor(targetSquare / row);
+  const y = targetSquare % column;
+
+  setTimeout(() => {
+    const result = playerOne.board.receiveAttack(x, y, 1);
+    squaresArray.splice(randomIndex, 1);
+    
+    if (result) {
+      for (let i = 0; i < row; i++) {
+        for (let j = 0; j < column; j++) {
+          const square = currentBoards[0][i][j];
+          
+          if (square === 2) {
+            const squareNumber = i * row + j;
+            
+            for (let i = 0; i < squaresArray.length; i++) {
+              const number = squaresArray[i];
+
+              if (number === squareNumber) {
+                squaresArray.splice(i, 1);
+              }
+            }
+          }
+        }
+      }
+
+      if (gameOver) {
+        return;
+      }
+      
+      getComputerMove();
+    } else {
+      message.textContent = 'Your turn';
+      playerAttacked = false;
+    }
+  }, 1500);
+}
+
+export function renderBoard() {
+  const row = playerOne.board.getRow();
+  const column = playerOne.board.getColumn();
   boardContainerOne.innerHTML = '';
   boardContainerTwo.innerHTML = '';
 
@@ -497,8 +588,10 @@ export function renderBoard(row = 8, column = 8) {
         squareTwo.classList.add('splash');
       } else if (currentBoards[1][i][j] === 'X') {
         squareTwo.classList.add('hit');
-      } else if (currentBoards[1][i][j] !== 0) {
-        squareTwo.classList.add('ship');
+      }
+
+      if (initial) {
+        squareTwo.classList.add('initial');
       }
 
       boardContainerOne.appendChild(squareOne);
@@ -523,9 +616,19 @@ playerTwo.board.deployShip(7, 3, 1, 'vertical');
 const shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
 const currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
 
+currentBoards[1] = playerTwo.board.deployRandom(2);
+console.log(shipLists[1]);
+console.log(currentBoards[1]);
+
 const randomBtn = document.querySelector('.random-btn');
 randomBtn.addEventListener('click', () => {
-  currentBoards[0] = playerOne.board.deployRandom();
+  if (gameOver) {
+    location.reload();
+  } else if (gameStart) {
+    return;
+  }
+
+  currentBoards[0] = playerOne.board.deployRandom(1);
   renderBoard();
   console.log(shipLists[0]);
   console.log(currentBoards[0]);
@@ -535,7 +638,7 @@ const boardContainerOne = document.querySelector('.board-container-one');
 const boardContainerTwo = document.querySelector('.board-container-two');
 
 boardContainerOne.addEventListener('click', (e) => {
-  const target = e.target
+  const target = e.target;
   const x = Number(target.getAttribute('x'));
   const y = Number(target.getAttribute('y'));
   const squares = document.querySelectorAll('.square-one');
@@ -579,6 +682,38 @@ boardContainerOne.addEventListener('click', (e) => {
       }
     }
   }
+});
+
+const playBtn = document.querySelector('.play-btn');
+const message = document.querySelector('.message');
+let playerAttacked;
+
+playBtn.addEventListener('click', () => {
+  if (gameStart || gameOver) {
+    return;
+  }
+
+  gameStart = true;
+  randomBtn.classList.add('opacity');
+  playBtn.classList.add('opacity');
+  message.textContent = 'Your turn';
+  initial = false;
+  renderBoard();
+  boardContainerTwo.addEventListener('click', (e) => {
+    if (playerAttacked || gameOver) {
+      return;
+    }
+
+    const target = e.target;
+    const x = Number(target.getAttribute('x'));
+    const y = Number(target.getAttribute('y'));
+    const result = playerTwo.board.receiveAttack(x, y, 2);
+    
+    if (!result) {
+      playerAttacked = true;
+      getComputerMove();
+    }
+  });
 });
 
 /*
