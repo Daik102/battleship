@@ -103,7 +103,7 @@ function gameBoard() {
     }
 
     if (currentType === 'S') {
-      return console.log('Can\'t rotate');
+      return;
     }
 
     for (let i = 1; i < length; i++) {
@@ -124,14 +124,14 @@ function gameBoard() {
               const type = shipTypesList[i];
 
               if (bottomSquare === type || bottomLeftSquare === type || bottomRightSquare === type) {
-                console.log('Can\'t rotate');
-                return cannotRotate = true;
+                cannotRotate = true
+                return cannotRotate;
               }
             }
           }
         } else {
-          console.log('Can\'t rotate');
-          return cannotRotate = true;
+          cannotRotate = true;
+          return cannotRotate
         }
       } else {
         // Check if it's possible to rotate horizontally.
@@ -142,8 +142,8 @@ function gameBoard() {
         let bottomRightSquare;
 
         if (rotatedSquare === undefined) {
-          console.log('Can\'t rotate');
-          return cannotRotate = true;
+         cannotRotate = true;
+          return cannotRotate;
         }
         
         if (board[x - 1]) {
@@ -158,8 +158,8 @@ function gameBoard() {
           const type = shipTypesList[i];
 
           if (rightSquare === type || topRightSquare === type || bottomRightSquare === type) {
-            console.log('Can\'t rotate');
-            return cannotRotate = true;
+            cannotRotate = true;
+            return cannotRotate;
           }
         }
       }
@@ -312,8 +312,6 @@ function gameBoard() {
     }
 
     if (cannotMove) {
-      console.log('Can\'t move');
-
       if (randomDirection) {
         return cannotMove;
       }
@@ -443,7 +441,6 @@ function gameBoard() {
 
       if (shipLists[playerNo - 1][index].length === shipLists[playerNo - 1][index].damage) {
         shipLists[playerNo - 1][index].isSunk(playerNo, index);
-        console.log(shipLists[playerNo - 1][index].body);
 
         // Put splash after sinking
 
@@ -513,15 +510,54 @@ function getComputerMove() {
   message.textContent = 'Computer\'s turn';
   const row = playerTwo.board.getRow();
   const column = playerTwo.board.getColumn();
+  
+  let randomIndex = Math.floor(Math.random() * squaresArray.length);
+  let targetSquare = squaresArray[randomIndex];
+  let x = Math.floor(targetSquare / row);
+  let y = targetSquare % column;
+  let hitNeighborSquares = [];
+  
+  for (let i = 0; i < row; i++) {
+    for (let j = 0; j < column; j++) {
+      const square = currentBoards[0][i][j];
 
-  const randomIndex = Math.floor(Math.random() * squaresArray.length);
-  const targetSquare = squaresArray[randomIndex];
-  const x = Math.floor(targetSquare / row);
-  const y = targetSquare % column;
+      if (square === 'X') {
+        if (currentBoards[0][i - 1]) {
+          if (currentBoards[0][i - 1][j] !== 1 && currentBoards[0][i - 1][j] !== 2 && currentBoards[0][i - 1][j] !== 'X') {
+            hitNeighborSquares.push((i - 1) * row + j);
+          }
+        }
+
+        if (currentBoards[0][i][j - 1] !== 1 && currentBoards[0][i][j - 1] !== 2 && currentBoards[0][i][j - 1] !== 'X' && j % row !== 0) {
+          hitNeighborSquares.push(i * row + j - 1);
+        }
+
+        if (currentBoards[0][i][j + 1] !== 1 && currentBoards[0][i][j + 1] !== 2 && currentBoards[0][i][j + 1] !== 'X' && j % row !== row - 1) {
+          hitNeighborSquares.push(i * row + j + 1);
+        }
+
+        if (currentBoards[0][i + 1]) {
+          if (currentBoards[0][i + 1][j] !== 1 && currentBoards[0][i + 1][j] !== 2 && currentBoards[0][i + 1][j] !== 'X') {
+            hitNeighborSquares.push((i + 1) * row + j);
+          }
+        }
+      }
+    }
+
+    if (hitNeighborSquares[0]) {
+      randomIndex = Math.floor(Math.random() * hitNeighborSquares.length);
+      targetSquare = hitNeighborSquares[randomIndex];
+      x = Math.floor(targetSquare / row);
+      y = targetSquare % column;
+    }
+  }
 
   setTimeout(() => {
     const result = playerOne.board.receiveAttack(x, y, 1);
-    squaresArray.splice(randomIndex, 1);
+    const targetIndex = squaresArray.indexOf(targetSquare);
+    squaresArray.splice(targetIndex, 1);
+    
+    // Erase splash squares from squaresArray
     
     if (result) {
       for (let i = 0; i < row; i++) {
@@ -545,7 +581,7 @@ function getComputerMove() {
       if (gameOver) {
         return;
       }
-      
+     
       getComputerMove();
     } else {
       message.textContent = 'Your turn';
@@ -617,8 +653,6 @@ const shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()]
 const currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
 
 currentBoards[1] = playerTwo.board.deployRandom(2);
-console.log(shipLists[1]);
-console.log(currentBoards[1]);
 
 const randomBtn = document.querySelector('.random-btn');
 randomBtn.addEventListener('click', () => {
@@ -630,8 +664,6 @@ randomBtn.addEventListener('click', () => {
 
   currentBoards[0] = playerOne.board.deployRandom(1);
   renderBoard();
-  console.log(shipLists[0]);
-  console.log(currentBoards[0]);
 });
 
 const boardContainerOne = document.querySelector('.board-container-one');
@@ -676,8 +708,6 @@ boardContainerOne.addEventListener('click', (e) => {
           }
         } else {
           renderBoard();
-          console.log(shipLists[0]);
-          console.log(currentBoards[0]);
         }
       }
     }
@@ -721,31 +751,5 @@ playerOne.board.moveShip(0, 1, 1, 2);
 playerOne.board.moveShip(7, 4, 3, 0);
 playerOne.board.moveShip(4, 6, 5, 6);
 */
-
-/*
-playerOne.board.receiveAttack(1, 2, 1);
-playerTwo.board.receiveAttack(0, 1, 2);
-playerOne.board.receiveAttack(2, 2, 1);
-playerTwo.board.receiveAttack(2, 7, 2);
-playerOne.board.receiveAttack(0, 3, 1);
-playerTwo.board.receiveAttack(7, 2, 2);
-playerOne.board.receiveAttack(3, 2, 1);
-playerTwo.board.receiveAttack(7, 3, 2);
-playerOne.board.receiveAttack(4, 2, 1);
-playerTwo.board.receiveAttack(7, 5, 2);
-playerOne.board.receiveAttack(0, 0, 1);
-playerOne.board.receiveAttack(0, 1, 1);
-playerOne.board.receiveAttack(0, 2, 1);
-playerOne.board.receiveAttack(4, 4, 1);
-playerOne.board.receiveAttack(4, 5, 1);
-playerOne.board.receiveAttack(2, 4, 1);
-playerOne.board.receiveAttack(6, 5, 1);
-playerOne.board.receiveAttack(6, 6, 1);
-
-console.log(shipLists[1]);
-console.log(currentBoards[1]);
-*/
-console.log(shipLists[0]);
-console.log(currentBoards[0]);
 
 // module.exports = ship;
