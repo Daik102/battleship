@@ -1,7 +1,3 @@
-let gameStart;
-let gameOver;
-let initial = true;
-
 function ship(length) {
   const totalShips = 4;
   let type = '';
@@ -37,6 +33,7 @@ function ship(length) {
       randomBtn.textContent = 'Reset';
       randomBtn.classList.remove('opacity');
       randomBtn.classList.add('reset-btn');
+      renderBoard(playerNo);
     }
   };
 
@@ -61,7 +58,6 @@ function gameBoard() {
   const deployShip = (x, y, length, direction) => {
     const newShip = ship(length);
     const type = newShip.type.slice(0, 1).toUpperCase();
-
     newShip.direction = direction;
     
     for (let i = 0; i < length; i++) {
@@ -109,7 +105,6 @@ function gameBoard() {
     for (let i = 1; i < length; i++) {
       if (direction === 'horizontal') {
         // Check if it's possible to rotate vertically.
-
         let bottomSquare;
         let bottomLeftSquare;
         let bottomRightSquare;
@@ -135,7 +130,6 @@ function gameBoard() {
         }
       } else {
         // Check if it's possible to rotate horizontally.
-
         const rotatedSquare = board[x][y + i];
         const rightSquare = board[x][y + i + 1];
         let topRightSquare;
@@ -172,7 +166,6 @@ function gameBoard() {
     }
 
     // Update ship's body(location).
-
     for (let i = 0; i < length; i++) {
       if (direction === 'horizontal') {
         currentShip.body[i] = [x + i, y];
@@ -182,7 +175,6 @@ function gameBoard() {
     }
     
     // Rotate ship to new direction and erase previous location
-
     for (let i = 1; i < length; i++) {
       if (direction === 'horizontal') {
         board[x + i][y] = currentType;
@@ -215,7 +207,6 @@ function gameBoard() {
       direction = randomDirection;
     } else {
       // Delete previous ship. It needs to avoid running to prevent accidental deletion when deploying randomly.
-
       for (let i = 0; i < length; i++) {
         if (direction === 'horizontal') {
           board[x][y + i] = 0;
@@ -238,7 +229,6 @@ function gameBoard() {
     for (let i = 0; i < length; i++) {
       if (direction === 'horizontal') {
         // Check if it's possible to move horizontally.
-
         const movedSquare = board[x2][y2 + i];
         const rightSquare = board[x2][y2 + i + 1];
         const leftSquare = board[x2][y2 + i - 1];
@@ -270,7 +260,6 @@ function gameBoard() {
         }
       } else {
         // Check if it's possible to move vertically.
-
         let rightSquare;
         let leftSquare;
 
@@ -329,17 +318,17 @@ function gameBoard() {
 
     for (let i = 0; i < length; i++) {
       if (direction === 'horizontal') {
-        board[x2][y2 + i] = currentType;
+        currentShip.body[i] = [x2, y2 + i];
       } else {
-        board[x2 + i][y2] = currentType;
+        currentShip.body[i] = [x2 + i, y2];
       }
     }
 
     for (let i = 0; i < length; i++) {
       if (direction === 'horizontal') {
-        currentShip.body[i] = [x2, y2 + i];
+        board[x2][y2 + i] = currentType;
       } else {
-        currentShip.body[i] = [x2 + i, y2];
+        board[x2 + i][y2] = currentType;
       }
     }
   };
@@ -419,6 +408,7 @@ function gameBoard() {
       shipLists[playerNo - 1][index].hit(playerNo, index);
       currentBoards[playerNo - 1][x][y] = 'X';
       
+      // put splash after hitting
       if (currentBoards[playerNo - 1][x - 1]) {
         if (currentBoards[playerNo - 1][x - 1][y - 1] === 0) {
           currentBoards[playerNo - 1][x - 1][y - 1] = 2;
@@ -443,7 +433,6 @@ function gameBoard() {
         shipLists[playerNo - 1][index].isSunk(playerNo, index);
 
         // Put splash after sinking
-
         for (let i = 0; i < shipLists[playerNo - 1][index].length; i++) {
           const body = shipLists[playerNo - 1][index].body[i];
           const bodyX = body[0];
@@ -504,8 +493,6 @@ function player(playerNo, playerType) {
   };
 }
 
-const squaresArray = Array.from({ length: 64}, (_, i) => i);
-
 function getComputerMove() {
   message.textContent = 'Computer\'s turn';
   const row = playerTwo.board.getRow();
@@ -517,6 +504,7 @@ function getComputerMove() {
   let y = targetSquare % column;
   let hitNeighborSquares = [];
   
+  // Check if there is a damaged enemy ship
   for (let i = 0; i < row; i++) {
     for (let j = 0; j < column; j++) {
       const square = currentBoards[0][i][j];
@@ -557,9 +545,8 @@ function getComputerMove() {
     const targetIndex = squaresArray.indexOf(targetSquare);
     squaresArray.splice(targetIndex, 1);
     
-    // Erase splash squares from squaresArray
-    
     if (result) {
+      // Erase splash squares from squaresArray
       for (let i = 0; i < row; i++) {
         for (let j = 0; j < column; j++) {
           const square = currentBoards[0][i][j];
@@ -586,16 +573,17 @@ function getComputerMove() {
     } else {
       message.textContent = 'Your turn';
       playerAttacked = false;
+      markupTarget();
     }
   }, 1500);
 }
 
-export function renderBoard() {
+export function renderBoard(playerNo) {
   const row = playerOne.board.getRow();
   const column = playerOne.board.getColumn();
   boardContainerOne.innerHTML = '';
   boardContainerTwo.innerHTML = '';
-
+  
   for (let i = 0; i < row; i++) {
     for (let j = 0; j < column; j++) {
       const squareOne = document.createElement('li');
@@ -628,6 +616,12 @@ export function renderBoard() {
 
       if (initial) {
         squareTwo.classList.add('initial');
+      }
+
+      if (playerNo === 2) {
+        boardContainerTwo.classList.add('dark');
+      } else if (playerNo === 1) {
+        boardContainerOne.classList.add('dark');
       }
 
       boardContainerOne.appendChild(squareOne);
@@ -714,9 +708,31 @@ boardContainerOne.addEventListener('click', (e) => {
   }
 });
 
+function markupTarget() {
+  if (gameOver) {
+    return;
+  }
+  
+  const squares = document.querySelectorAll('.square-two');
+
+  squares.forEach((square) => {
+    square.addEventListener('mouseenter', () => {
+      square.classList.toggle('target');
+    });
+
+    square.addEventListener('mouseleave', () => {
+      square.classList.toggle('target');
+    });
+  });
+}
+
+const squaresArray = Array.from({ length: 64}, (_, i) => i);
 const playBtn = document.querySelector('.play-btn');
 const message = document.querySelector('.message');
 let playerAttacked;
+let gameStart;
+let gameOver;
+let initial = true;
 
 playBtn.addEventListener('click', () => {
   if (gameStart || gameOver) {
@@ -729,6 +745,8 @@ playBtn.addEventListener('click', () => {
   message.textContent = 'Your turn';
   initial = false;
   renderBoard();
+  markupTarget();
+  
   boardContainerTwo.addEventListener('click', (e) => {
     if (playerAttacked || gameOver) {
       return;
@@ -739,7 +757,9 @@ playBtn.addEventListener('click', () => {
     const y = Number(target.getAttribute('y'));
     const result = playerTwo.board.receiveAttack(x, y, 2);
     
-    if (!result) {
+    if (result) {
+      markupTarget();
+    } else {
       playerAttacked = true;
       getComputerMove();
     }
