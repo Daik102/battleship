@@ -20,19 +20,9 @@ function ship(length) {
 
   const isSunk = (playerNo, index) => {
     shipLists[playerNo - 1][index].sunk = true;
-    const sunkCounter = shipLists[playerNo - 1].reduce((acc, curr) => acc + curr.sunk, 0);
-    console.log(sunkCounter);
-    if (sunkCounter === totalShips) {
-      if (playerNo === 1) {
-        message.textContent = 'You lose';
-      } else {
-        message.textContent = 'You win!';
-      }
-
-      gameOver = true;
-      renderBoard(playerNo);
-    }
   };
+
+  const getTotalShips = () => totalShips;
 
   return {
     type,
@@ -43,10 +33,11 @@ function ship(length) {
     sunk: false,
     hit,
     isSunk,
+    getTotalShips,
   };
 }
 
-function gameBoard() {
+export function gameBoard() {
   const row = 8;
   const column = 8;
   const shipList = [];
@@ -87,7 +78,6 @@ function gameBoard() {
       
       if (bow[0] === x && bow[1] === y) {
         currentShip = ship;
-        type = currentShip.type;
         length = ship.length;
         direction = ship.direction;
       }
@@ -200,14 +190,13 @@ function gameBoard() {
         if (direction === 'horizontal') {
           board[x][y + i] = 0;
         } else {
-          if (board[x + 1]) {
+          if (board[x + 1] || length === 1) {
             board[x + i][y] = 0;
           }
         }
       }
     }
 
-    const shipTypesList = ['B', 'C', 'D', 'S'];
     let topLeftSquare;
     let topSquare;
     let topRightSquare;
@@ -390,9 +379,9 @@ function gameBoard() {
       if (currentShip.type === 'cruiser') {
         index = 1;
       } else if (currentShip.type === 'destroyer') {
-        index === 2;
+        index = 2;
       } else if (currentShip.type === 'submarine') {
-        index === 3;
+        index = 3;
       }
 
       shipLists[playerNo - 1][index].hit(playerNo, index);
@@ -419,6 +408,21 @@ function gameBoard() {
         }
       }
 
+      const currentScoreBoard = document.querySelector('.current-score-board');
+      const hiScoreBoard = document.querySelector('.hi-score-board');
+
+      if (playerNo === 2) {
+        currentScore += 500;
+        const padScore = currentScore.toString().padStart(6, '0');
+        currentScoreBoard.textContent = padScore;
+
+        if (currentScore > hiScore) {
+          hiScore = currentScore;
+          const padHiScore = hiScore.toString().padStart(6, '0');
+          hiScoreBoard.textContent = 'Hi ' + padHiScore;
+        }
+      }
+
       if (shipLists[playerNo - 1][index].length === shipLists[playerNo - 1][index].damage) {
         shipLists[playerNo - 1][index].isSunk(playerNo, index);
 
@@ -427,6 +431,7 @@ function gameBoard() {
           const body = shipLists[playerNo - 1][index].body[i];
           const bodyX = body[0];
           const bodyY = body[1];
+          currentBoards[playerNo - 1][bodyX][bodyY] = 'D';
 
           if (currentBoards[playerNo - 1][bodyX - 1]) {
             if (currentBoards[playerNo - 1][bodyX - 1][bodyY] === 0) {
@@ -448,6 +453,59 @@ function gameBoard() {
             }
           }
         }
+        console.log(currentBoards[playerNo - 1]);
+        // Check if player or computer wins
+        const sunkCounter = shipLists[playerNo - 1].reduce((acc, curr) => acc + curr.sunk, 0);
+        const totalShips = ship().getTotalShips();
+        
+        if (sunkCounter === totalShips) {
+          if (playerNo === 1) {
+            message.textContent = 'You lose';
+          } else {
+            message.textContent = 'You win!';
+            const dialogVictory = document.querySelector('.dialog-victory');
+            const continueBtn = document.querySelector('.continue-btn');
+            const bonusScores = document.querySelectorAll('.bonus-score');
+            const totalBonusScore = document.querySelector('.total-bonus-score');
+            let totalBonus = 0;
+
+            bonusScores.forEach((score, i) => {
+              let bonus = 2000 - i * 500;
+              
+              if (!shipLists[0][i].sunk) {
+                score.textContent = bonus;
+                totalBonus += bonus
+              } else {
+                score.textContent = 0;
+              }
+            });
+
+            totalBonusScore.textContent = totalBonus;
+
+            currentScore += totalBonus;
+            const padScore = currentScore.toString().padStart(6, '0');
+            let padHiScore = '';
+
+            if (currentScore > hiScore) {
+              hiScore = currentScore;
+              padHiScore = hiScore.toString().padStart(6, '0');
+            }
+
+            setTimeout(() => {
+              dialogVictory.showModal();
+              currentScoreBoard.textContent = padScore;
+              hiScoreBoard.textContent = 'Hi ' + padHiScore;
+
+              continueBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                dialogVictory.close();
+              });
+            }, 1500);
+          }
+
+          gameOver = true;
+          renderBoard(playerNo);
+        }
       }
 
       notFinished = true
@@ -456,6 +514,68 @@ function gameBoard() {
     renderBoard();
     return notFinished;
   };
+
+  const renderBoard = (playerNo) => {
+    const row = playerOne.board.getRow();
+    const column = playerOne.board.getColumn();
+    boardContainerOne.innerHTML = '';
+    boardContainerTwo.innerHTML = '';
+  
+    for (let i = 0; i < row; i++) {
+      for (let j = 0; j < column; j++) {
+        const squareOne = document.createElement('li');
+        squareOne.classList.add('square-one');
+        squareOne.setAttribute('x', i);
+        squareOne.setAttribute('y', j);
+
+        const squareTwo = document.createElement('li');
+        squareTwo.classList.add('square-two');
+        squareTwo.setAttribute('x', i);
+        squareTwo.setAttribute('y', j);
+
+        if (currentBoards[0][i][j] === 1) {
+          squareOne.classList.add('miss');
+        } else if (currentBoards[0][i][j] === 2) {
+          squareOne.classList.add('splash');
+        } else if (currentBoards[0][i][j] === 'X' || currentBoards[0][i][j] === 'D') {
+          squareOne.classList.add('hit');
+        } else if (currentBoards[0][i][j] !== 0) {
+          squareOne.classList.add('ship');
+          squareOne.setAttribute('draggable', 'false');
+        }
+
+        if (currentBoards[1][i][j] === 1) {
+          squareTwo.classList.add('miss');
+        } else if (currentBoards[1][i][j] === 2) {
+          squareTwo.classList.add('splash');
+        } else if (currentBoards[1][i][j] === 'X' || currentBoards[1][i][j] === 'D') {
+          squareTwo.classList.add('hit');
+        } else if (currentBoards[1][i][j] !== 0) {
+          squareTwo.classList.add('ship');
+        }
+
+        if (initial) {
+          squareOne.setAttribute('draggable', 'true');
+          squareTwo.classList.add('initial');
+
+          if (currentBoards[0][i][j] !== 0) {
+            squareOne.classList.add('grabbing');
+          }
+        }
+
+        if (playerNo === 2) {
+          boardContainerTwo.classList.add('dark');
+          boardContainerTwo.classList.add('finished');
+        } else if (playerNo === 1) {
+          boardContainerOne.classList.add('dark');
+          boardContainerTwo.classList.add('finished');
+        }
+
+        boardContainerOne.appendChild(squareOne);
+        boardContainerTwo.appendChild(squareTwo);
+      }
+    }
+  }
 
   const getShipList = () => shipList;
   const getBoard = () => board;
@@ -468,6 +588,7 @@ function gameBoard() {
     moveShip,
     deployRandom,
     receiveAttack,
+    renderBoard,
     getShipList,
     getBoard,
     getRow,
@@ -483,363 +604,323 @@ function player(playerNo, playerType) {
   };
 }
 
-function getComputerMove() {
-  message.textContent = 'Computer\'s turn';
-  const row = playerTwo.board.getRow();
-  const column = playerTwo.board.getColumn();
-  
-  let randomIndex = Math.floor(Math.random() * squaresArray.length);
-  let targetSquare = squaresArray[randomIndex];
-  let x = Math.floor(targetSquare / row);
-  let y = targetSquare % column;
-  let hitNeighborSquares = [];
-  
-  // Check if there is a damaged enemy ship
-  for (let i = 0; i < row; i++) {
-    for (let j = 0; j < column; j++) {
-      const square = currentBoards[0][i][j];
-
-      if (square === 'X') {
-        if (currentBoards[0][i - 1]) {
-          if (currentBoards[0][i - 1][j] !== 1 && currentBoards[0][i - 1][j] !== 2 && currentBoards[0][i - 1][j] !== 'X') {
-            hitNeighborSquares.push((i - 1) * row + j);
-          }
-        }
-
-        if (currentBoards[0][i][j - 1] !== 1 && currentBoards[0][i][j - 1] !== 2 && currentBoards[0][i][j - 1] !== 'X' && j % row !== 0) {
-          hitNeighborSquares.push(i * row + j - 1);
-        }
-
-        if (currentBoards[0][i][j + 1] !== 1 && currentBoards[0][i][j + 1] !== 2 && currentBoards[0][i][j + 1] !== 'X' && j % row !== row - 1) {
-          hitNeighborSquares.push(i * row + j + 1);
-        }
-
-        if (currentBoards[0][i + 1]) {
-          if (currentBoards[0][i + 1][j] !== 1 && currentBoards[0][i + 1][j] !== 2 && currentBoards[0][i + 1][j] !== 'X') {
-            hitNeighborSquares.push((i + 1) * row + j);
-          }
-        }
-      }
-    }
-
-    if (hitNeighborSquares[0]) {
-      randomIndex = Math.floor(Math.random() * hitNeighborSquares.length);
-      targetSquare = hitNeighborSquares[randomIndex];
-      x = Math.floor(targetSquare / row);
-      y = targetSquare % column;
-    }
-  }
-
-  setTimeout(() => {
-    const result = playerOne.board.receiveAttack(x, y, 1);
-    const targetIndex = squaresArray.indexOf(targetSquare);
-    squaresArray.splice(targetIndex, 1);
-    
-    if (result) {
-      // Erase splash squares from squaresArray
-      for (let i = 0; i < row; i++) {
-        for (let j = 0; j < column; j++) {
-          const square = currentBoards[0][i][j];
-          
-          if (square === 2) {
-            const squareNumber = i * row + j;
-            
-            for (let i = 0; i < squaresArray.length; i++) {
-              const number = squaresArray[i];
-
-              if (number === squareNumber) {
-                squaresArray.splice(i, 1);
-              }
-            }
-          }
-        }
-      }
-
-      if (gameOver) {
-        return;
-      }
-     
-      getComputerMove();
-    } else {
-      message.textContent = 'Your turn';
-      playerAttacked = false;
-      markupTarget();
-    }
-  }, 1500);
-}
-
-export function renderBoard(playerNo) {
-  const row = playerOne.board.getRow();
-  const column = playerOne.board.getColumn();
-  boardContainerOne.innerHTML = '';
-  boardContainerTwo.innerHTML = '';
-  
-  for (let i = 0; i < row; i++) {
-    for (let j = 0; j < column; j++) {
-      const squareOne = document.createElement('li');
-      squareOne.classList.add('square-one');
-      squareOne.setAttribute('x', i);
-      squareOne.setAttribute('y', j);
-
-      const squareTwo = document.createElement('li');
-      squareTwo.classList.add('square-two');
-      squareTwo.setAttribute('x', i);
-      squareTwo.setAttribute('y', j);
-
-      if (currentBoards[0][i][j] === 1) {
-        squareOne.classList.add('miss');
-      } else if (currentBoards[0][i][j] === 2) {
-        squareOne.classList.add('splash');
-      } else if (currentBoards[0][i][j] === 'X') {
-        squareOne.classList.add('hit');
-      } else if (currentBoards[0][i][j] !== 0) {
-        squareOne.classList.add('ship');
-        squareOne.setAttribute('draggable', 'false');
-      }
-
-      if (currentBoards[1][i][j] === 1) {
-        squareTwo.classList.add('miss');
-      } else if (currentBoards[1][i][j] === 2) {
-        squareTwo.classList.add('splash');
-      } else if (currentBoards[1][i][j] === 'X') {
-        squareTwo.classList.add('hit');
-      }
-
-      if (initial) {
-        squareOne.setAttribute('draggable', 'true');
-        squareTwo.classList.add('initial');
-
-        if (currentBoards[0][i][j] !== 0) {
-          squareOne.classList.add('grabbing');
-        }
-      }
-
-      if (playerNo === 2) {
-        boardContainerTwo.classList.add('dark');
-        boardContainerTwo.classList.add('finished');
-      } else if (playerNo === 1) {
-        boardContainerOne.classList.add('dark');
-        boardContainerTwo.classList.add('finished');
-      }
-
-      boardContainerOne.appendChild(squareOne);
-      boardContainerTwo.appendChild(squareTwo);
-    }
-  }
-}
-
 const playerOne = player(1, 'human');
 const playerTwo = player(2, 'computer');
-
-playerOne.board.deployShip(0, 1, 4, 'horizontal');
-playerOne.board.deployShip(5, 3, 3, 'vertical');
-playerOne.board.deployShip(3, 6, 2, 'horizontal');
-playerOne.board.deployShip(6, 1, 1, 'vertical');
-
-playerTwo.board.deployShip(5, 2, 4, 'horizontal');
-playerTwo.board.deployShip(2, 7, 3, 'vertical');
-playerTwo.board.deployShip(1, 4, 2, 'horizontal');
-playerTwo.board.deployShip(7, 3, 1, 'vertical');
 
 const shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
 const currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
 
-currentBoards[1] = playerTwo.board.deployRandom(2);
-
-const randomBtn = document.querySelector('.random-btn');
-randomBtn.addEventListener('click', () => {
-  if (gameStart) {
-    location.reload();
-  }
-
-  currentBoards[0] = playerOne.board.deployRandom(1);
-  renderBoard();
-});
-
 const boardContainerOne = document.querySelector('.board-container-one');
 const boardContainerTwo = document.querySelector('.board-container-two');
 
-boardContainerOne.addEventListener('click', (e) => {
-  if (gameStart) {
-    return;
-  }
-
-  const target = e.target;
-  const x = Number(target.getAttribute('x'));
-  const y = Number(target.getAttribute('y'));
-  const squares = document.querySelectorAll('.square-one');
-  
-  for (let i = 0; i < shipLists[0].length; i++) {
-    const ship = shipLists[0][i]
-    const bow = ship.body[0];
-
-    for (let j = 0; j < ship.body.length; j++) {
-      let body = ship.body[j];
-      let bodyX = body[0];
-      let bodyY = body[1];
-      
-      if (x === bodyX && y === bodyY) {
-        const cannotRotate = playerOne.board.rotateShip(bow[0], bow[1]);
-
-        if (cannotRotate) {
-          for (let k = 0; k < ship.body.length; k++) {
-            body = ship.body[k];
-            bodyX = body[0];
-            bodyY = body[1];
-            
-            squares.forEach((square) => {
-              const squareX = Number(square.getAttribute('x'));
-              const squareY = Number(square.getAttribute('y'));
-
-              if (squareX === bodyX && squareY === bodyY) {
-                square.classList.toggle('caution');
-
-                setTimeout(() => {
-                  square.classList.toggle('caution');
-                }, 200);
-              }
-            });
-          }
-        } else {
-          renderBoard();
-        }
-      }
-    }
-  }
-});
-
-let startTarget;
-let startX = 0;
-let startY = 0;
-
-boardContainerOne.addEventListener('dragstart', (e) => {
-  startTarget = e.target;
-  startX = Number(startTarget.getAttribute('x'));
-  startY = Number(startTarget.getAttribute('Y'));
-});
-
-boardContainerOne.addEventListener('dragover', (e) => {
-  if (gameStart) {
-    return;
-  }
-  
-  e.preventDefault();
-});
-
-boardContainerOne.addEventListener('drop', (e) => {
-  const endTarget = e.target;
-  let endX = Number(endTarget.getAttribute('x'));
-  let endY = Number(endTarget.getAttribute('Y'));
-  let currentShip;
-  let bodyIndex = 0;
-  
-  for (let i = 0; i < shipLists[0].length; i++) {
-    const ship = shipLists[0][i];
-
-    for (let j = 0; j < ship.body.length; j++) {
-      const body = ship.body[j];
-      const bodyX = Number(body[0]);
-      const bodyY = Number(body[1]);
-
-      if (bodyX === startX && bodyY === startY) {
-        currentShip = ship;
-        bodyIndex = j;
-      }
-    }
-  }
-
-  const bow = currentShip.body[0];
-  const direction = currentShip.direction;
-  
-  if (bow) {
-    startX = bow[0];
-    startY = bow[1];
-
-    if (direction === 'horizontal') {
-      endY -= bodyIndex;
-    } else {
-      
-      endX -= bodyIndex;
-    }
-    console.log('start', startX, startY);
-    console.log('end', endX, endY);
-  }  
-
-  const cannotMove = playerOne.board.moveShip(startX, startY, endX, endY, 0, 1);
-
-  if (cannotMove) {
-    startTarget.classList.add('caution');
-
-    setTimeout(() => {
-      startTarget.classList.remove('caution');
-    }, 200);
-
-    return;
-  }
-
-  renderBoard();
-  console.log(shipLists[0]);
-  console.log(currentBoards[0]);
-});
-
-function markupTarget() {
-  if (gameOver) {
-    return;
-  }
-
-  const squares = document.querySelectorAll('.square-two');
-
-  squares.forEach((square) => {
-    square.addEventListener('mouseenter', () => {
-      square.classList.toggle('target');
-    });
-
-    square.addEventListener('mouseleave', () => {
-      square.classList.toggle('target');
-    });
-  });
-}
-
-const squaresArray = Array.from({ length: 64}, (_, i) => i);
-const playBtn = document.querySelector('.play-btn');
 const message = document.querySelector('.message');
-let playerAttacked;
-let gameStart;
+
 let gameOver;
 let initial = true;
+let currentScore = 0;
+let hiScore = 5000;
 
-playBtn.addEventListener('click', () => {
-  if (gameStart || gameOver) {
-    return;
-  }
+function playGame() {
+  const myGameBoard = gameBoard();
+  playerOne.board.deployShip(0, 1, 4, 'horizontal');
+  playerOne.board.deployShip(5, 3, 3, 'vertical');
+  playerOne.board.deployShip(3, 6, 2, 'horizontal');
+  playerOne.board.deployShip(6, 1, 1, 'vertical');
 
-  gameStart = true;
-  message.textContent = 'Your turn';
-  randomBtn.textContent = 'Reset';
-  randomBtn.classList.remove('opacity');
-  randomBtn.classList.add('reset-btn');
-  playBtn.classList.add('opacity');
-  initial = false;
-  renderBoard();
-  markupTarget();
-  
-  boardContainerTwo.addEventListener('click', (e) => {
-    if (playerAttacked || gameOver) {
+  playerTwo.board.deployShip(5, 2, 4, 'horizontal');
+  playerTwo.board.deployShip(2, 7, 3, 'vertical');
+  playerTwo.board.deployShip(1, 4, 2, 'horizontal');
+  playerTwo.board.deployShip(7, 3, 1, 'vertical');
+
+  currentBoards[1] = playerTwo.board.deployRandom(2);
+
+  const randomBtn = document.querySelector('.random-btn');
+
+  randomBtn.addEventListener('click', () => {
+    if (gameStart) {
+      location.reload();
+    }
+
+    currentBoards[0] = playerOne.board.deployRandom(1);
+    myGameBoard.renderBoard();
+  });
+
+  boardContainerOne.addEventListener('click', (e) => {
+    if (gameStart) {
       return;
     }
 
     const target = e.target;
     const x = Number(target.getAttribute('x'));
     const y = Number(target.getAttribute('y'));
-    const result = playerTwo.board.receiveAttack(x, y, 2);
+    const squares = document.querySelectorAll('.square-one');
     
-    if (result) {
-      markupTarget();
-    } else {
-      playerAttacked = true;
-      getComputerMove();
+    for (let i = 0; i < shipLists[0].length; i++) {
+      const ship = shipLists[0][i]
+      const bow = ship.body[0];
+
+      for (let j = 0; j < ship.body.length; j++) {
+        let body = ship.body[j];
+        let bodyX = body[0];
+        let bodyY = body[1];
+        
+        if (x === bodyX && y === bodyY) {
+          const cannotRotate = playerOne.board.rotateShip(bow[0], bow[1]);
+
+          if (cannotRotate) {
+            for (let k = 0; k < ship.body.length; k++) {
+              body = ship.body[k];
+              bodyX = body[0];
+              bodyY = body[1];
+              
+              squares.forEach((square) => {
+                const squareX = Number(square.getAttribute('x'));
+                const squareY = Number(square.getAttribute('y'));
+
+                if (squareX === bodyX && squareY === bodyY) {
+                  square.classList.toggle('caution');
+
+                  setTimeout(() => {
+                    square.classList.toggle('caution');
+                  }, 200);
+                }
+              });
+            }
+          } else {
+            myGameBoard.renderBoard();
+          }
+        }
+      }
     }
   });
-});
+
+  let startTarget;
+  let startX = 0;
+  let startY = 0;
+
+  boardContainerOne.addEventListener('dragstart', (e) => {
+    startTarget = e.target;
+    startX = Number(startTarget.getAttribute('x'));
+    startY = Number(startTarget.getAttribute('Y'));
+  });
+
+  boardContainerOne.addEventListener('dragover', (e) => {
+    if (gameStart) {
+      return;
+    }
+    
+    e.preventDefault();
+  });
+
+  boardContainerOne.addEventListener('drop', (e) => {
+    const endTarget = e.target;
+    let endX = Number(endTarget.getAttribute('x'));
+    let endY = Number(endTarget.getAttribute('Y'));
+    let currentShip;
+    let bodyIndex = 0;
+    
+    for (let i = 0; i < shipLists[0].length; i++) {
+      const ship = shipLists[0][i];
+
+      for (let j = 0; j < ship.body.length; j++) {
+        const body = ship.body[j];
+        const bodyX = Number(body[0]);
+        const bodyY = Number(body[1]);
+
+        if (bodyX === startX && bodyY === startY) {
+          currentShip = ship;
+          bodyIndex = j;
+        }
+      }
+    }
+
+    const bow = currentShip.body[0];
+    const direction = currentShip.direction;
+    
+    if (bow) {
+      startX = bow[0];
+      startY = bow[1];
+
+      if (direction === 'horizontal') {
+        endY -= bodyIndex;
+      } else {
+        
+        endX -= bodyIndex;
+      }
+    }  
+
+    const cannotMove = playerOne.board.moveShip(startX, startY, endX, endY, 0, 1);
+
+    if (cannotMove) {
+      startTarget.classList.add('caution');
+
+      setTimeout(() => {
+        startTarget.classList.remove('caution');
+      }, 200);
+
+      return;
+    }
+
+    myGameBoard.renderBoard();
+  });
+
+  function markupTarget() {
+    if (gameOver) {
+      return;
+    }
+
+    const squares = document.querySelectorAll('.square-two');
+
+    squares.forEach((square) => {
+      square.addEventListener('mouseenter', () => {
+        square.classList.toggle('target');
+      });
+
+      square.addEventListener('mouseleave', () => {
+        square.classList.toggle('target');
+      });
+    });
+  }
+
+  const squaresArray = Array.from({ length: 64}, (_, i) => i);
+  let playerAttacked;
+
+  function getComputerMove() {
+    const row = playerTwo.board.getRow();
+    const column = playerTwo.board.getColumn();
+    
+    let randomIndex = Math.floor(Math.random() * squaresArray.length);
+    let targetSquare = squaresArray[randomIndex];
+    let x = Math.floor(targetSquare / row);
+    let y = targetSquare % column;
+    let hitNeighborSquares = [];
+  
+    // Check if there is a damaged enemy ship
+    for (let i = 0; i < row; i++) {
+      const boardRow = currentBoards[0][i];
+      for (let j = 0; j < column; j++) {
+        const square = boardRow[j];
+
+        if (square === 'X') {
+          if (currentBoards[0][i - 1]) {
+            if (currentBoards[0][i - 1][j] !== 1 && currentBoards[0][i - 1][j] !== 2 && currentBoards[0][i - 1][j] !== 'X') {
+              hitNeighborSquares.push((i - 1) * row + j);
+            }
+          }
+          
+          if (currentBoards[0][i][j - 1] !== 1 && currentBoards[0][i][j - 1] !== 2 && currentBoards[0][i][j - 1] !== 'X' && j % row !== 0) {
+            hitNeighborSquares.push(i * row + j - 1);
+          }
+          
+          if (currentBoards[0][i][j + 1] !== 1 && currentBoards[0][i][j + 1] !== 2 && currentBoards[0][i][j + 1] !== 'X' && j % row !== row - 1) {
+            hitNeighborSquares.push(i * row + j + 1);
+          }
+          
+          if (currentBoards[0][i + 1]) {
+            if (currentBoards[0][i + 1][j] !== 1 && currentBoards[0][i + 1][j] !== 2 && currentBoards[0][i + 1][j] !== 'X') {
+              hitNeighborSquares.push((i + 1) * row + j);
+            }
+          }
+        }
+      }
+    }
+    
+    if (hitNeighborSquares.length !== 0) {
+      randomIndex = Math.floor(Math.random() * hitNeighborSquares.length);
+      targetSquare = hitNeighborSquares[randomIndex];
+      x = Math.floor(targetSquare / row);
+      y = targetSquare % column;
+    }
+
+    setTimeout(() => {
+      const result = playerOne.board.receiveAttack(x, y, 1);
+      const targetIndex = squaresArray.indexOf(targetSquare);
+      squaresArray.splice(targetIndex, 1);
+      
+      if (result) {
+        // Erase splash squares from squaresArray
+        for (let i = 0; i < row; i++) {
+          for (let j = 0; j < column; j++) {
+            const square = currentBoards[0][i][j];
+            
+            if (square === 2) {
+              const squareNumber = i * row + j;
+              
+              for (let i = 0; i < squaresArray.length; i++) {
+                const number = squaresArray[i];
+
+                if (number === squareNumber) {
+                  squaresArray.splice(i, 1);
+                }
+              }
+            }
+          }
+        }
+
+        if (gameOver) {
+          return;
+        }
+        
+        getComputerMove();
+      } else {
+        message.textContent = 'Your turn';
+        playerAttacked = false;
+        markupTarget();
+      }
+    }, 1000);
+  }
+
+  const playBtn = document.querySelector('.play-btn');
+  let gameStart;
+
+  playBtn.addEventListener('mouseenter', () => {
+    if (!gameStart) {
+      playBtn.classList.add('play-btn-hover');
+    }
+  });
+
+  playBtn.addEventListener('mouseleave', () => {
+    if (!gameStart) {
+      playBtn.classList.remove('play-btn-hover');
+    }
+  });
+
+  playBtn.addEventListener('click', () => {
+    if (gameOver) {
+      return;
+    }
+
+    gameStart = true;
+    message.textContent = 'Your turn';
+    randomBtn.textContent = 'Reset';
+    randomBtn.classList.remove('opacity');
+    randomBtn.classList.add('reset-btn');
+    playBtn.classList.add('opacity');
+    initial = false;
+    myGameBoard.renderBoard();
+    markupTarget();
+  
+    boardContainerTwo.addEventListener('click', (e) => {
+      if (playerAttacked || gameOver) {
+        return;
+      }
+
+      const target = e.target;
+      const x = Number(target.getAttribute('x'));
+      const y = Number(target.getAttribute('y'));
+      const result = playerTwo.board.receiveAttack(x, y, 2);
+      
+      if (result) {
+        markupTarget();
+      } else {
+        playerAttacked = true;
+        message.textContent = 'Computer\'s turn';
+        getComputerMove();
+      }
+    });
+  });
+}
+
+playGame();
 
 // module.exports = ship;
