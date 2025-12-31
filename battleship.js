@@ -443,7 +443,7 @@ export function gameBoard() {
         }
       }
 
-      notFinished = true
+      notFinished = true;
     }
 
     renderBoard();
@@ -495,8 +495,6 @@ export function gameBoard() {
           squareTwo.classList.add('splash');
         } else if (currentBoards[1][i][j] === 'X' || currentBoards[1][i][j] === 'D') {
           squareTwo.classList.add('hit');
-        } else if (currentBoards[1][i][j] !== 0) {
-          squareTwo.classList.add('ship');
         }
 
         if (!gameStart) {
@@ -558,9 +556,10 @@ let currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
 let gameStart;
 let gameOver;
 let currentScore = 0;
-let hiScore = 5000;
+const padScore = currentScore.toString().padStart(6, '0');
+let hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
 let currentVictory = 0;
-let highestVictory = 1;
+let highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
 
 function playGame() {
   function deployDefault() {
@@ -714,18 +713,32 @@ function playGame() {
   const message = document.querySelector('.message');
   const currentScoreBoard = document.querySelector('.current-score-board');
   const hiScoreBoard = document.querySelector('.hi-score-board');
+  const currentVictoryBoard = document.querySelector('.current-victory-board');
+  const highestVictoryBoard = document.querySelector('.highest-victory-board');
+  const padHiScore = hiScore.toString().padStart(6, '0');
+  currentScoreBoard.textContent = padScore;
+  hiScoreBoard.textContent = 'Hi ' + padHiScore;
+  currentVictoryBoard.textContent = currentVictory;
+  highestVictoryBoard.textContent = highestVictory;
 
   function checkTheWinner(playerNo) {
     const sunkCounter = shipLists[playerNo - 1].reduce((acc, curr) => acc + curr.sunk, 0);
     const totalShips = ship().getTotalShips();
         
     if (sunkCounter === totalShips) {
+      const dialogDefeat = document.querySelector('.dialog-defeat');
+      const dialogVictory = document.querySelector('.dialog-victory');
+
       if (playerNo === 1) {
         message.textContent = 'You lose';
+        currentScore = 0;
+        currentVictory = 0;
+
+        setTimeout(() => {
+          dialogDefeat.showModal();
+        }, 1000);
       } else {
         message.textContent = 'You win!';
-        const dialogVictory = document.querySelector('.dialog-victory');
-        const continueBtn = document.querySelector('.continue-btn');
         const bonusScores = document.querySelectorAll('.bonus-score');
         const totalBonusScore = document.querySelector('.total-bonus-score');
         let totalBonus = 0;
@@ -742,56 +755,58 @@ function playGame() {
         });
 
         totalBonusScore.textContent = totalBonus;
-
         currentScore += totalBonus;
-        const padScore = currentScore.toString().padStart(6, '0');
-        let padHiScore = '';
-
-        if (currentScore > hiScore) {
-          hiScore = currentScore;
-          padHiScore = hiScore.toString().padStart(6, '0');
-        }
-
-        const currentVictoryBoard = document.querySelector('.current-victory-board');
-        const highestVictoryBoard = document.querySelector('.highest-victory-board');
+        currentVictory += 1;
 
         setTimeout(() => {
           dialogVictory.showModal();
-          currentVictory += 1;
+        }, 1000);
+      }
+
+      const continueBtns = document.querySelectorAll('.continue-btn');
+
+      continueBtns.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          dialogDefeat.close();
+          dialogVictory.close();
+        
+          const padScore = currentScore.toString().padStart(6, '0');
+          currentScoreBoard.textContent = padScore;
+
+          if (currentScore > hiScore) {
+            hiScore = currentScore;
+            const padHiScore = hiScore.toString().padStart(6, '0');
+            hiScoreBoard.textContent = 'Hi ' + padHiScore;
+            localStorage.setItem('hiScore', JSON.stringify(hiScore));
+          }
+
           currentVictoryBoard.textContent = currentVictory;
 
           if (currentVictory > highestVictory) {
             highestVictory = currentVictory;
             highestVictoryBoard.textContent = highestVictory;
+            localStorage.setItem('highestVictory', JSON.stringify(highestVictory));
           }
-          
-          currentScoreBoard.textContent = padScore;
-          hiScoreBoard.textContent = 'Hi ' + padHiScore;
 
-          continueBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            dialogVictory.close();
+          playerOne = player(1, 'human');
+          playerTwo = player(2, 'computer');
+          shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
+          currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
+          squaresArray = Array.from({ length: 64}, (_, i) => i);
+          gameStart = false;
+          gameOver = false;
+          playerAttacked = false;
 
-            playerOne = player(1, 'human');
-            playerTwo = player(2, 'computer');
-            shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
-            currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
-            gameStart = false;
-            gameOver = false;
-
-            message.textContent = 'Deploy your fleet';
-            randomBtn.textContent = 'Random';
-            randomBtn.classList.remove('reset-btn');
-            playBtn.classList.remove('opacity');
-            playBtn.classList.remove('play-btn-hover');
-            deployDefault();
-            playerOne.board.renderBoard();
-            console.log(currentBoards[0]);
-            console.log(shipLists[0]);
-          });
-        }, 1000);
-      }
-
+          message.textContent = 'Deploy your fleet';
+          randomBtn.textContent = 'Random';
+          randomBtn.classList.remove('reset-btn');
+          playBtn.classList.remove('opacity');
+          playBtn.classList.remove('play-btn-hover');
+          deployDefault();
+          playerOne.board.renderBoard();
+        });
+      });
       gameOver = true;
       playerOne.board.renderBoard(playerNo);
     }
@@ -815,7 +830,7 @@ function playGame() {
     });
   }
 
-  const squaresArray = Array.from({ length: 64}, (_, i) => i);
+  let squaresArray = Array.from({ length: 64}, (_, i) => i);
   let playerAttacked;
 
   function getComputerMove() {
@@ -864,7 +879,7 @@ function playGame() {
       x = Math.floor(targetSquare / row);
       y = targetSquare % column;
     }
-
+    
     setTimeout(() => {
       const result = playerOne.board.receiveAttack(x, y, 1);
       const targetIndex = squaresArray.indexOf(targetSquare);
@@ -945,7 +960,6 @@ function playGame() {
     const result = playerTwo.board.receiveAttack(x, y, 2);
     
     if (result) {
-      console.log('hey');
       currentScore += 500;
       const padScore = currentScore.toString().padStart(6, '0');
       currentScoreBoard.textContent = padScore;
@@ -954,6 +968,7 @@ function playGame() {
         hiScore = currentScore;
         const padHiScore = hiScore.toString().padStart(6, '0');
         hiScoreBoard.textContent = 'Hi ' + padHiScore;
+        localStorage.setItem('hiScore', JSON.stringify(hiScore));
       }
 
       checkTheWinner(2);
