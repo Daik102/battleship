@@ -42,7 +42,8 @@ export function gameBoard() {
   const column = 8;
   const shipList = [];
   let board = Array.from({ length: row }, () => Array(column).fill(0));
-  let hit;
+  let currentShip = {};
+  let length = 0;
   
   const deployShip = (x, y, length, direction) => {
     const newShip = ship(length);
@@ -68,8 +69,6 @@ export function gameBoard() {
   };
 
   const rotateShip = (x, y) => {
-    let currentShip;
-    let length = 0;
     let direction = '';
     let cannotRotate;
     
@@ -165,9 +164,49 @@ export function gameBoard() {
     }
   };
 
+  const setRotateLocation = (x, y) => {
+    const squares = document.querySelectorAll('.square-one');
+  
+    for (let i = 0; i < shipLists[0].length; i++) {
+      const ship = shipLists[0][i];
+      const bow = ship.body[0];
+
+      for (let j = 0; j < ship.body.length; j++) {
+        let body = ship.body[j];
+        let bodyX = body[0];
+        let bodyY = body[1];
+        
+        if (x === bodyX && y === bodyY) {
+          const cannotRotate = rotateShip(bow[0], bow[1]);
+
+          if (cannotRotate) {
+            for (let k = 0; k < ship.body.length; k++) {
+              body = ship.body[k];
+              bodyX = body[0];
+              bodyY = body[1];
+              
+              squares.forEach((square) => {
+                const squareX = Number(square.getAttribute('x'));
+                const squareY = Number(square.getAttribute('y'));
+
+                if (squareX === bodyX && squareY === bodyY) {
+                  square.classList.add('caution');
+
+                  setTimeout(() => {
+                    square.classList.remove('caution');
+                  }, 200);
+                }
+              });
+            }
+          } else {
+            renderBoard();
+          }
+        }
+      }
+    }
+  };
+
   const moveShip = (x, y, x2, y2, randomDirection, player) => {
-    let currentShip;
-    let length = 0;
     let direction = '';
     let cannotMove;
     
@@ -296,11 +335,66 @@ export function gameBoard() {
     }
   };
 
+  let startTarget;
+  let startX;
+  let startY;
+
+  const setStartLocation = (start, x, y) => {
+    startTarget = start;
+    startX = x;
+    startY = y;
+  };
+
+  const setEndLocation = (endX, endY) => {
+    let bodyIndex = 0;
+    
+    for (let i = 0; i < shipLists[0].length; i++) {
+      const ship = shipLists[0][i];
+      
+      for (let j = 0; j < ship.body.length; j++) {
+        const body = ship.body[j];
+        const bodyX = Number(body[0]);
+        const bodyY = Number(body[1]);
+
+        if (bodyX === startX && bodyY === startY) {
+          currentShip = ship;
+          bodyIndex = j;
+        }
+      }
+    }
+
+    const bow = currentShip.body[0];
+    const direction = currentShip.direction;
+  
+    if (bow) {
+      startX = bow[0];
+      startY = bow[1];
+
+      if (direction === 'horizontal') {
+        endY -= bodyIndex;
+      } else {
+        endX -= bodyIndex;
+      }
+    }  
+
+    const cannotMove = moveShip(startX, startY, endX, endY, 0, 1);
+
+    if (cannotMove) {
+      startTarget.classList.add('caution');
+      
+      setTimeout(() => {
+        startTarget.classList.remove('caution');
+      }, 200);
+    } else {
+      renderBoard();
+    }
+  };
+
   const deployRandom = (player) => {
     board = Array.from({ length: row }, () => Array(column).fill(0));
 
     for (let i = 0; i < shipLists[player - 1].length; i++) {
-      const currentShip = shipLists[player - 1][i];
+      currentShip = shipLists[player - 1][i];
       const bow = currentShip.body[0];
       let x = bow[0];
       let y = bow[1];
@@ -349,9 +443,9 @@ export function gameBoard() {
     return board;
   };
 
-  const receiveAttack = (x, y, playerNo) => {
-    let currentShip;
+  let hit;
 
+  const receiveAttack = (x, y, playerNo) => {
     for (let i = 0; i < shipLists[playerNo - 1].length; i++) {
       const ship = shipLists[playerNo - 1][i];
 
@@ -530,7 +624,10 @@ export function gameBoard() {
   return {
     deployShip,
     rotateShip,
+    setRotateLocation,
     moveShip,
+    setStartLocation,
+    setEndLocation,
     deployRandom,
     receiveAttack,
     renderBoard,
@@ -546,273 +643,105 @@ function player(playerNo, playerType) {
     playerNo,
     playerType,
     board: gameBoard(),
+    play: playGame(),
   };
 }
 
-let playerOne = player(1, 'human');
-let playerTwo = player(2, 'computer');
-let shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
-let currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
-let gameStart;
-let gameOver;
-let currentScore = 0;
-const padScore = currentScore.toString().padStart(6, '0');
-let hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
-let currentVictory = 0;
-let highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
-
 function playGame() {
-  function deployDefault() {
-    playerOne.board.deployShip(0, 1, 4, 'horizontal');
-    playerOne.board.deployShip(5, 3, 3, 'vertical');
-    playerOne.board.deployShip(3, 6, 2, 'horizontal');
-    playerOne.board.deployShip(6, 1, 1, 'vertical');
+  const setInitial = (playerNo) => {
+    if (playerNo === 1) {
+      playerOne.board.deployShip(0, 1, 4, 'horizontal');
+      playerOne.board.deployShip(5, 3, 3, 'vertical');
+      playerOne.board.deployShip(3, 6, 2, 'horizontal');
+      playerOne.board.deployShip(6, 1, 1, 'vertical');
+      
+      updateScore();
+      updateVictory();
+      updateMessage('Deploy your fleet');
+      updateBtn();
+      playerOne.board.renderBoard();
+    } else {
+      playerTwo.board.deployShip(5, 2, 4, 'horizontal');
+      playerTwo.board.deployShip(2, 7, 3, 'vertical');
+      playerTwo.board.deployShip(1, 4, 2, 'horizontal');
+      playerTwo.board.deployShip(7, 3, 1, 'vertical');
 
-    playerTwo.board.deployShip(5, 2, 4, 'horizontal');
-    playerTwo.board.deployShip(2, 7, 3, 'vertical');
-    playerTwo.board.deployShip(1, 4, 2, 'horizontal');
-    playerTwo.board.deployShip(7, 3, 1, 'vertical');
-
-    currentBoards[1] = playerTwo.board.deployRandom(2);
-  }
-
-  deployDefault();
-
-  const randomBtn = document.querySelector('.random-btn');
-
-  randomBtn.addEventListener('click', () => {
-    if (gameStart) {
-      location.reload();
-    }
-
-    currentBoards[0] = playerOne.board.deployRandom(1);
-    playerOne.board.renderBoard();
-  });
-
-  const boardContainerOne = document.querySelector('.board-container-one');
-  const boardContainerTwo = document.querySelector('.board-container-two');
-
-  boardContainerOne.addEventListener('click', (e) => {
-    if (gameStart) {
-      return;
-    }
-
-    const target = e.target;
-    const x = Number(target.getAttribute('x'));
-    const y = Number(target.getAttribute('y'));
-    const squares = document.querySelectorAll('.square-one');
-    
-    for (let i = 0; i < shipLists[0].length; i++) {
-      const ship = shipLists[0][i]
-      const bow = ship.body[0];
-
-      for (let j = 0; j < ship.body.length; j++) {
-        let body = ship.body[j];
-        let bodyX = body[0];
-        let bodyY = body[1];
-        
-        if (x === bodyX && y === bodyY) {
-          const cannotRotate = playerOne.board.rotateShip(bow[0], bow[1]);
-
-          if (cannotRotate) {
-            for (let k = 0; k < ship.body.length; k++) {
-              body = ship.body[k];
-              bodyX = body[0];
-              bodyY = body[1];
-              
-              squares.forEach((square) => {
-                const squareX = Number(square.getAttribute('x'));
-                const squareY = Number(square.getAttribute('y'));
-
-                if (squareX === bodyX && squareY === bodyY) {
-                  square.classList.add('caution');
-
-                  setTimeout(() => {
-                    square.classList.remove('caution');
-                  }, 200);
-                }
-              });
-            }
-          } else {
-            playerOne.board.renderBoard();
-          }
-        }
-      }
-    }
-  });
-
-  let startTarget;
-  let startX = 0;
-  let startY = 0;
-
-  boardContainerOne.addEventListener('dragstart', (e) => {
-    startTarget = e.target;
-    startX = Number(startTarget.getAttribute('x'));
-    startY = Number(startTarget.getAttribute('Y'));
-  });
-
-  boardContainerOne.addEventListener('dragover', (e) => {
-    if (gameStart) {
-      return;
-    }
-    
-    e.preventDefault();
-  });
-
-  boardContainerOne.addEventListener('drop', (e) => {
-    const endTarget = e.target;
-    let endX = Number(endTarget.getAttribute('x'));
-    let endY = Number(endTarget.getAttribute('Y'));
-    let currentShip;
-    let bodyIndex = 0;
-    
-    for (let i = 0; i < shipLists[0].length; i++) {
-      const ship = shipLists[0][i];
-
-      for (let j = 0; j < ship.body.length; j++) {
-        const body = ship.body[j];
-        const bodyX = Number(body[0]);
-        const bodyY = Number(body[1]);
-
-        if (bodyX === startX && bodyY === startY) {
-          currentShip = ship;
-          bodyIndex = j;
-        }
-      }
-    }
-
-    const bow = currentShip.body[0];
-    const direction = currentShip.direction;
-    
-    if (bow) {
-      startX = bow[0];
-      startY = bow[1];
-
-      if (direction === 'horizontal') {
-        endY -= bodyIndex;
-      } else {
-        endX -= bodyIndex;
-      }
-    }  
-
-    const cannotMove = playerOne.board.moveShip(startX, startY, endX, endY, 0, 1);
-
-    if (cannotMove) {
-      startTarget.classList.add('caution');
-
-      setTimeout(() => {
-        startTarget.classList.remove('caution');
-      }, 200);
-
-      return;
-    }
-
-    playerOne.board.renderBoard();
-  });
-
-  const message = document.querySelector('.message');
-  const currentScoreBoard = document.querySelector('.current-score-board');
-  const hiScoreBoard = document.querySelector('.hi-score-board');
-  const currentVictoryBoard = document.querySelector('.current-victory-board');
-  const highestVictoryBoard = document.querySelector('.highest-victory-board');
-  const padHiScore = hiScore.toString().padStart(6, '0');
-  currentScoreBoard.textContent = padScore;
-  hiScoreBoard.textContent = 'Hi ' + padHiScore;
-  currentVictoryBoard.textContent = currentVictory;
-  highestVictoryBoard.textContent = highestVictory;
-
-  function checkTheWinner(playerNo) {
-    const sunkCounter = shipLists[playerNo - 1].reduce((acc, curr) => acc + curr.sunk, 0);
-    const totalShips = ship().getTotalShips();
-        
-    if (sunkCounter === totalShips) {
-      const dialogDefeat = document.querySelector('.dialog-defeat');
-      const dialogVictory = document.querySelector('.dialog-victory');
-
-      if (playerNo === 1) {
-        message.textContent = 'You lose';
-        currentScore = 0;
-        currentVictory = 0;
-
-        setTimeout(() => {
-          dialogDefeat.showModal();
-        }, 1000);
-      } else {
-        message.textContent = 'You win!';
-        const bonusScores = document.querySelectorAll('.bonus-score');
-        const totalBonusScore = document.querySelector('.total-bonus-score');
-        let totalBonus = 0;
-
-        bonusScores.forEach((score, i) => {
-          let bonus = 2000 - i * 500;
-          
-          if (!shipLists[0][i].sunk) {
-            score.textContent = bonus;
-            totalBonus += bonus
-          } else {
-            score.textContent = 0;
-          }
-        });
-
-        totalBonusScore.textContent = totalBonus;
-        currentScore += totalBonus;
-        currentVictory += 1;
-
-        setTimeout(() => {
-          dialogVictory.showModal();
-        }, 1000);
-      }
-
-      const continueBtns = document.querySelectorAll('.continue-btn');
-
-      continueBtns.forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          dialogDefeat.close();
-          dialogVictory.close();
-        
-          const padScore = currentScore.toString().padStart(6, '0');
-          currentScoreBoard.textContent = padScore;
-
-          if (currentScore > hiScore) {
-            hiScore = currentScore;
-            const padHiScore = hiScore.toString().padStart(6, '0');
-            hiScoreBoard.textContent = 'Hi ' + padHiScore;
-            localStorage.setItem('hiScore', JSON.stringify(hiScore));
-          }
-
-          currentVictoryBoard.textContent = currentVictory;
-
-          if (currentVictory > highestVictory) {
-            highestVictory = currentVictory;
-            highestVictoryBoard.textContent = highestVictory;
-            localStorage.setItem('highestVictory', JSON.stringify(highestVictory));
-          }
-
-          playerOne = player(1, 'human');
-          playerTwo = player(2, 'computer');
-          shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
-          currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
-          squaresArray = Array.from({ length: 64}, (_, i) => i);
-          gameStart = false;
-          gameOver = false;
-          playerAttacked = false;
-
-          message.textContent = 'Deploy your fleet';
-          randomBtn.textContent = 'Random';
-          randomBtn.classList.remove('reset-btn');
-          playBtn.classList.remove('opacity');
-          playBtn.classList.remove('play-btn-hover');
-          deployDefault();
-          playerOne.board.renderBoard();
-        });
-      });
-      gameOver = true;
-      playerOne.board.renderBoard(playerNo);
+      currentBoards[1] = playerTwo.board.deployRandom(2);
+      playerTwo.board.renderBoard();
     }
   }
 
-  function markupTarget() {
+  const updateScore = (score, reset) => {
+    const currentScoreBoard = document.querySelector('.current-score-board');
+    const hiScoreBoard = document.querySelector('.hi-score-board');
+
+    if (reset) {
+      currentScore = 0;
+    }
+
+    if (score) {
+      currentScore += score;
+    }
+
+    if (currentScore > hiScore) {
+      hiScore = currentScore;
+      localStorage.setItem('hiScore', JSON.stringify(hiScore));
+    }
+
+    let padScore = currentScore.toString().padStart(6, '0');
+    let padHiScore = hiScore.toString().padStart(6, '0');
+    currentScoreBoard.textContent = padScore;
+    hiScoreBoard.textContent = 'Hi ' + padHiScore;
+  };
+
+  const updateVictory = (reset) => {
+    const currentVictoryBoard = document.querySelector('.current-victory-board');
+    const highestVictoryBoard = document.querySelector('.highest-victory-board');
+
+    if (reset) {
+      currentVictory = 0;
+    }
+
+    if (currentVictory > highestVictory) {
+      highestVictory = currentVictory;
+      localStorage.setItem('highestVictory', JSON.stringify(highestVictory));
+    }
+
+    currentVictoryBoard.textContent = currentVictory;
+    highestVictoryBoard.textContent = highestVictory;
+  };
+
+  const updateMessage = (message, stop) => {
+    const messageBoard = document.querySelector('.message-board');
+    messageBoard.textContent = message;
+    
+    if (!gameStart) {
+      intervalId = setInterval(() => {
+        messageBoard.classList.toggle('invisible');
+      }, 1000);
+    }
+    
+    if (stop) {
+      messageBoard.classList.remove('invisible');
+      clearInterval(intervalId);
+    }
+  };
+
+  const updateBtn = () => {
+    if (gameStart) {
+      randomBtn.textContent = 'Reset';
+      randomBtn.classList.remove('opacity');
+      randomBtn.classList.add('reset-btn');
+      playBtn.classList.add('opacity');
+    } else {
+      randomBtn.textContent = 'Random';
+      randomBtn.classList.remove('reset-btn');
+      playBtn.classList.remove('opacity');
+      playBtn.classList.remove('play-btn-hover');
+    }
+  };
+
+  const markupTarget = () => {
     if (gameOver) {
       return;
     }
@@ -831,9 +760,10 @@ function playGame() {
   }
 
   let squaresArray = Array.from({ length: 64}, (_, i) => i);
-  let playerAttacked;
 
-  function getComputerMove() {
+  const getComputerMove = () => {
+    playerAttacked = true;
+
     const row = playerTwo.board.getRow();
     const column = playerTwo.board.getColumn();
     
@@ -905,82 +835,217 @@ function playGame() {
           }
         }
 
-        checkTheWinner(1);
+        playerTwo.play.checkTheWinner(1);
 
         if (gameOver) {
           return;
         }
         
-        getComputerMove();
+        playerTwo.play.getComputerMove();
       } else {
-        message.textContent = 'Your turn';
         playerAttacked = false;
-        markupTarget();
+        playerTwo.play.updateMessage('Your turn');
+        playerTwo.play.markupTarget();
       }
     }, 1000);
   }
+  
+  const checkTheWinner = (playerNo) => {
+    const sunkCounter = shipLists[playerNo - 1].reduce((acc, curr) => acc + curr.sunk, 0);
+    const totalShips = ship().getTotalShips();
+        
+    if (sunkCounter === totalShips) {
+      if (playerNo === 1) {
+        currentScore = 0;
+        currentVictory = 0;
 
-  const playBtn = document.querySelector('.play-btn');
+        setTimeout(() => {
+          playerOne.play.updateMessage('You lose');
+          dialogDefeat.showModal();
+        }, 1000);
+      } else {
+        const bonusScores = document.querySelectorAll('.bonus-score');
+        const totalBonusScore = document.querySelector('.total-bonus-score');
+        let totalBonus = 0;
 
-  playBtn.addEventListener('mouseenter', () => {
-    if (!gameStart) {
-      playBtn.classList.add('play-btn-hover');
-    }
-  });
+        bonusScores.forEach((score, i) => {
+          let bonus = 2000 - i * 500;
+          
+          if (!shipLists[0][i].sunk) {
+            score.textContent = bonus;
+            totalBonus += bonus
+          } else {
+            score.textContent = 0;
+          }
+        });
 
-  playBtn.addEventListener('mouseleave', () => {
-    if (!gameStart) {
-      playBtn.classList.remove('play-btn-hover');
-    }
-  });
+        totalBonusScore.textContent = totalBonus;
+        currentScore += totalBonus;
+        currentVictory += 1;
 
-  playBtn.addEventListener('click', () => {
-    if (gameOver) {
-      return;
-    }
-
-    gameStart = true;
-    message.textContent = 'Your turn';
-    randomBtn.textContent = 'Reset';
-    randomBtn.classList.remove('opacity');
-    randomBtn.classList.add('reset-btn');
-    playBtn.classList.add('opacity');
-    playerOne.board.renderBoard();
-    markupTarget();
-  });
-
-  boardContainerTwo.addEventListener('click', (e) => {
-    if (playerAttacked || gameOver) {
-      return;
-    }
-
-    const target = e.target;
-    const x = Number(target.getAttribute('x'));
-    const y = Number(target.getAttribute('y'));
-    const result = playerTwo.board.receiveAttack(x, y, 2);
-    
-    if (result) {
-      currentScore += 500;
-      const padScore = currentScore.toString().padStart(6, '0');
-      currentScoreBoard.textContent = padScore;
-
-      if (currentScore > hiScore) {
-        hiScore = currentScore;
-        const padHiScore = hiScore.toString().padStart(6, '0');
-        hiScoreBoard.textContent = 'Hi ' + padHiScore;
-        localStorage.setItem('hiScore', JSON.stringify(hiScore));
+        setTimeout(() => {
+          playerOne.play.updateMessage('You win!');
+          dialogVictory.showModal();
+        }, 1000);
       }
-
-      checkTheWinner(2);
-      markupTarget();
-    } else {
-      playerAttacked = true;
-      message.textContent = 'Computer\'s turn';
-      getComputerMove();
+      
+      gameOver = true;
+      playerOne.board.renderBoard(playerNo);
     }
-  });
+  }
+
+  const resetGame = () => {
+    playerOne = player(1, 'human');
+    playerTwo = player(2, 'computer');
+    shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
+    currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
+    squaresArray = Array.from({ length: 64}, (_, i) => i);
+    gameStart = false;
+    gameOver = false;
+    playerAttacked = false;
+
+    setInitial(1);
+    setInitial(2);
+  };
+
+  return {
+    setInitial,
+    updateScore,
+    updateVictory,
+    updateMessage,
+    updateBtn,
+    markupTarget,
+    getComputerMove,
+    checkTheWinner,
+    resetGame,
+  }
 }
 
-playGame();
+const randomBtn = document.querySelector('.random-btn');
+const playBtn = document.querySelector('.play-btn');
+const boardContainerOne = document.querySelector('.board-container-one');
+const boardContainerTwo = document.querySelector('.board-container-two');
+const dialogDefeat = document.querySelector('.dialog-defeat');
+const dialogVictory = document.querySelector('.dialog-victory');
+const continueBtns = document.querySelectorAll('.continue-btn');
+
+let playerOne = player(1, 'human');
+let playerTwo = player(2, 'computer');
+
+let shipLists = [playerOne.board.getShipList(), playerTwo.board.getShipList()];
+let currentBoards = [playerOne.board.getBoard(), playerTwo.board.getBoard()];
+
+let gameStart;
+let gameOver;
+let playerAttacked;
+let intervalId = 0;
+
+let currentScore = 0;
+let hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
+let currentVictory = 0;
+let highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
+
+playerOne.play.setInitial(1);
+playerTwo.play.setInitial(2);
+
+randomBtn.addEventListener('click', () => {
+  if (gameStart) {
+    playerOne.play.updateScore(0, 'reset');
+    playerOne.play.updateVictory('reset');
+    playerOne.play.resetGame();
+    return;
+  }
+
+  currentBoards[0] = playerOne.board.deployRandom(1);
+  playerOne.board.renderBoard();
+});
+
+boardContainerOne.addEventListener('click', (e) => {
+  if (gameStart) {
+    return;
+  }
+
+  const target = e.target;
+  const x = Number(target.getAttribute('x'));
+  const y = Number(target.getAttribute('y'));
+  playerOne.board.setRotateLocation(x, y);
+});
+
+boardContainerOne.addEventListener('dragstart', (e) => {
+  const startTarget = e.target;
+  const startX = Number(startTarget.getAttribute('x'));
+  const startY = Number(startTarget.getAttribute('Y'));
+  playerOne.board.setStartLocation(startTarget, startX, startY);
+});
+
+boardContainerOne.addEventListener('dragover', (e) => {
+  if (gameStart) {
+    return;
+  }
+  
+  e.preventDefault();
+});
+
+boardContainerOne.addEventListener('drop', (e) => {
+  const endTarget = e.target;
+  const endX = Number(endTarget.getAttribute('x'));
+  const endY = Number(endTarget.getAttribute('Y'));
+  playerOne.board.setEndLocation(endX, endY);
+});
+
+
+
+playBtn.addEventListener('mouseenter', () => {
+  if (!gameStart) {
+    playBtn.classList.add('play-btn-hover');
+  }
+});
+
+playBtn.addEventListener('mouseleave', () => {
+  if (!gameStart) {
+    playBtn.classList.remove('play-btn-hover');
+  }
+});
+
+playBtn.addEventListener('click', () => {
+  if (gameOver) {
+    return;
+  }
+
+  gameStart = true;
+  playerOne.play.updateMessage('Your turn', 'stop');
+  playerOne.play.updateBtn();
+  playerOne.board.renderBoard();
+  playerOne.play.markupTarget();
+});
+
+boardContainerTwo.addEventListener('click', (e) => {
+  if (playerAttacked || gameOver) {
+    return;
+  }
+
+  const target = e.target;
+  const x = Number(target.getAttribute('x'));
+  const y = Number(target.getAttribute('y'));
+  const result = playerTwo.board.receiveAttack(x, y, 2);
+  
+  if (result) {
+    playerOne.play.updateScore(500);
+    playerOne.play.checkTheWinner(2);
+    playerOne.play.markupTarget();
+  } else {
+    playerOne.play.updateMessage('Computer\'s turn');
+    playerTwo.play.getComputerMove();
+  }
+});
+      
+continueBtns.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    dialogDefeat.close();
+    dialogVictory.close();
+    playerOne.play.resetGame();
+  });
+});
 
 // module.exports = ship;
