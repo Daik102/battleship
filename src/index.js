@@ -15,20 +15,18 @@ playerOne.board.deployShip();
 playerTwo.board.deployShip();
 playerTwo.board.deployRandom();
 
-playerOne.board.updateScore();
-playerOne.board.updateVictory();
+playerOne.board.updateRecords();
 playerOne.board.updateMessage('Deploy your fleet');
 playerOne.board.updateBtn();
 
 playerOne.board.renderBoard(1, playerTwo.board.getBoard());
 
 function resetGame() {
-  const scoreList = playerOne.board.updateScore('getScore');
-  const currentScore = scoreList[0];
-  const hiScore = scoreList[1];
-  const victoryList = playerOne.board.updateVictory('getVictory');
-  const currentVictory = victoryList[0];
-  const highestVictory = victoryList[1];
+  const records = playerOne.board.updateRecords('getRecords');
+  const currentScore = records[0];
+  const hiScore = records[1];
+  const currentVictory = records[2];
+  const highestVictory = records[3];
   
   playerOne = player(playerOne.playerNo, playerOne.playerType, currentScore, hiScore, currentVictory, highestVictory);
   playerTwo = player(playerTwo.playerNo, playerTwo.playerType);
@@ -36,8 +34,7 @@ function resetGame() {
   playerTwo.board.deployShip();
   playerTwo.board.deployRandom();
   
-  playerOne.board.updateScore();
-  playerOne.board.updateVictory();
+  playerOne.board.updateRecords();
   playerOne.board.updateMessage('Deploy your fleet');
   playerOne.board.updateBtn();
   
@@ -48,8 +45,7 @@ randomBtn.addEventListener('click', () => {
   const currentTurn = playerOne.board.getCurrentTurn();
 
   if (currentTurn !== 0) {
-    playerOne.board.updateScore(0);
-    playerOne.board.updateVictory(0);
+    playerOne.board.updateRecords(0, 0);
     resetGame();
     return;
   }
@@ -146,13 +142,12 @@ boardContainerTwo.addEventListener('click', (e) => {
   const result = playerTwo.board.receiveAttack(x, y, 2, playerOne.board.getBoard());
   
   if (result === 'hit') {
-    playerOne.board.updateScore(500);
+    playerOne.board.updateRecords(500);
     const winner = playerTwo.board.checkTheWinner(2, playerOne.board.getBoard());
 
     if (winner === 2) {
       const totalBonus = playerOne.board.getTotalBonus();
-      playerOne.board.updateScore(totalBonus, 'notRender');
-      playerOne.board.updateVictory(1, 'notRender');
+      playerOne.board.updateRecords(totalBonus, 1, 'notRender');
       return;
     }
 
@@ -174,8 +169,7 @@ continueBtns.forEach((btn) => {
     const winner = playerOne.board.checkTheWinner(1);
 
     if (winner === 1) {
-      playerOne.board.updateScore(0);
-      playerOne.board.updateVictory(0);
+      playerOne.board.updateRecords(0, 0);
     }
 
     resetGame();

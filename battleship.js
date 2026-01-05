@@ -711,19 +711,22 @@ function gameBoard(cs, hs, cv, hv) {
 
   let currentScore = 0;
   let hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
+  let currentVictory = 0;
+  let highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
   
   if (cs) {
     currentScore = cs;
     hiScore = hs;
+    currentVictory = cv;
+    highestVictory = hv;
   }
 
-  const updateScore = (score, notRender) => {
-    const currentScoreBoard = document.querySelector('.current-score-board');
-    const hiScoreBoard = document.querySelector('.hi-score-board');
-
-    if (score === 'getScore') {
-      return [currentScore, hiScore];
-    } else if (score) {
+  const updateRecords = (score, victory, notRender) => {
+    if (score === 'getRecords') {
+      return [currentScore, hiScore, currentVictory, highestVictory];
+    }
+    
+    if (score) {
       currentScore += score;
     } else if (score === 0) {
       currentScore = 0;
@@ -734,31 +737,7 @@ function gameBoard(cs, hs, cv, hv) {
       localStorage.setItem('hiScore', JSON.stringify(hiScore));
     }
 
-    if (notRender) {
-      return;
-    }
-    
-    let padScore = currentScore.toString().padStart(6, '0');
-    let padHiScore = hiScore.toString().padStart(6, '0');
-    currentScoreBoard.textContent = padScore;
-    hiScoreBoard.textContent = 'Hi ' + padHiScore;
-  };
-
-  let currentVictory = 0;
-  let highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
-
-  if (cv) {
-    currentVictory = cv;
-    highestVictory = hv;
-  }
-
-  const updateVictory = (victory, notRender) => {
-    const currentVictoryBoard = document.querySelector('.current-victory-board');
-    const highestVictoryBoard = document.querySelector('.highest-victory-board');
-
-    if (victory === 'getVictory') {
-      return [currentVictory, highestVictory];
-    } else if (victory) {
+    if (victory) {
       currentVictory += 1;
     } else if (victory === 0) {
       currentVictory = 0;
@@ -773,6 +752,15 @@ function gameBoard(cs, hs, cv, hv) {
       return;
     }
 
+    const currentScoreBoard = document.querySelector('.current-score-board');
+    const hiScoreBoard = document.querySelector('.hi-score-board');
+    const currentVictoryBoard = document.querySelector('.current-victory-board');
+    const highestVictoryBoard = document.querySelector('.highest-victory-board');
+    let padScore = currentScore.toString().padStart(6, '0');
+    let padHiScore = hiScore.toString().padStart(6, '0');
+
+    currentScoreBoard.textContent = padScore;
+    hiScoreBoard.textContent = 'Hi ' + padHiScore;
     currentVictoryBoard.textContent = currentVictory;
     highestVictoryBoard.textContent = highestVictory;
   };
@@ -908,8 +896,7 @@ function gameBoard(cs, hs, cv, hv) {
     markupTarget,
     checkTheWinner,
     getTotalBonus,
-    updateScore,
-    updateVictory,
+    updateRecords,
     updateMessage,
     updateBtn,
     getBoard,
