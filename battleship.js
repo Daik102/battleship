@@ -11,19 +11,14 @@ function ship(length, direction) {
     type = 'submarine';
   }
 
-  const hit = (shipList, index) => {
-    shipList[index].damage += 1;
-  };
-
-  const isSunk = (shipList, index) => {
-    shipList[index].sunk = true;
-  };
+  const hit = (shipList, index) => shipList[index].damage += 1;
+  const isSunk = (shipList, index) => shipList[index].sunk = true;
 
   return {
     type,
     length,
-    body: [],
     direction,
+    body: [],
     damage: 0,
     sunk: false,
     hit,
@@ -37,49 +32,54 @@ function gameBoard(cs, hs, cv, hv) {
   const column = 8;
   const shipList = [];
   let board = Array.from({ length: row }, () => Array(column).fill(0));
-  let currentShip = {};
-  let length = 0;
-  let body = [];
-  let direction = '';
-  let bow = [];
-  let currentTurn = 0;
   
-  const deployShip = () => {
-    const defaultList = [[0, 1, 4, 'horizontal'], [5, 3, 3, 'vertical'], [3, 6, 2, 'horizontal'], [6, 1, 1, 'vertical']];
-
+  const deployShip = (customSets) => {
+    const defaultSets = [[0, 1, 4, 'horizontal'], [5, 3, 3, 'vertical'], [3, 6, 2, 'horizontal'], [6, 1, 1, 'vertical']];
+    let fleetSets = [];
+    customSets ? fleetSets = customSets : fleetSets = defaultSets;
+    
     for (let i = 0; i < totalShips; i++) {
-      const defaultSet = defaultList[i];
-      const x = defaultSet[0];
-      const y = defaultSet[1];
-      length = defaultSet[2];
-      direction = defaultSet[3];
-      
+      const fleetSet = fleetSets[i];
+      const x = fleetSet[0];
+      const y = fleetSet[1];
+      const length = fleetSet[2];
+      const direction = fleetSet[3];
       const newShip = ship(length, direction);
     
-      for (let i = 0; i < length; i++) {
+      for (let j = 0; j < length; j++) {
         if (direction === 'horizontal') {
-          newShip.body.push([x, y + i]);
+          newShip.body.push([x, y + j]);
+          board[x][y + j] = 'S';
         } else {
-          newShip.body.push([x + i, y]);
+          newShip.body.push([x + j, y]);
+          board[x + j][y] = 'S';
         }
       }
       
       shipList.push(newShip);
-
-      for (let i = 0; i < length; i++) {
-        if (direction === 'horizontal') {
-          board[x][y + i] = 'S';
-        } else {
-          board[x + i][y] = 'S';
-        }
-      }
     }
   };
 
+  const getDeploySets = () => {
+    const customSets = [];
+    
+    for (let i = 0; i < totalShips; i++) {
+      const ship = shipList[i];
+      const x = ship.body[0][0];
+      const y = ship.body[0][1];
+      const length = ship.length;
+      const direction = ship.direction;
+      const customSet = [x, y, length, direction];
+      customSets.push(customSet);
+    }
+
+    return customSets;
+  };
+
   const rotateShip = (bowX, bowY, ship) => {
+    const length = ship.length;
+    const direction = ship.direction;
     let cannotRotate;
-    length = ship.length;
-    direction = ship.direction;
 
     for (let k = 1; k < length; k++) {
       if (direction === 'horizontal') {
@@ -163,14 +163,13 @@ function gameBoard(cs, hs, cv, hv) {
   
     for (let i = 0; i < totalShips; i++) {
       const ship = shipList[i];
-      length = ship.length;
-      direction = ship.direction;
-      bow = ship.body[0];
+      const length = ship.length;
+      const bow = ship.body[0];
       const bowX = bow[0];
       const bowY = bow[1];
 
       for (let j = 0; j < length; j++) {
-        body = ship.body[j];
+        let body = ship.body[j];
         let bodyX = body[0];
         let bodyY = body[1];
         
@@ -209,9 +208,13 @@ function gameBoard(cs, hs, cv, hv) {
   };
 
   const moveShip = (x, y, x2, y2, randomDirection) => {
+    let currentShip = {};
+    let length = 0;
+    let direction = '';
+
     for (let i = 0; i < totalShips; i++) {
       const ship = shipList[i];
-      bow = ship.body[0];
+      const bow = ship.body[0];
       const bowX = bow[0];
       const bowY = bow[1];
       
@@ -353,13 +356,14 @@ function gameBoard(cs, hs, cv, hv) {
       return;
     }
 
+    let currentShip = {};
     let bodyIndex = 0;
     
     for (let i = 0; i < totalShips; i++) {
       const ship = shipList[i];
       
       for (let j = 0; j < ship.length; j++) {
-        body = ship.body[j];
+        const body = ship.body[j];
         const bodyX = Number(body[0]);
         const bodyY = Number(body[1]);
 
@@ -370,8 +374,8 @@ function gameBoard(cs, hs, cv, hv) {
       }
     }
 
-    bow = currentShip.body[0];
-    direction = currentShip.direction;
+    const bow = currentShip.body[0];
+    const direction = currentShip.direction;
   
     if (bow) {
       startX = bow[0];
@@ -402,12 +406,13 @@ function gameBoard(cs, hs, cv, hv) {
     
     for (let i = 0; i < totalShips; i++) {
       const ship = shipList[i];
-      bow = ship.body[0];
+      const bow = ship.body[0];
       const bowX = bow[0];
       const bowY = bow[1];
       let x2 = Math.floor(Math.random() * row);
       let y2 = Math.floor(Math.random() * column);
       let zeroOrOne = Math.floor(Math.random() * 2);
+      let direction = '';
     
       if (zeroOrOne === 0) {
         direction = 'horizontal';
@@ -437,7 +442,7 @@ function gameBoard(cs, hs, cv, hv) {
     return board;
   };
 
-  const startGame = () => currentTurn = 1;
+  let currentTurn = 0;
 
   const changeTurn = () => {
     if (currentTurn === 1) {
@@ -464,19 +469,13 @@ function gameBoard(cs, hs, cv, hv) {
       return;
     } else {
       result = 'hit';
-
-      const wrapper = document.querySelector('.wrapper');
-      wrapper.classList.add('hit');
-
-      setTimeout(() => {
-        wrapper.classList.remove('hit');
-      }, 100);
+      let currentShip = {};
 
       for (let i = 0; i < totalShips; i++) {
         const ship = shipList[i];
 
         for (let j = 0; j < ship.length; j++) {
-          body = ship.body[j];
+          const body = ship.body[j];
           const bodyX = Number(body[0]);
           const bodyY = Number(body[1]);
 
@@ -525,7 +524,7 @@ function gameBoard(cs, hs, cv, hv) {
         
         // Put splash after sinking
         for (let i = 0; i < shipList[index].length; i++) {
-          body = shipList[index].body[i];
+          const body = shipList[index].body[i];
           const bodyX = body[0];
           const bodyY = body[1];
           board[bodyX][bodyY] = 'D';
@@ -553,7 +552,7 @@ function gameBoard(cs, hs, cv, hv) {
       }
     }
     
-    renderBoard(playerNo, otherBoard);
+    renderBoard(playerNo, otherBoard, result);
     return result;
   };
 
@@ -791,7 +790,7 @@ function gameBoard(cs, hs, cv, hv) {
 
   const getCurrentTurn = () => currentTurn;
 
-  const renderBoard = (playerNo, otherBoard) => {
+  const renderBoard = (playerNo, otherBoard, result) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
     
@@ -803,6 +802,15 @@ function gameBoard(cs, hs, cv, hv) {
       }
 
       return;
+    }
+
+    if (result === 'hit') {
+      const wrapper = document.querySelector('.wrapper');
+      wrapper.classList.add('hit');
+
+      setTimeout(() => {
+        wrapper.classList.remove('hit');
+      }, 100);
     }
 
     boardContainerOne.innerHTML = '';
@@ -883,13 +891,13 @@ function gameBoard(cs, hs, cv, hv) {
   
   return {
     deployShip,
+    getDeploySets,
     rotateShip,
     setRotateLocation,
     moveShip,
     setStartLocation,
     setEndLocation,
     deployRandom,
-    startGame,
     changeTurn,
     receiveAttack,
     getComputerMove,
