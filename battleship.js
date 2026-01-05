@@ -679,6 +679,18 @@ function gameBoard(cs, hs, cv, hv) {
         setTimeout(() => {
           updateMessage('You lose');
           dialogDefeat.showModal();
+
+          const rankList = ['Seaman', 'Petty Officer', 'Chief Petty Officer', 'Ensign', 'Lieutenant Jr. Grade', 'Lieutenant', 'Lieutenant Commander', 'Commander', 'Captain', 'Rear Admiral', 'Vice Admiral', 'Admiral'];
+          let rankIndex = Math.floor(currentVictory / 3) + 1;
+          
+          if (currentVictory === 0) {
+            rankIndex = 0;
+          }
+
+          const finalVictoryBoard = document.querySelector('.final-victory-board');
+          const rankBoard = document.querySelector('.rank-board');
+          finalVictoryBoard.textContent = currentVictory + ' wins';
+          rankBoard.textContent = rankList[rankIndex];
         }, 1000);
       }
       
