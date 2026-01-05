@@ -1,5 +1,3 @@
-import { currentBoards } from "./src/index.js";
-
 function ship(length, direction) {
   let type = '';
 
@@ -160,7 +158,7 @@ function gameBoard(cs, hs, cv, hv) {
     }
   };
 
-  const setRotateLocation = (x, y) => {
+  const setRotateLocation = (x, y, otherBoard) => {
     const squares = document.querySelectorAll('.square-one');
   
     for (let i = 0; i < totalShips; i++) {
@@ -203,7 +201,7 @@ function gameBoard(cs, hs, cv, hv) {
               });
             }
           } else {
-            renderBoard();
+            renderBoard(1, otherBoard);
           }
         }
       }
@@ -350,7 +348,11 @@ function gameBoard(cs, hs, cv, hv) {
     startY = y;
   };
 
-  const setEndLocation = (endX, endY) => {
+  const setEndLocation = (endX, endY, otherBoard) => {
+    if (!startTarget.classList.contains('ship')) {
+      return;
+    }
+
     let bodyIndex = 0;
     
     for (let i = 0; i < totalShips; i++) {
@@ -391,7 +393,7 @@ function gameBoard(cs, hs, cv, hv) {
         startTarget.classList.remove('caution');
       }, 200);
     } else {
-      renderBoard();
+      renderBoard(1, otherBoard);
     }
   };
 
@@ -445,8 +447,8 @@ function gameBoard(cs, hs, cv, hv) {
     }
   };
 
-  const receiveAttack = (x, y, playerNo) => {
-    const square = currentBoards[playerNo - 1][x][y];
+  const receiveAttack = (x, y, playerNo, otherBoard) => {
+    const square = board[x][y];
     let result = '';
     
     if (square === 0) {
@@ -456,7 +458,7 @@ function gameBoard(cs, hs, cv, hv) {
         currentTurn = 1;
       }
       
-      currentBoards[playerNo - 1][x][y] = 1;
+      board[x][y] = 1;
       result = 'miss';
     } else if (square !== 'S') {
       return;
@@ -495,26 +497,26 @@ function gameBoard(cs, hs, cv, hv) {
       }
       
       shipList[index].hit(shipList, index);
-      currentBoards[playerNo - 1][x][y] = 'X';
+      board[x][y] = 'X';
       
       // put splash after hitting
-      if (currentBoards[playerNo - 1][x - 1]) {
-        if (currentBoards[playerNo - 1][x - 1][y - 1] === 0) {
-          currentBoards[playerNo - 1][x - 1][y - 1] = 2;
+      if (board[x - 1]) {
+        if (board[x - 1][y - 1] === 0) {
+          board[x - 1][y - 1] = 2;
         }
 
-        if (currentBoards[playerNo - 1][x - 1][y + 1] === 0) {
-          currentBoards[playerNo - 1][x - 1][y + 1] = 2;
+        if (board[x - 1][y + 1] === 0) {
+          board[x - 1][y + 1] = 2;
         }
       }
 
-      if (currentBoards[playerNo - 1][x + 1]) {
-        if (currentBoards[playerNo - 1][x + 1][y - 1] === 0) {
-          currentBoards[playerNo - 1][x + 1][y - 1] = 2;
+      if (board[x + 1]) {
+        if (board[x + 1][y - 1] === 0) {
+          board[x + 1][y - 1] = 2;
         }
 
-        if (currentBoards[playerNo - 1][x + 1][y + 1] === 0) {
-          currentBoards[playerNo - 1][x + 1][y + 1] = 2;
+        if (board[x + 1][y + 1] === 0) {
+          board[x + 1][y + 1] = 2;
         }
       }
 
@@ -526,38 +528,38 @@ function gameBoard(cs, hs, cv, hv) {
           body = shipList[index].body[i];
           const bodyX = body[0];
           const bodyY = body[1];
-          currentBoards[playerNo - 1][bodyX][bodyY] = 'D';
+          board[bodyX][bodyY] = 'D';
 
-          if (currentBoards[playerNo - 1][bodyX - 1]) {
-            if (currentBoards[playerNo - 1][bodyX - 1][bodyY] === 0) {
-              currentBoards[playerNo - 1][bodyX - 1][bodyY] = 2;
+          if (board[bodyX - 1]) {
+            if (board[bodyX - 1][bodyY] === 0) {
+              board[bodyX - 1][bodyY] = 2;
             }
           }
 
-          if (currentBoards[playerNo - 1][bodyX][bodyY - 1] === 0) {
-            currentBoards[playerNo - 1][bodyX][bodyY - 1] = 2;
+          if (board[bodyX][bodyY - 1] === 0) {
+            board[bodyX][bodyY - 1] = 2;
           }
         
-          if (currentBoards[playerNo - 1][bodyX][bodyY + 1] === 0) {
-            currentBoards[playerNo - 1][bodyX][bodyY + 1] = 2;
+          if (board[bodyX][bodyY + 1] === 0) {
+            board[bodyX][bodyY + 1] = 2;
           }
 
-          if (currentBoards[playerNo - 1][bodyX + 1]) {
-            if (currentBoards[playerNo - 1][bodyX + 1][bodyY] === 0) {
-              currentBoards[playerNo - 1][bodyX + 1][bodyY] = 2;
+          if (board[bodyX + 1]) {
+            if (board[bodyX + 1][bodyY] === 0) {
+              board[bodyX + 1][bodyY] = 2;
             }
           }
         }
       }
     }
     
-    renderBoard();
+    renderBoard(playerNo, otherBoard);
     return result;
   };
 
   const squaresArray = Array.from({ length: 64 }, (_, i) => i);
 
-  const getComputerMove = () => {
+  const getComputerMove = (otherBoard) => {
     let randomIndex = Math.floor(Math.random() * squaresArray.length);
     let targetSquare = squaresArray[randomIndex];
     let x = Math.floor(targetSquare / row);
@@ -566,27 +568,27 @@ function gameBoard(cs, hs, cv, hv) {
   
     // Check if there is a damaged enemy ship
     for (let i = 0; i < row; i++) {
-      const boardRow = currentBoards[0][i];
+      const boardRow = board[i];
       for (let j = 0; j < column; j++) {
         const square = boardRow[j];
 
         if (square === 'X') {
-          if (currentBoards[0][i - 1]) {
-            if (currentBoards[0][i - 1][j] !== 1 && currentBoards[0][i - 1][j] !== 2 && currentBoards[0][i - 1][j] !== 'X') {
+          if (board[i - 1]) {
+            if (board[i - 1][j] !== 1 && board[i - 1][j] !== 2 && board[i - 1][j] !== 'X') {
               hitNeighborSquares.push((i - 1) * row + j);
             }
           }
           
-          if (currentBoards[0][i][j - 1] !== 1 && currentBoards[0][i][j - 1] !== 2 && currentBoards[0][i][j - 1] !== 'X' && j % row !== 0) {
+          if (board[i][j - 1] !== 1 && board[i][j - 1] !== 2 && board[i][j - 1] !== 'X' && j % row !== 0) {
             hitNeighborSquares.push(i * row + j - 1);
           }
           
-          if (currentBoards[0][i][j + 1] !== 1 && currentBoards[0][i][j + 1] !== 2 && currentBoards[0][i][j + 1] !== 'X' && j % row !== row - 1) {
+          if (board[i][j + 1] !== 1 && board[i][j + 1] !== 2 && board[i][j + 1] !== 'X' && j % row !== row - 1) {
             hitNeighborSquares.push(i * row + j + 1);
           }
           
-          if (currentBoards[0][i + 1]) {
-            if (currentBoards[0][i + 1][j] !== 1 && currentBoards[0][i + 1][j] !== 2 && currentBoards[0][i + 1][j] !== 'X') {
+          if (board[i + 1]) {
+            if (board[i + 1][j] !== 1 && board[i + 1][j] !== 2 && board[i + 1][j] !== 'X') {
               hitNeighborSquares.push((i + 1) * row + j);
             }
           }
@@ -602,7 +604,7 @@ function gameBoard(cs, hs, cv, hv) {
     }
     
     setTimeout(() => {
-      const result = receiveAttack(x, y, 1);
+      const result = receiveAttack(x, y, 1, otherBoard);
       const targetIndex = squaresArray.indexOf(targetSquare);
       squaresArray.splice(targetIndex, 1);
       
@@ -610,7 +612,7 @@ function gameBoard(cs, hs, cv, hv) {
         // Erase splash squares from squaresArray
         for (let i = 0; i < row; i++) {
           for (let j = 0; j < column; j++) {
-            const square = currentBoards[0][i][j];
+            const square = board[i][j];
             
             if (square === 2) {
               const squareNumber = i * row + j;
@@ -626,13 +628,13 @@ function gameBoard(cs, hs, cv, hv) {
           }
         }
 
-        const winner = checkTheWinner(1);
+        const winner = checkTheWinner(1, otherBoard);
 
         if (winner) {
           return;
         }
         
-        getComputerMove();
+        getComputerMove(otherBoard);
       } else {
         updateMessage('Your turn');
         markupTarget();
@@ -658,31 +660,31 @@ function gameBoard(cs, hs, cv, hv) {
     });
   }
 
-  const checkTheWinner = (playerNo, check) => {
+  const checkTheWinner = (playerNo, otherBoard) => {
     const sunkCounter = shipList.reduce((acc, curr) => acc + curr.sunk, 0);
         
     if (sunkCounter === totalShips) {
-      if (check) {
+      if (!otherBoard) {
         return playerNo;
       }
 
-      const dialogDefeat = document.querySelector('.dialog-defeat');
       const dialogVictory = document.querySelector('.dialog-victory');
+      const dialogDefeat = document.querySelector('.dialog-defeat');
 
-      if (playerNo === 1) {
-        setTimeout(() => {
-          updateMessage('You lose');
-          dialogDefeat.showModal();
-        }, 1000);
-      } else {
+      if (playerNo === 2) {
         setTimeout(() => {
           updateMessage('You win!');
           dialogVictory.showModal();
         }, 1000);
+      } else {
+        setTimeout(() => {
+          updateMessage('You lose');
+          dialogDefeat.showModal();
+        }, 1000);
       }
       
       currentTurn = 3;
-      renderBoard(playerNo);
+      renderBoard(playerNo, otherBoard);
       return playerNo;
     }
   }
@@ -801,9 +803,20 @@ function gameBoard(cs, hs, cv, hv) {
 
   const getCurrentTurn = () => currentTurn;
 
-  const renderBoard = (playerNo) => {
+  const renderBoard = (playerNo, otherBoard) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
+    
+    if (currentTurn === 3) {
+      if (playerNo === 1) {
+        boardContainerOne.classList.add('dark');
+      } else {
+        boardContainerTwo.classList.add('dark');  
+      }
+
+      return;
+    }
+
     boardContainerOne.innerHTML = '';
     boardContainerTwo.innerHTML = '';
     
@@ -819,41 +832,58 @@ function gameBoard(cs, hs, cv, hv) {
         squareTwo.setAttribute('x', i);
         squareTwo.setAttribute('y', j);
 
-        if (currentBoards[0][i][j] === 1) {
-          squareOne.classList.add('miss');
-        } else if (currentBoards[0][i][j] === 2) {
-          squareOne.classList.add('splash');
-        } else if (currentBoards[0][i][j] === 'X' || currentBoards[0][i][j] === 'D') {
-          squareOne.classList.add('hit');
-        } else if (currentBoards[0][i][j] !== 0) {
-          squareOne.classList.add('ship');
-          squareOne.setAttribute('draggable', 'false');
-        }
-        
-        if (currentBoards[1][i][j] === 1) {
-          squareTwo.classList.add('miss');
-        } else if (currentBoards[1][i][j] === 2) {
-          squareTwo.classList.add('splash');
-        } else if (currentBoards[1][i][j] === 'X' || currentBoards[1][i][j] === 'D') {
-          squareTwo.classList.add('hit');
-        } else if (currentBoards[1][i][j] !== 0) {
-          squareTwo.classList.add('ship');
+        if (playerNo === 1) {
+          if (board[i][j] === 1) {
+            squareOne.classList.add('miss');
+          } else if (board[i][j] === 2) {
+            squareOne.classList.add('splash');
+          } else if (board[i][j] === 'X' || board[i][j] === 'D') {
+            squareOne.classList.add('hit');
+          } else if (board[i][j] !== 0) {
+            squareOne.classList.add('ship');
+            squareOne.setAttribute('draggable', 'false');
+          }
+
+          if (otherBoard[i][j] === 1) {
+            squareTwo.classList.add('miss');
+          } else if (otherBoard[i][j] === 2) {
+            squareTwo.classList.add('splash');
+          } else if (otherBoard[i][j] === 'X' || otherBoard[i][j] === 'D') {
+            squareTwo.classList.add('hit');
+          }
+        } else {
+          if (otherBoard[i][j] === 1) {
+            squareOne.classList.add('miss');
+          } else if (otherBoard[i][j] === 2) {
+            squareOne.classList.add('splash');
+          } else if (otherBoard[i][j] === 'X' || otherBoard[i][j] === 'D') {
+            squareOne.classList.add('hit');
+          } else if (otherBoard[i][j] !== 0) {
+            squareOne.classList.add('ship');
+            squareOne.setAttribute('draggable', 'false');
+          }
+
+          if (board[i][j] === 1) {
+            squareTwo.classList.add('miss');
+          } else if (board[i][j] === 2) {
+            squareTwo.classList.add('splash');
+          } else if (board[i][j] === 'X' || board[i][j] === 'D') {
+            squareTwo.classList.add('hit');
+          }
         }
 
         if (currentTurn === 0) {
           boardContainerTwo.classList.remove('dark');
           boardContainerOne.classList.remove('dark');
-          squareOne.setAttribute('draggable', 'true');
+
+          if (squareOne.classList.contains('ship')) {
+            squareOne.setAttribute('draggable', 'true');
+          }
+          
           squareTwo.classList.add('initial');
 
-          if (currentBoards[0][i][j] === 'S') {
+          if (board[i][j] === 'S') {
             squareOne.classList.add('grabbing');
-          }
-        } else if (currentTurn === 3) {
-          if (playerNo === 1) {
-            boardContainerOne.classList.add('dark');
-          } else {
-            boardContainerTwo.classList.add('dark');  
           }
         }
 
