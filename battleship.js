@@ -11,8 +11,17 @@ function ship(length, direction) {
     type = 'submarine';
   }
 
-  const hit = (shipList, index) => shipList[index].damage += 1;
-  const isSunk = (shipList, index) => shipList[index].sunk = true;
+  const hit = (ship) => ship.damage += 1;
+  
+  const isSunk = (ship) => {
+    let sinking;
+    
+    if (ship.length === ship.damage) {
+      sinking = true;
+    }
+    
+    return sinking;
+  }
 
   return {
     type,
@@ -20,7 +29,6 @@ function ship(length, direction) {
     direction,
     body: [],
     damage: 0,
-    sunk: false,
     hit,
     isSunk,
   };
@@ -58,6 +66,7 @@ function gameBoard(cs, hs, cv, hv) {
       
       shipList.push(newShip);
     }
+    console.log(shipList);
   };
 
   const getDeploySets = () => {
@@ -401,34 +410,28 @@ function gameBoard(cs, hs, cv, hv) {
       const bow = ship.body[0];
       const bowX = bow[0];
       const bowY = bow[1];
-      let x2 = Math.floor(Math.random() * row);
-      let y2 = Math.floor(Math.random() * column);
-      let zeroOrOne = Math.floor(Math.random() * 2);
-      let direction = '';
-    
-      if (zeroOrOne === 0) {
-        direction = 'horizontal';
-      } else {
-        direction = 'vertical';
-      }
+
+      function getRandomLocation() {
+        const x2 = Math.floor(Math.random() * row);
+        const y2 = Math.floor(Math.random() * column);
+        const zeroOrOne = Math.floor(Math.random() * 2);
+        let direction = '';
       
-      let cannotMove = moveShip(bowX, bowY, x2, y2, direction);
-      ship.direction = direction;
-      
-      while (cannotMove) {
-        x2 = Math.floor(Math.random() * row);
-        y2 = Math.floor(Math.random() * column);
-        zeroOrOne = Math.floor(Math.random() * 2);
-    
         if (zeroOrOne === 0) {
           direction = 'horizontal';
         } else {
           direction = 'vertical';
         }
         
-        cannotMove = moveShip(bowX, bowY, x2, y2, direction);
+        const cannotMove = moveShip(bowX, bowY, x2, y2, direction);
         ship.direction = direction;
+
+        if (cannotMove) {
+          getRandomLocation();
+        }
       }
+      
+      getRandomLocation();
     }
 
     return board;
@@ -461,8 +464,7 @@ function gameBoard(cs, hs, cv, hv) {
       return;
     } else {
       result = 'hit';
-      let currentShip = {};
-
+      
       for (let i = 0; i < totalShips; i++) {
         const ship = shipList[i];
 
@@ -472,72 +474,60 @@ function gameBoard(cs, hs, cv, hv) {
           const bodyY = Number(body[1]);
 
           if (bodyX === x && bodyY === y) {
-            currentShip = ship;
-          }
-        }
-      }
+            ship.hit(ship);
+            board[x][y] = 'X';
 
-      let index = 0;
+            // Put splash after hitting
+            if (board[x - 1]) {
+              if (board[x - 1][y - 1] === 0) {
+                board[x - 1][y - 1] = 2;
+              }
 
-      if (currentShip.type === 'cruiser') {
-        index = 1;
-      } else if (currentShip.type === 'destroyer') {
-        index = 2;
-      } else if (currentShip.type === 'submarine') {
-        index = 3;
-      }
-      
-      shipList[index].hit(shipList, index);
-      board[x][y] = 'X';
-      
-      // put splash after hitting
-      if (board[x - 1]) {
-        if (board[x - 1][y - 1] === 0) {
-          board[x - 1][y - 1] = 2;
-        }
-
-        if (board[x - 1][y + 1] === 0) {
-          board[x - 1][y + 1] = 2;
-        }
-      }
-
-      if (board[x + 1]) {
-        if (board[x + 1][y - 1] === 0) {
-          board[x + 1][y - 1] = 2;
-        }
-
-        if (board[x + 1][y + 1] === 0) {
-          board[x + 1][y + 1] = 2;
-        }
-      }
-
-      if (shipList[index].length === shipList[index].damage) {
-        shipList[index].isSunk(shipList, index);
-        
-        // Put splash after sinking
-        for (let i = 0; i < shipList[index].length; i++) {
-          const body = shipList[index].body[i];
-          const bodyX = body[0];
-          const bodyY = body[1];
-          board[bodyX][bodyY] = 'D';
-
-          if (board[bodyX - 1]) {
-            if (board[bodyX - 1][bodyY] === 0) {
-              board[bodyX - 1][bodyY] = 2;
+              if (board[x - 1][y + 1] === 0) {
+                board[x - 1][y + 1] = 2;
+              }
             }
-          }
 
-          if (board[bodyX][bodyY - 1] === 0) {
-            board[bodyX][bodyY - 1] = 2;
-          }
-        
-          if (board[bodyX][bodyY + 1] === 0) {
-            board[bodyX][bodyY + 1] = 2;
-          }
+            if (board[x + 1]) {
+              if (board[x + 1][y - 1] === 0) {
+                board[x + 1][y - 1] = 2;
+              }
 
-          if (board[bodyX + 1]) {
-            if (board[bodyX + 1][bodyY] === 0) {
-              board[bodyX + 1][bodyY] = 2;
+              if (board[x + 1][y + 1] === 0) {
+                board[x + 1][y + 1] = 2;
+              }
+            }
+
+            const sinking = ship.isSunk(ship);
+
+            if (sinking) {
+              // Put splash after sinking
+              for (let k = 0; k < ship.length; k++) {
+                const body = ship.body[k];
+                const bodyX = body[0];
+                const bodyY = body[1];
+                board[bodyX][bodyY] = 'D';
+
+                if (board[bodyX - 1]) {
+                  if (board[bodyX - 1][bodyY] === 0) {
+                    board[bodyX - 1][bodyY] = 2;
+                  }
+                }
+
+                if (board[bodyX][bodyY - 1] === 0) {
+                  board[bodyX][bodyY - 1] = 2;
+                }
+              
+                if (board[bodyX][bodyY + 1] === 0) {
+                  board[bodyX][bodyY + 1] = 2;
+                }
+
+                if (board[bodyX + 1]) {
+                  if (board[bodyX + 1][bodyY] === 0) {
+                    board[bodyX + 1][bodyY] = 2;
+                  }
+                }
+              }
             }
           }
         }
@@ -652,7 +642,7 @@ function gameBoard(cs, hs, cv, hv) {
   }
 
   const checkTheWinner = (playerNo, otherBoard) => {
-    const sunkCounter = shipList.reduce((acc, curr) => acc + curr.sunk, 0);
+    const sunkCounter = shipList.reduce((acc, curr, i) => acc + curr.isSunk(shipList[i]), 0);
         
     if (sunkCounter === totalShips) {
       if (!otherBoard) {
@@ -704,7 +694,7 @@ function gameBoard(cs, hs, cv, hv) {
     bonusScores.forEach((score, i) => {
       let bonus = 2000 - i * 500;
       
-      if (!shipList[i].sunk) {
+      if (!shipList[i].isSunk(shipList[i])) {
         score.textContent = bonus;
         totalBonus += bonus
       } else {
