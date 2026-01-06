@@ -211,16 +211,16 @@ function gameBoard(cs, hs, cv, hv) {
       const bowY = bow[1];
       
       if (bowX === x && bowY === y) {
-        currentShip = ship
-        length = ship.length;
-        direction = ship.direction;
+        currentShip = ship;
+        length = currentShip.length;
+        direction = currentShip.direction;
       }
     }
     
     if (randomDirection) {
       direction = randomDirection;
     } else {
-      // Delete previous ship. It needs to avoid running to prevent accidental deletion when deploying randomly.
+      // Delete the previous ship to prevent accidental deletion when deploying randomly.
       for (let i = 0; i < length; i++) {
         if (direction === 'horizontal') {
           board[x][y + i] = 0;
@@ -314,82 +314,82 @@ function gameBoard(cs, hs, cv, hv) {
       }
       
       return cannotMove;
-    }
-
-    for (let i = 0; i < length; i++) {
-      if (direction === 'horizontal') {
-        currentShip.body[i] = [x2, y2 + i];
-      } else {
-        currentShip.body[i] = [x2 + i, y2];
+    } else {
+      for (let i = 0; i < length; i++) {
+        if (direction === 'horizontal') {
+          currentShip.body[i] = [x2, y2 + i];
+        } else {
+          currentShip.body[i] = [x2 + i, y2];
+        }
       }
-    }
 
-    for (let i = 0; i < length; i++) {
-      if (direction === 'horizontal') {
-        board[x2][y2 + i] = 'S';
-      } else {
-        board[x2 + i][y2] = 'S';
-      }
-    }
-  };
-
-  let startTarget;
-  let startX;
-  let startY;
-
-  const setStartLocation = (start, x, y) => {
-    startTarget = start;
-    startX = x;
-    startY = y;
-  };
-
-  const setEndLocation = (endX, endY, otherBoard) => {
-    if (!startTarget.classList.contains('ship')) {
-      return;
-    }
-
-    let currentShip = {};
-    let bodyIndex = 0;
-    
-    for (let i = 0; i < totalShips; i++) {
-      const ship = shipList[i];
-      
-      for (let j = 0; j < ship.length; j++) {
-        const body = ship.body[j];
-        const bodyX = Number(body[0]);
-        const bodyY = Number(body[1]);
-
-        if (bodyX === startX && bodyY === startY) {
-          currentShip = ship;
-          bodyIndex = j;
+      for (let i = 0; i < length; i++) {
+        if (direction === 'horizontal') {
+          board[x2][y2 + i] = 'S';
+        } else {
+          board[x2 + i][y2] = 'S';
         }
       }
     }
+  };
 
-    const bow = currentShip.body[0];
-    const direction = currentShip.direction;
-  
-    if (bow) {
-      startX = bow[0];
-      startY = bow[1];
+  let startTarget = {};
+  let startX = 0;
+  let startY = 0;
 
-      if (direction === 'horizontal') {
-        endY -= bodyIndex;
-      } else {
-        endX -= bodyIndex;
+  const setMoveLocation = (x, y, start, otherBoard) => {
+    if (start) {
+      if (start.classList.contains('ship')) {
+        startTarget = start;
+        startX = x;
+        startY = y;
       }
-    }  
-
-    const cannotMove = moveShip(startX, startY, endX, endY);
-
-    if (cannotMove) {
-      startTarget.classList.add('caution');
-      
-      setTimeout(() => {
-        startTarget.classList.remove('caution');
-      }, 200);
     } else {
-      renderBoard(1, otherBoard);
+      let currentShip = {};
+      let bodyIndex = 0;
+      
+      for (let i = 0; i < totalShips; i++) {
+        const ship = shipList[i];
+        
+        for (let j = 0; j < ship.length; j++) {
+          const body = ship.body[j];
+          const bodyX = Number(body[0]);
+          const bodyY = Number(body[1]);
+
+          if (bodyX === startX && bodyY === startY) {
+            currentShip = ship;
+            bodyIndex = j;
+          }
+        }
+      }
+
+      const bow = currentShip.body[0];
+      const direction = currentShip.direction;
+      let endX = x;
+      let endY = y;
+    
+      if (bow) {
+        startX = bow[0];
+        startY = bow[1];
+
+        if (direction === 'horizontal') {
+          endY -= bodyIndex;
+        } else {
+          endX -= bodyIndex;
+        }
+      }
+
+      const cannotMove = moveShip(startX, startY, endX, endY);
+      
+      if (cannotMove) {
+        startTarget.classList.add('caution');
+        
+        setTimeout(() => {
+          startTarget.classList.remove('caution');
+        }, 200);
+      } else {
+        renderBoard(1, otherBoard);
+      }
     }
   };
 
@@ -902,8 +902,7 @@ function gameBoard(cs, hs, cv, hv) {
     getDeploySets,
     rotateShip,
     moveShip,
-    setStartLocation,
-    setEndLocation,
+    setMoveLocation,
     deployRandom,
     changeTurn,
     receiveAttack,

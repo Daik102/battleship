@@ -65,7 +65,7 @@ boardContainerOne.addEventListener('dragstart', (e) => {
   const startTarget = e.target;
   const startX = Number(startTarget.getAttribute('x'));
   const startY = Number(startTarget.getAttribute('Y'));
-  playerOne.board.setStartLocation(startTarget, startX, startY);
+  playerOne.board.setMoveLocation(startX, startY, startTarget);
 });
 
 boardContainerOne.addEventListener('dragover', (e) => {
@@ -80,7 +80,7 @@ boardContainerOne.addEventListener('drop', (e) => {
   const endTarget = e.target;
   const endX = Number(endTarget.getAttribute('x'));
   const endY = Number(endTarget.getAttribute('Y'));
-  playerOne.board.setEndLocation(endX, endY, playerTwo.board.getBoard());
+  playerOne.board.setMoveLocation(endX, endY, '', playerTwo.board.getBoard());
 });
 
 playBtn.addEventListener('mouseenter', () => {
