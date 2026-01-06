@@ -57,7 +57,7 @@ boardContainerOne.addEventListener('click', (e) => {
     const target = e.target;
     const x = Number(target.getAttribute('x'));
     const y = Number(target.getAttribute('y'));
-    playerOne.board.setRotateLocation(x, y, playerTwo.board.getBoard());
+    playerOne.board.rotateShip(x, y, playerTwo.board.getBoard());
   }
 });
 

@@ -76,89 +76,7 @@ function gameBoard(cs, hs, cv, hv) {
     return customSets;
   };
 
-  const rotateShip = (bowX, bowY, ship) => {
-    const length = ship.length;
-    const direction = ship.direction;
-    let cannotRotate;
-
-    for (let k = 1; k < length; k++) {
-      if (direction === 'horizontal') {
-        // Check if it's possible to rotate vertically.
-        let bottomSquare;
-        let bottomLeftSquare;
-        let bottomRightSquare;
-
-        if (board[bowX + k]) {
-          if (board[bowX + k + 1]) {
-            bottomSquare = board[bowX + k + 1][bowY];
-            bottomLeftSquare = board[bowX + k + 1][bowY - 1];
-            bottomRightSquare = board[bowX + k + 1][bowY + 1];
-
-          if (bottomSquare === 'S' || bottomLeftSquare === 'S' || bottomRightSquare === 'S') {
-            cannotRotate = true;
-            return cannotRotate;
-          }
-            
-          }
-        } else {
-          cannotRotate = true;
-          return cannotRotate;
-        }
-      } else {
-        // Check if it's possible to rotate horizontally.
-        const rotatedSquare = board[bowX][bowY + k];
-        const rightSquare = board[bowX][bowY + k + 1];
-        let topRightSquare;
-        let bottomRightSquare;
-
-        if (rotatedSquare === undefined) {
-         cannotRotate = true;
-          return cannotRotate;
-        }
-        
-        if (board[bowX - 1]) {
-          topRightSquare = board[bowX - 1][bowY + k + 1];
-        }
-
-        if (board[bowX + 1]) {
-          bottomRightSquare = board[bowX + 1][bowY + k + 1];
-        }
-
-        if (rightSquare === 'S' || topRightSquare === 'S' || bottomRightSquare === 'S') {
-          cannotRotate = true;
-          return cannotRotate;
-        } 
-      }
-    }
-
-    if (ship.direction === 'horizontal') {
-      ship.direction = 'vertical';
-    } else {
-      ship.direction = 'horizontal';
-    }
-
-    // Update ship's body(location).
-    for (let k = 0; k < length; k++) {
-      if (direction === 'horizontal') {
-        ship.body[k] = [bowX + k, bowY];
-      } else {
-        ship.body[k] = [bowX, bowY + k];
-      }
-    }
-    
-    // Rotate ship to new direction and erase previous location
-    for (let k = 1; k < length; k++) {
-      if (direction === 'horizontal') {
-        board[bowX + k][bowY] = 'S';
-        board[bowX][bowY + k] = 0;
-      } else {
-        board[bowX][bowY + k] = 'S';
-        board[bowX + k][bowY] = 0;
-      }
-    }
-  };
-
-  const setRotateLocation = (x, y, otherBoard) => {
+  const rotateShip = (x, y, otherBoard) => {
     const squares = document.querySelectorAll('.square-one');
   
     for (let i = 0; i < totalShips; i++) {
@@ -178,8 +96,58 @@ function gameBoard(cs, hs, cv, hv) {
             return;
           }
           
-          const cannotRotate = rotateShip(bowX, bowY, ship);
-          
+          const direction = ship.direction;
+          let cannotRotate;
+
+          for (let k = 1; k < length; k++) {
+            if (direction === 'horizontal') {
+              // Check if it's possible to rotate vertically.
+              let bottomSquare;
+              let bottomLeftSquare;
+              let bottomRightSquare;
+
+              if (board[bowX + k]) {
+                if (board[bowX + k + 1]) {
+                  bottomSquare = board[bowX + k + 1][bowY];
+                  bottomLeftSquare = board[bowX + k + 1][bowY - 1];
+                  bottomRightSquare = board[bowX + k + 1][bowY + 1];
+
+                  if (bottomSquare === 'S' || bottomLeftSquare === 'S' || bottomRightSquare === 'S') {
+                    cannotRotate = true;
+                    break;
+                  }
+                }
+              } else {
+                cannotRotate = true;
+                break;
+              }
+            } else {
+              // Check if it's possible to rotate horizontally.
+              const rotatedSquare = board[bowX][bowY + k];
+              const rightSquare = board[bowX][bowY + k + 1];
+              let topRightSquare;
+              let bottomRightSquare;
+
+              if (rotatedSquare === undefined) {
+                cannotRotate = true;
+                break;
+              }
+              
+              if (board[bowX - 1]) {
+                topRightSquare = board[bowX - 1][bowY + k + 1];
+              }
+
+              if (board[bowX + 1]) {
+                bottomRightSquare = board[bowX + 1][bowY + k + 1];
+              }
+
+              if (rightSquare === 'S' || topRightSquare === 'S' || bottomRightSquare === 'S') {
+                cannotRotate = true;
+                break;
+              } 
+            }
+          }
+
           if (cannotRotate) {
             for (let k = 0; k < length; k++) {
               body = ship.body[k];
@@ -200,6 +168,30 @@ function gameBoard(cs, hs, cv, hv) {
               });
             }
           } else {
+            if (ship.direction === 'horizontal') {
+              ship.direction = 'vertical';
+            } else {
+              ship.direction = 'horizontal';
+            }
+            // Update ship's body(location).
+            for (let k = 0; k < length; k++) {
+              if (direction === 'horizontal') {
+                ship.body[k] = [bowX + k, bowY];
+              } else {
+                ship.body[k] = [bowX, bowY + k];
+              }
+            }
+            // Rotate ship to new direction and erase previous location
+            for (let k = 1; k < length; k++) {
+              if (direction === 'horizontal') {
+                board[bowX + k][bowY] = 'S';
+                board[bowX][bowY + k] = 0;
+              } else {
+                board[bowX][bowY + k] = 'S';
+                board[bowX + k][bowY] = 0;
+              }
+            }
+
             renderBoard(1, otherBoard);
           }
         }
@@ -457,14 +449,14 @@ function gameBoard(cs, hs, cv, hv) {
     let result = '';
     
     if (square === 0) {
+      result = 'miss';
+      board[x][y] = 1;
+
       if (playerNo === 2) {
         currentTurn = 2;
       } else {
         currentTurn = 1;
       }
-      
-      board[x][y] = 1;
-      result = 'miss';
     } else if (square !== 'S') {
       return;
     } else {
@@ -679,12 +671,16 @@ function gameBoard(cs, hs, cv, hv) {
         setTimeout(() => {
           updateMessage('You lose');
           dialogDefeat.showModal();
-
+          
           const rankList = ['Seaman', 'Petty Officer', 'Chief Petty Officer', 'Ensign', 'Lieutenant Jr. Grade', 'Lieutenant', 'Lieutenant Commander', 'Commander', 'Captain', 'Rear Admiral', 'Vice Admiral', 'Admiral'];
           let rankIndex = Math.floor(currentVictory / 3) + 1;
           
           if (currentVictory === 0) {
             rankIndex = 0;
+          }
+
+          if (rankIndex >= rankList.length) {
+            rankIndex = rankList.length - 1;
           }
 
           const finalVictoryBoard = document.querySelector('.final-victory-board');
@@ -905,7 +901,6 @@ function gameBoard(cs, hs, cv, hv) {
     deployShip,
     getDeploySets,
     rotateShip,
-    setRotateLocation,
     moveShip,
     setStartLocation,
     setEndLocation,
