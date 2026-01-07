@@ -5,14 +5,17 @@ const randomBtn = document.querySelector('.random-btn');
 const playBtn = document.querySelector('.play-btn');
 const boardContainerOne = document.querySelector('.board-container-one');
 const boardContainerTwo = document.querySelector('.board-container-two');
-const continueBtns = document.querySelectorAll('.continue-btn');
+const moveOnBtn = document.querySelector('.move-on-btn');
+const tryAgainBtn = document.querySelector('.try-again-btn');
+const okayBtn = document.querySelector('.okay-btn');
 const dialogVictory = document.querySelector('.dialog-victory');
 const dialogDefeat = document.querySelector('.dialog-defeat');
+const dialogFinish = document.querySelector('.dialog-finish');
 
 let playerOne = player(1, 'human');
 let playerTwo = player(2, 'computer');
 
-function resetGame(initial) {
+function setUpGame(initial) {
   let customSets;
 
   if (!initial) {
@@ -36,7 +39,7 @@ function resetGame(initial) {
   playerOne.board.renderBoard(1, playerTwo.board.getBoard());
 }
 
-resetGame('initial');
+setUpGame('initial');
 
 randomBtn.addEventListener('click', () => {
   const currentTurn = playerOne.board.getCurrentTurn();
@@ -44,9 +47,9 @@ randomBtn.addEventListener('click', () => {
   if (currentTurn === 0) {
     playerOne.board.deployRandom();
     playerOne.board.renderBoard(1, playerTwo.board.getBoard());
-  } else {
+  } else if (currentTurn === 1) {
     playerOne.board.updateRecords(0, 0);
-    resetGame();
+    setUpGame();
   }
 });
 
@@ -57,15 +60,18 @@ boardContainerOne.addEventListener('click', (e) => {
     const target = e.target;
     const x = Number(target.getAttribute('x'));
     const y = Number(target.getAttribute('y'));
-    playerOne.board.rotateShip(x, y, playerTwo.board.getBoard());
+
+    if (target.classList.contains('ship')) {
+      playerOne.board.rotateShip(x, y, playerTwo.board.getBoard());
+    }
   }
 });
 
 boardContainerOne.addEventListener('dragstart', (e) => {
-  const startTarget = e.target;
-  const startX = Number(startTarget.getAttribute('x'));
-  const startY = Number(startTarget.getAttribute('Y'));
-  playerOne.board.setMoveLocation(startX, startY, startTarget);
+  const target = e.target;
+  const startX = Number(target.getAttribute('x'));
+  const startY = Number(target.getAttribute('Y'));
+  playerOne.board.setMoveLocation(startX, startY, target);
 });
 
 boardContainerOne.addEventListener('dragover', (e) => {
@@ -77,9 +83,9 @@ boardContainerOne.addEventListener('dragover', (e) => {
 });
 
 boardContainerOne.addEventListener('drop', (e) => {
-  const endTarget = e.target;
-  const endX = Number(endTarget.getAttribute('x'));
-  const endY = Number(endTarget.getAttribute('Y'));
+  const target = e.target;
+  const endX = Number(target.getAttribute('x'));
+  const endY = Number(target.getAttribute('Y'));
   playerOne.board.setMoveLocation(endX, endY, '', playerTwo.board.getBoard());
 });
 
@@ -130,7 +136,7 @@ boardContainerTwo.addEventListener('click', (e) => {
       playerOne.board.updateRecords(500);
       const winner = playerTwo.board.checkTheWinner(2, playerOne.board.getBoard());
 
-      if (winner === 2) {
+      if (winner) {
         const totalBonus = playerOne.board.getTotalBonus();
         playerOne.board.updateRecords(totalBonus, 1, 'notRender');
         return;
@@ -146,18 +152,31 @@ boardContainerTwo.addEventListener('click', (e) => {
   }
 });
 
-continueBtns.forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const winner = playerOne.board.checkTheWinner(1);
+moveOnBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  dialogVictory.close();
 
-    if (winner === 1) {
-      dialogDefeat.close();
-      playerOne.board.updateRecords(0, 0);
-    } else {
-      dialogVictory.close();
-    }
+  const records = playerOne.board.updateRecords('getRecords');
+  const currentVictory = records[2];
 
-    resetGame();
-  });
+  if (currentVictory === 20) {
+    dialogFinish.showModal();
+    playerOne.board.updateRecords();
+  } else {
+    setUpGame();
+  }
+});
+
+tryAgainBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  dialogDefeat.close();
+  playerOne.board.updateRecords(0, 0);
+  setUpGame();
+});
+
+okayBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  dialogFinish.close();
+  playerOne.board.updateRecords(0, 0);
+  setUpGame();
 });
