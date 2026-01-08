@@ -25,9 +25,14 @@ function setUpGame(initial) {
     const currentVictory = records[2];
     const highestVictory = records[3];
     customSets = playerOne.board.getDeploySets();
+    const finished = playerOne.board.getFinished();
     
     playerOne = player(playerOne.playerNo, playerOne.playerType, currentScore, hiScore, currentVictory, highestVictory);
     playerTwo = player(playerTwo.playerNo, playerTwo.playerType);
+
+    if (finished) {
+      playerOne.board.setFinished();
+    }
   }
   
   playerOne.board.deployShip(customSets);
@@ -178,5 +183,6 @@ okayBtn.addEventListener('click', (e) => {
   e.preventDefault();
   dialogFinish.close();
   playerOne.board.updateRecords(0, 0);
+  playerOne.board.setFinished();
   setUpGame();
 });

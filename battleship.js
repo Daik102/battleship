@@ -779,6 +779,10 @@ function gameBoard(cs, hs, cv, hv) {
   const getBoard = () => board;
   const getCurrentTurn = () => currentTurn;
 
+  let finished;
+  const setFinished = () => finished = true;
+  const getFinished = () => finished;
+
   const renderBoard = (playerNo, otherBoard, result) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
@@ -800,6 +804,11 @@ function gameBoard(cs, hs, cv, hv) {
       setTimeout(() => {
         wrapper.classList.remove('hit');
       }, 100);
+    }
+
+    if (finished) {
+      const title = document.querySelector('.title');
+      title.classList.add('golden-title');
     }
 
     boardContainerOne.innerHTML = '';
@@ -895,6 +904,8 @@ function gameBoard(cs, hs, cv, hv) {
     updateMessage,
     updateBtn,
     getBoard,
+    setFinished,
+    getFinished,
     getCurrentTurn,
     renderBoard,
   };
