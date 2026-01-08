@@ -206,126 +206,122 @@ function gameBoard(cs, hs, cv, hv) {
     }
   };
 
-  const moveShip = (x, y, x2, y2, randomDirection) => {
-    let length = 0;
+  const moveShip = (x, y, x2, y2, randomDirection, shipIndex) => {
+    const ship = shipList[shipIndex];
+    const length = ship.length;
+    const bow = ship.coordinates[0];
+    const bowX = bow[0];
+    const bowY = bow[1];
     let direction = '';
-
-    for (let i = 0; i < shipList.length; i++) {
-      const ship = shipList[i];
-      const bow = ship.coordinates[0];
-      const bowX = bow[0];
-      const bowY = bow[1];
-      
-      if (bowX === x && bowY === y) {
-        length = ship.length;
+    
+    if (bowX === x && bowY === y) {
+      if (randomDirection) {
+        direction = randomDirection;
+      } else {
         direction = ship.direction;
-
-        if (randomDirection) {
-          direction = randomDirection;
-        } else {
-          // Delete the previous ship to prevent accidental deletion when deploying randomly.
-          for (let i = 0; i < length; i++) {
-            if (direction === 'horizontal') {
-              board[x][y + i] = 0;
-            } else {
-              if (board[x + 1] || length === 1) {
-                board[x + i][y] = 0;
-              }
+        // Delete the previous ship first to prevent error to move with its own coordinates.
+        for (let i = 0; i < length; i++) {
+          if (direction === 'horizontal') {
+            board[x][y + i] = 0;
+          } else {
+            if (board[x + 1] || length === 1) {
+              board[x + i][y] = 0;
             }
           }
         }
+      }
 
-        let cannotMove;
+      let cannotMove;
 
-        let topLeftSquare;
-        let topSquare;
-        let topRightSquare;
-        let rightSquare;
-        let leftSquare;
-        let bottomLeftSquare;
-        let bottomSquare;
-        let bottomRightSquare;
+      let topLeftSquare;
+      let topSquare;
+      let topRightSquare;
+      let rightSquare;
+      let leftSquare;
+      let bottomLeftSquare;
+      let bottomSquare;
+      let bottomRightSquare;
 
-        for (let j = 0; j < length; j++) {
-          if (direction === 'horizontal') {
-            // Check if it's possible to move horizontally.
-            const movedSquare = board[x2][y2 + j];
-            rightSquare = board[x2][y2 + j + 1];
-            leftSquare = board[x2][y2 + j - 1];
+      for (let i = 0; i < length; i++) {
+        if (direction === 'horizontal') {
+          // Check if it's possible to move horizontally.
+          const movedSquare = board[x2][y2 + i];
+          rightSquare = board[x2][y2 + i + 1];
+          leftSquare = board[x2][y2 + i - 1];
 
-            if (movedSquare === undefined) {
-              cannotMove = true;
-              break;
+          if (movedSquare === undefined) {
+            cannotMove = true;
+            break;
+          }
+          
+          if (board[x2 - 1]) {
+            topLeftSquare = board[x2 - 1][y2 + i - 1];
+            topSquare = board[x2 - 1][y2];
+            topRightSquare = board[x2 - 1][y2 + i + 1];
+          }
+
+          if (board[x2 + 1]) {
+            bottomLeftSquare = board[x2 + 1][y2 + i - 1];
+            bottomSquare = board[x2 + 1][y2];
+            bottomRightSquare = board[x2 + 1][y2 + i + 1];
+          }
+          
+          if (topLeftSquare === 'S' || topSquare === 'S' || topRightSquare === 'S' || leftSquare === 'S' || rightSquare === 'S' || bottomLeftSquare === 'S' || bottomSquare === 'S' || bottomRightSquare === 'S') {
+            cannotMove = true;
+            break;
+          }
+        } else {
+          // Check if it's possible to move vertically.
+          if (board[x2 + i]) {
+            rightSquare = board[x2 + i][y2 + 1];
+            leftSquare = board[x2 + i][y2 - 1];
+
+            if (board[x2 + i - 1]) {
+              topLeftSquare = board[x2 + i - 1][y2 - 1];
+              topSquare = board[x2 + i - 1][y2];
+              topRightSquare = board[x2 + i - 1][y2 + 1];
             }
-            
-            if (board[x2 - 1]) {
-              topLeftSquare = board[x2 - 1][y2 + j - 1];
-              topSquare = board[x2 - 1][y2];
-              topRightSquare = board[x2 - 1][y2 + j + 1];
+
+            if (board[x2 + i + 1]) {
+              bottomLeftSquare = board[x2 + i + 1][y2 - 1];
+              bottomSquare = board[x2 + i + 1][y2];
+              bottomRightSquare = board[x2 + i + 1][y2 + 1];
             }
 
-            if (board[x2 + 1]) {
-              bottomLeftSquare = board[x2 + 1][y2 + j - 1];
-              bottomSquare = board[x2 + 1][y2];
-              bottomRightSquare = board[x2 + 1][y2 + j + 1];
-            }
-            
             if (topLeftSquare === 'S' || topSquare === 'S' || topRightSquare === 'S' || leftSquare === 'S' || rightSquare === 'S' || bottomLeftSquare === 'S' || bottomSquare === 'S' || bottomRightSquare === 'S') {
               cannotMove = true;
               break;
             }
           } else {
-            // Check if it's possible to move vertically.
-            if (board[x2 + j]) {
-              rightSquare = board[x2 + j][y2 + 1];
-              leftSquare = board[x2 + j][y2 - 1];
-
-              if (board[x2 + j - 1]) {
-                topLeftSquare = board[x2 + j - 1][y2 - 1];
-                topSquare = board[x2 + j - 1][y2];
-                topRightSquare = board[x2 + j - 1][y2 + 1];
-              }
-
-              if (board[x2 + j + 1]) {
-                bottomLeftSquare = board[x2 + j + 1][y2 - 1];
-                bottomSquare = board[x2 + j + 1][y2];
-                bottomRightSquare = board[x2 + j + 1][y2 + 1];
-              }
-
-              if (topLeftSquare === 'S' || topSquare === 'S' || topRightSquare === 'S' || leftSquare === 'S' || rightSquare === 'S' || bottomLeftSquare === 'S' || bottomSquare === 'S' || bottomRightSquare === 'S') {
-                cannotMove = true;
-                break;
-              }
-            } else {
-              cannotMove = true;
-              break;
-            }
+            cannotMove = true;
+            break;
           }
         }
+      }
 
-        if (cannotMove) {
-          if (randomDirection) {
-            return cannotMove;
-          }
-
-          for (let j = 0; j < length; j++) {
-            if (direction === 'horizontal') {
-              board[x][y + j] = 'S';
-            } else {
-              board[x + j][y] = 'S';
-            }
-          }
-      
+      if (cannotMove) {
+        if (randomDirection) {
           return cannotMove;
-        } else {
-          for (let j = 0; j < length; j++) {
-            if (direction === 'horizontal') {
-              ship.coordinates[j] = [x2, y2 + j];
-              board[x2][y2 + j] = 'S';
-            } else {
-              ship.coordinates[j] = [x2 + j, y2];
-              board[x2 + j][y2] = 'S';
-            }
+        }
+        // Restore the previous coordinates when it cannot move.
+        for (let i = 0; i < length; i++) {
+          if (direction === 'horizontal') {
+            board[x][y + i] = 'S';
+          } else {
+            board[x + i][y] = 'S';
+          }
+        }
+    
+        return cannotMove;
+      } else {
+        console.log(ship);
+        for (let i = 0; i < length; i++) {
+          if (direction === 'horizontal') {
+            ship.coordinates[i] = [x2, y2 + i];
+            board[x2][y2 + i] = 'S';
+          } else {
+            ship.coordinates[i] = [x2 + i, y2];
+            board[x2 + i][y2] = 'S';
           }
         }
       }
@@ -374,7 +370,7 @@ function gameBoard(cs, hs, cv, hv) {
               }
             }
 
-            const cannotMove = moveShip(startX, startY, endX, endY);
+            const cannotMove = moveShip(startX, startY, endX, endY, '', i);
       
             if (cannotMove) {
               startTarget.classList.add('caution');
@@ -399,7 +395,7 @@ function gameBoard(cs, hs, cv, hv) {
       const bow = ship.coordinates[0];
       const bowX = bow[0];
       const bowY = bow[1];
-
+      
       function getRandomLocation() {
         const x2 = Math.floor(Math.random() * row);
         const y2 = Math.floor(Math.random() * column);
@@ -412,7 +408,7 @@ function gameBoard(cs, hs, cv, hv) {
           direction = 'vertical';
         }
         
-        const cannotMove = moveShip(bowX, bowY, x2, y2, direction);
+        const cannotMove = moveShip(bowX, bowY, x2, y2, direction, i);
         ship.direction = direction;
 
         if (cannotMove) {
@@ -422,7 +418,7 @@ function gameBoard(cs, hs, cv, hv) {
       
       getRandomLocation();
     }
-
+    
     return board;
   };
 
@@ -517,17 +513,6 @@ function gameBoard(cs, hs, cv, hv) {
               }
             }
           }
-        }
-      }
-      // To deal with the unlisted ship bug. The reason hasn't been figured out yet
-      if (!result) {
-        result = 'miss';
-        board[x][y] = 1;
-
-        if (playerNo === 2) {
-          currentTurn = 2;
-        } else {
-          currentTurn = 1;
         }
       }
     }
@@ -919,4 +904,4 @@ export function player(playerNo, playerType, currentScore, hiScore, currentVicto
   };
 }
 
-// module.exports = ship;
+//module.exports = gameBoard;
