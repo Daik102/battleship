@@ -19,21 +19,19 @@ function setUpGame(initial) {
   let customSets;
 
   if (!initial) {
-    const records = playerOne.board.getRecords();
+    const records = playerOne.info.getRecords();
     const currentScore = records[0];
-    const hiScore = records[1];
-    const currentVictory = records[2];
-    const highestVictory = records[3];
-    const finished = playerOne.board.getFinished();
+    const currentVictory = records[1];
+    const finished = playerOne.info.getFinished();
     customSets = playerOne.list.getDeploySets();
     boardContainerTwo.classList.remove('dark');
     boardContainerOne.classList.remove('dark');
     
-    playerOne = player(playerOne.playerNo, playerOne.playerType, currentScore, hiScore, currentVictory, highestVictory);
+    playerOne = player(playerOne.playerNo, playerOne.playerType, currentScore, currentVictory);
     playerTwo = player(playerTwo.playerNo, playerTwo.playerType);
     
     if (finished) {
-      playerOne.board.setFinished('display');
+      playerOne.info.setFinished('display');
     }
   }
   
@@ -42,27 +40,27 @@ function setUpGame(initial) {
   playerOne.board.deployBoard(playerOne.list.getList());
   playerTwo.board.deployBoard(playerTwo.list.getList());
   playerTwo.board.deployRandom(playerTwo.list.getList());
-  playerOne.board.updateRecords();
-  playerOne.board.updateMessage('Deploy your fleet');
-  playerOne.board.updateBtn();
+  playerOne.info.updateRecords();
+  playerOne.info.updateMessage('Deploy your fleet');
+  playerOne.info.updateBtn();
   playerOne.board.renderBoard();
 }
 
 setUpGame('initial');
 
 randomBtn.addEventListener('click', () => {
-  const currentTurn = playerOne.board.getCurrentTurn();
+  const currentTurn = playerOne.info.getCurrentTurn();
   
   if (currentTurn === 0) {
     playerOne.board.deployRandom(playerOne.list.getList());
   } else if (currentTurn === 1) {
-    playerOne.board.updateRecords('reset');
+    playerOne.info.updateRecords('reset');
     setUpGame();
   }
 });
 
 boardContainerOne.addEventListener('click', (e) => {
-  const currentTurn = playerOne.board.getCurrentTurn();
+  const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
     const target = e.target;
@@ -80,7 +78,7 @@ boardContainerOne.addEventListener('dragstart', (e) => {
 });
 
 boardContainerOne.addEventListener('dragover', (e) => {
-  const currentTurn = playerOne.board.getCurrentTurn();
+  const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
     e.preventDefault();
@@ -92,7 +90,7 @@ boardContainerOne.addEventListener('drop', (e) => {
 });
 
 playBtn.addEventListener('mouseenter', () => {
-  const currentTurn = playerOne.board.getCurrentTurn();
+  const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
     playBtn.classList.add('play-btn-hover');
@@ -100,7 +98,7 @@ playBtn.addEventListener('mouseenter', () => {
 });
 
 playBtn.addEventListener('mouseleave', () => {
-  const currentTurn = playerOne.board.getCurrentTurn();
+  const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
     playBtn.classList.remove('play-btn-hover');
@@ -108,19 +106,19 @@ playBtn.addEventListener('mouseleave', () => {
 });
 
 playBtn.addEventListener('click', () => {
-  const currentTurn = playerOne.board.getCurrentTurn();
+  const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
-    playerOne.board.setCurrentTurn(1);
-    playerOne.board.updateMessage('Your turn');
-    playerOne.board.updateBtn();
+    playerOne.info.setCurrentTurn(1);
+    playerOne.info.updateMessage('Your turn');
+    playerOne.info.updateBtn();
     playerOne.board.renderBoard(1, playerTwo.board.getBoard());
     playerOne.board.markupTarget();
   }
 });
 
 boardContainerTwo.addEventListener('click', (e) => {
-  const currentTurn = playerOne.board.getCurrentTurn();
+  const currentTurn = playerOne.info.getCurrentTurn();
   
   if (currentTurn === 1) {
     const target = e.target;
@@ -134,22 +132,29 @@ boardContainerTwo.addEventListener('click', (e) => {
     const result = playerTwo.board.receiveAttack(x, y, 2, playerTwo.list.getList(), playerOne.board.getBoard());
     
     if (result === 'hit') {
-      playerOne.board.updateRecords('hit');
-      const winner = playerTwo.board.checkTheWinner(2, playerTwo.list.getList(), playerOne.board.getBoard());
+      playerOne.info.updateRecords('hit');
+      const winner = playerTwo.board.checkTheWinner(1, playerTwo.list.getList());
 
       if (winner) {
-        const totalBonus = playerOne.board.getTotalBonus(playerOne.list.getList());
-        playerOne.board.updateRecords(totalBonus, 'notRender');
+        playerOne.info.displayResult(1);
+        const totalBonus = playerOne.info.getTotalBonus(playerOne.list.getList());
+        playerOne.info.updateRecords(totalBonus, 'notRender');
       } else {
         playerOne.board.markupTarget();
       }
     } else if (result === 'miss') {
-      playerOne.board.setCurrentTurn(2);
-      playerOne.board.updateMessage('Computer\'s turn');
+      playerOne.info.setCurrentTurn(2);
+      playerOne.info.updateMessage('Computer\'s turn');
       playerOne.board.getComputerMove(wait, playerOne.list.getList(), playerTwo.board.getBoard());
 
-      function wait() {
-        playerOne.board.setCurrentTurn(1);
+      function wait(winner) {
+        if (winner) {
+          playerOne.info.displayResult(2);
+        } else {
+          playerOne.info.setCurrentTurn(1);
+          playerOne.info.updateMessage('Your turn');
+          playerOne.board.markupTarget();
+        }
       }
     }
   }
@@ -157,12 +162,12 @@ boardContainerTwo.addEventListener('click', (e) => {
 
 moveOnBtn.addEventListener('click', () => {
   dialogVictory.close();
-  const records = playerOne.board.getRecords();
-  const currentVictory = records[2];
+  const records = playerOne.info.getRecords();
+  const currentVictory = records[1];
   
   if (currentVictory === 20) {
     dialogFinish.showModal();
-    playerOne.board.updateRecords();
+    playerOne.info.updateRecords();
   } else {
     setUpGame();
   }
@@ -170,13 +175,13 @@ moveOnBtn.addEventListener('click', () => {
 
 tryAgainBtn.addEventListener('click', () => {
   dialogDefeat.close();
-  playerOne.board.updateRecords('reset');
+  playerOne.info.updateRecords('reset');
   setUpGame();
 });
 
 finaleBtn.addEventListener('click', () => {
   dialogFinish.close();
-  playerOne.board.updateRecords('reset');
-  playerOne.board.setFinished();
+  playerOne.info.updateRecords('reset');
+  playerOne.info.setFinished();
   setUpGame();
 });

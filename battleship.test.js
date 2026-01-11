@@ -1,5 +1,9 @@
-export const sum = require('./battleship');
+/* global require: writable */
+const { describe, test, expect } = require('@jest/globals');
+const sum = require('./src/battleship.js');
 
-test('adds 1 + 2 to equal 3', () => {
-  expect(sum(1, 2)).toBe(3);
+describe('gameBoard function', () => {
+  test('example 1', () => {
+    expect(sum(4, 5)).toBe(9);
+  });
 });
