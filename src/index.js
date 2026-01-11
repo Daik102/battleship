@@ -1,5 +1,5 @@
 import "./styles.css";
-import { player } from "../battleship.js";
+import { player } from "./battleship.js";
 
 let playerOne = player(1, 'human');
 let playerTwo = player(2, 'computer');
@@ -25,7 +25,7 @@ function setUpGame(initial) {
     const currentVictory = records[2];
     const highestVictory = records[3];
     const finished = playerOne.board.getFinished();
-    customSets = playerOne.board.getDeploySets();
+    customSets = playerOne.list.getDeploySets();
     boardContainerTwo.classList.remove('dark');
     boardContainerOne.classList.remove('dark');
     
@@ -37,9 +37,11 @@ function setUpGame(initial) {
     }
   }
   
-  playerOne.board.deployShip(customSets);
-  playerTwo.board.deployShip();
-  playerTwo.board.deployRandom();
+  playerOne.list.deployShip(customSets);
+  playerTwo.list.deployShip();
+  playerOne.board.deployBoard(playerOne.list.getList());
+  playerTwo.board.deployBoard(playerTwo.list.getList());
+  playerTwo.board.deployRandom(playerTwo.list.getList());
   playerOne.board.updateRecords();
   playerOne.board.updateMessage('Deploy your fleet');
   playerOne.board.updateBtn();
@@ -52,7 +54,7 @@ randomBtn.addEventListener('click', () => {
   const currentTurn = playerOne.board.getCurrentTurn();
   
   if (currentTurn === 0) {
-    playerOne.board.deployRandom();
+    playerOne.board.deployRandom(playerOne.list.getList());
   } else if (currentTurn === 1) {
     playerOne.board.updateRecords('reset');
     setUpGame();
@@ -68,13 +70,13 @@ boardContainerOne.addEventListener('click', (e) => {
     const y = Number(target.getAttribute('y'));
 
     if (target.classList.contains('ship')) {
-      playerOne.board.rotateShip(x, y);
+      playerOne.board.rotateShip(x, y, playerOne.list.getList());
     }
   }
 });
 
 boardContainerOne.addEventListener('dragstart', (e) => {
-  playerOne.board.setMoveLocation(e.target, 'start');
+  playerOne.board.setMoveLocation(e.target);
 });
 
 boardContainerOne.addEventListener('dragover', (e) => {
@@ -86,7 +88,7 @@ boardContainerOne.addEventListener('dragover', (e) => {
 });
 
 boardContainerOne.addEventListener('drop', (e) => {
-  playerOne.board.setMoveLocation(e.target);
+  playerOne.board.setMoveLocation(e.target, playerOne.list.getList());
 });
 
 playBtn.addEventListener('mouseenter', () => {
@@ -129,14 +131,14 @@ boardContainerTwo.addEventListener('click', (e) => {
       return;
     }
 
-    const result = playerTwo.board.receiveAttack(x, y, 2, playerOne.board.getBoard());
+    const result = playerTwo.board.receiveAttack(x, y, 2, playerTwo.list.getList(), playerOne.board.getBoard());
     
     if (result === 'hit') {
       playerOne.board.updateRecords('hit');
-      const winner = playerTwo.board.checkTheWinner(2, playerOne.board.getBoard());
+      const winner = playerTwo.board.checkTheWinner(2, playerTwo.list.getList(), playerOne.board.getBoard());
 
       if (winner) {
-        const totalBonus = playerOne.board.getTotalBonus();
+        const totalBonus = playerOne.board.getTotalBonus(playerOne.list.getList());
         playerOne.board.updateRecords(totalBonus, 'notRender');
       } else {
         playerOne.board.markupTarget();
@@ -144,7 +146,7 @@ boardContainerTwo.addEventListener('click', (e) => {
     } else if (result === 'miss') {
       playerOne.board.setCurrentTurn(2);
       playerOne.board.updateMessage('Computer\'s turn');
-      playerOne.board.getComputerMove(wait, playerTwo.board.getBoard());
+      playerOne.board.getComputerMove(wait, playerOne.list.getList(), playerTwo.board.getBoard());
 
       function wait() {
         playerOne.board.setCurrentTurn(1);
