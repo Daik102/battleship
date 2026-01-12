@@ -646,7 +646,7 @@ function gameBoard() {
   
   const getBoard = () => board;
 
-  const renderBoard = (playerNo, otherBoard) => {
+  const renderBoard = (playerNo, otherBoard, currentVictory) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
     boardContainerOne.innerHTML = '';
@@ -718,6 +718,17 @@ function gameBoard() {
         boardContainerOne.appendChild(squareOne);
         boardContainerTwo.appendChild(squareTwo);
       }
+    }
+
+    if (currentVictory || currentVictory === 0) {
+      const roundBoard = document.querySelector('.round-board');
+      const round = currentVictory + 1;
+      roundBoard.classList.add('display-round');
+      roundBoard.textContent = 'Round ' + round;
+
+      setTimeout(() => {
+        roundBoard.classList.remove('display-round');
+      }, 1200);
     }
   };
   

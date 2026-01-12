@@ -16,6 +16,7 @@ const dialogDefeat = document.querySelector('.dialog-defeat');
 const dialogFinish = document.querySelector('.dialog-finish');
 
 function setUpGame(initial) {
+  
   let customSets;
 
   if (!initial) {
@@ -107,12 +108,14 @@ playBtn.addEventListener('mouseleave', () => {
 
 playBtn.addEventListener('click', () => {
   const currentTurn = playerOne.info.getCurrentTurn();
-
+  const records = playerOne.info.getRecords();
+  const currentVictory = records[1];
+  
   if (currentTurn === 0) {
     playerOne.info.setCurrentTurn(1);
     playerOne.info.updateMessage('Your turn');
     playerOne.info.updateBtn();
-    playerOne.board.renderBoard(1, playerTwo.board.getBoard());
+    playerOne.board.renderBoard(1, playerTwo.board.getBoard(), currentVictory);
     playerOne.board.markupTarget(playerTwo.board.getBoard());
   }
 });
