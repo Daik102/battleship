@@ -152,7 +152,7 @@ h2 {
   width: 44rem;
   height: 100%;
   margin: 0 auto;
-  padding: 3.2rem 6rem 2.6rem;
+  padding: 3.2rem 6rem 2.28rem;
   background-color: var(--wrapper-theme);
 }
 
@@ -383,10 +383,7 @@ h1 {
 
 .round-board {
   visibility: hidden;
-  position: absolute;
-  top: 77%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  margin:-19.6rem 0 13.32rem;
   font-size: 2.6rem;
   color: var(--text-theme);
 }
