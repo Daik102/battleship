@@ -113,7 +113,7 @@ playBtn.addEventListener('click', () => {
     playerOne.info.updateMessage('Your turn');
     playerOne.info.updateBtn();
     playerOne.board.renderBoard(1, playerTwo.board.getBoard());
-    playerOne.board.markupTarget();
+    playerOne.board.markupTarget(playerTwo.board.getBoard());
   }
 });
 
@@ -133,6 +133,7 @@ boardContainerTwo.addEventListener('click', (e) => {
     
     if (result === 'hit') {
       playerOne.info.updateRecords('hit');
+      playerOne.board.markupTarget();
       const winner = playerTwo.board.checkTheWinner(1, playerTwo.list.getList());
 
       if (winner) {
@@ -140,11 +141,12 @@ boardContainerTwo.addEventListener('click', (e) => {
         const totalBonus = playerOne.info.getTotalBonus(playerOne.list.getList());
         playerOne.info.updateRecords(totalBonus, 'notRender');
       } else {
-        playerOne.board.markupTarget();
+        playerOne.board.markupTarget(playerTwo.board.getBoard());
       }
     } else if (result === 'miss') {
       playerOne.info.setCurrentTurn(2);
       playerOne.info.updateMessage('Computer\'s turn');
+      playerOne.board.markupTarget();
       playerOne.board.getComputerMove(wait, playerOne.list.getList(), playerTwo.board.getBoard());
 
       function wait(winner) {
@@ -153,7 +155,7 @@ boardContainerTwo.addEventListener('click', (e) => {
         } else {
           playerOne.info.setCurrentTurn(1);
           playerOne.info.updateMessage('Your turn');
-          playerOne.board.markupTarget();
+          playerOne.board.markupTarget(playerTwo.board.getBoard());
         }
       }
     }
@@ -185,3 +187,4 @@ finaleBtn.addEventListener('click', () => {
   playerOne.info.setFinished();
   setUpGame();
 });
+  
