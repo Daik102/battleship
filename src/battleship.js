@@ -250,7 +250,7 @@ function gameBoard() {
 
     for (let i = 0; i < length; i++) {
       if (direction === 'horizontal') {
-        // Check if it's possible to move for the horizontal ship.
+        // Check if it's possible to move when the ship is horizontal.
         const movedSquare = board[x2][y2 + i];
         rightSquare = board[x2][y2 + i + 1];
         leftSquare = board[x2][y2 + i - 1];
@@ -272,7 +272,7 @@ function gameBoard() {
           bottomRightSquare = board[x2 + 1][y2 + i + 1];
         }
       } else {
-        // Check if it's possible to move for the vertical ship.
+        // Check if it's possible to move when the ship is vertical.
         if (board[x2 + i]) {
           rightSquare = board[x2 + i][y2 + 1];
           leftSquare = board[x2 + i][y2 - 1];
@@ -397,7 +397,7 @@ function gameBoard() {
         const direction = directions[randomIndex];
         const cannotMove = moveShip(bowX, bowY, endX, endY, ship, direction);
         ship.direction = direction;
-
+        // Run repeatedly until getting proper location.
         if (cannotMove) {
           getRandomLocation();
         }
@@ -842,11 +842,11 @@ function gameInfo(cs, cv) {
   };
 
   const getTotalBonus = (list) => {
-    const bonusScores = document.querySelectorAll('.bonus-score');
-    const totalBonusScore = document.querySelector('.total-bonus-score');
+    const bonusScoreBoards = document.querySelectorAll('.bonus-score-board');
+    const totalBonusScoreBoard = document.querySelector('.total-bonus-score-board');
     let totalBonus = 0;
 
-    bonusScores.forEach((bonusScore, i) => {
+    bonusScoreBoards.forEach((bonusScoreBoard, i) => {
       let bonus = 2000 - i * 500;
       
       if (!list[i].isSunk(list[i])) {
@@ -855,10 +855,10 @@ function gameInfo(cs, cv) {
         bonus = 0;
       }
 
-      bonusScore.textContent = bonus;
+      bonusScoreBoard.textContent = bonus;
     });
 
-    totalBonusScore.textContent = totalBonus;
+    totalBonusScoreBoard.textContent = totalBonus;
     return totalBonus;
   };
 

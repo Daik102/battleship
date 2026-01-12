@@ -148,7 +148,7 @@ boardContainerTwo.addEventListener('click', (e) => {
       playerOne.info.updateMessage('Computer\'s turn');
       playerOne.board.markupTarget();
       playerOne.board.getComputerMove(wait, playerOne.list.getList(), playerTwo.board.getBoard());
-
+      // Callback for setTimeout.
       function wait(winner) {
         if (winner) {
           playerOne.info.displayResult(2);
