@@ -180,6 +180,7 @@ h1 {
 .emblem {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 1.6rem;
   height: 2.4rem;
   background-image: linear-gradient(var(--emblem-theme) 1.2rem, var(--star-theme) 0 1.3rem, var(--emblem-theme) 0 1.5rem, var(--star-theme) 0 1.6rem, var(--emblem-theme) 0 1.8rem, var(--star-theme) 0 1.9rem, var(--emblem-theme) 0 2.1rem, var(--star-theme) 0 2.2rem, var(--emblem-theme) 0);
@@ -207,6 +208,7 @@ h1 {
 
 .victory-row div {
   display: flex;
+  align-items: center;
   gap: 0.4rem;
   font-size: 1.6rem;
 }
