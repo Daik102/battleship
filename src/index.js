@@ -190,4 +190,3 @@ finaleBtn.addEventListener('click', () => {
   playerOne.info.setFinished();
   setUpGame();
 });
-  
