@@ -4,19 +4,7 @@ import { player } from "./battleship.js";
 let playerOne = player(1, 'human');
 let playerTwo = player(2, 'computer');
 
-const randomBtn = document.querySelector('.random-btn');
-const playBtn = document.querySelector('.play-btn');
-const boardContainerOne = document.querySelector('.board-container-one');
-const boardContainerTwo = document.querySelector('.board-container-two');
-const moveOnBtn = document.querySelector('.move-on-btn');
-const tryAgainBtn = document.querySelector('.try-again-btn');
-const finaleBtn = document.querySelector('.finale-btn');
-const dialogVictory = document.querySelector('.dialog-victory');
-const dialogDefeat = document.querySelector('.dialog-defeat');
-const dialogFinish = document.querySelector('.dialog-finish');
-
 function setUpGame(initial) {
-  
   let customSets;
 
   if (!initial) {
@@ -25,8 +13,6 @@ function setUpGame(initial) {
     const currentVictory = records[1];
     const finished = playerOne.info.getFinished();
     customSets = playerOne.list.getDeploySets();
-    boardContainerTwo.classList.remove('dark');
-    boardContainerOne.classList.remove('dark');
     
     playerOne = player(playerOne.playerNo, playerOne.playerType, currentScore, currentVictory);
     playerTwo = player(playerTwo.playerNo, playerTwo.playerType);
@@ -48,6 +34,11 @@ function setUpGame(initial) {
 }
 
 setUpGame('initial');
+
+const randomBtn = document.querySelector('.random-btn');
+const playBtn = document.querySelector('.play-btn');
+const boardContainerOne = document.querySelector('.board-container-one');
+const boardContainerTwo = document.querySelector('.board-container-two');
 
 randomBtn.addEventListener('click', () => {
   const currentTurn = playerOne.info.getCurrentTurn();
@@ -140,9 +131,35 @@ boardContainerTwo.addEventListener('click', (e) => {
       const winner = playerTwo.board.checkTheWinner(1, playerTwo.list.getList());
 
       if (winner) {
-        playerOne.info.displayResult(1);
-        const totalBonus = playerOne.info.getTotalBonus(playerOne.list.getList());
-        playerOne.info.updateRecords(totalBonus, 'notRender');
+        playerOne.info.displayResult(1, waitRender);
+        // Callback for setTimeout.
+        function waitRender() {
+          const totalBonus = playerOne.info.getTotalBonus(playerOne.list.getList());
+          playerOne.info.updateRecords(totalBonus, 'notRender');
+
+          const moveOnBtn = document.querySelector('.move-on-btn');
+
+          moveOnBtn.addEventListener('click', () => {
+            boardContainerTwo.classList.remove('dark');
+            const records = playerOne.info.getRecords();
+            const currentVictory = records[1];
+            
+            if (currentVictory === 20) {
+              playerOne.info.displayResult('finish');
+              playerOne.info.updateRecords();
+
+              const finaleBtn = document.querySelector('.finale-btn');
+
+              finaleBtn.addEventListener('click', () => {
+                playerOne.info.updateRecords('reset');
+                playerOne.info.setFinished();
+                setUpGame();
+              });
+            } else {
+              setUpGame();
+            }
+          });
+        }
       } else {
         playerOne.board.markupTarget(playerTwo.board.getBoard());
       }
@@ -150,11 +167,20 @@ boardContainerTwo.addEventListener('click', (e) => {
       playerOne.info.setCurrentTurn(2);
       playerOne.info.updateMessage('Computer\'s turn');
       playerOne.board.markupTarget();
-      playerOne.board.getComputerMove(wait, playerOne.list.getList(), playerTwo.board.getBoard());
+      playerOne.board.getComputerMove(waitComputerMove, playerOne.list.getList(), playerTwo.board.getBoard());
       // Callback for setTimeout.
-      function wait(winner) {
+      function waitComputerMove(winner) {
         if (winner) {
-          playerOne.info.displayResult(2);
+          playerOne.info.displayResult(2, waitRender);
+          // Callback for setTimeout.
+          function waitRender() {
+            const tryAgainBtn = document.querySelector('.try-again-btn');
+            
+            tryAgainBtn.addEventListener('click', () => {
+              playerOne.info.updateRecords('reset');
+              setUpGame();
+            });
+          }
         } else {
           playerOne.info.setCurrentTurn(1);
           playerOne.info.updateMessage('Your turn');
@@ -163,30 +189,4 @@ boardContainerTwo.addEventListener('click', (e) => {
       }
     }
   }
-});
-
-moveOnBtn.addEventListener('click', () => {
-  dialogVictory.close();
-  const records = playerOne.info.getRecords();
-  const currentVictory = records[1];
-  
-  if (currentVictory === 20) {
-    dialogFinish.showModal();
-    playerOne.info.updateRecords();
-  } else {
-    setUpGame();
-  }
-});
-
-tryAgainBtn.addEventListener('click', () => {
-  dialogDefeat.close();
-  playerOne.info.updateRecords('reset');
-  setUpGame();
-});
-
-finaleBtn.addEventListener('click', () => {
-  dialogFinish.close();
-  playerOne.info.updateRecords('reset');
-  playerOne.info.setFinished();
-  setUpGame();
 });

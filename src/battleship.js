@@ -571,7 +571,7 @@ function gameBoard() {
     return result;
   };
 
-  const getComputerMove = (wait, list, otherBoard) => {
+  const getComputerMove = (waitComputerMove, list, otherBoard) => {
     const adjacentSquares = [];
     const restSquares = [];
     // Check if there is a damaged enemy ship.
@@ -626,12 +626,12 @@ function gameBoard() {
         const winner = checkTheWinner(1, list);
 
         if (winner) {
-          wait(winner);
+          waitComputerMove(winner);
         } else {
-          getComputerMove(wait, list, otherBoard);
+          getComputerMove(waitComputerMove, list, otherBoard);
         }
       } else {
-        wait();
+        waitComputerMove();
       }
     }, 1000);
   };
@@ -669,8 +669,10 @@ function gameBoard() {
             squareOne.classList.add('miss');
           } else if (otherBoard[i][j] === 2) {
             squareOne.classList.add('splash');
-          } else if (otherBoard[i][j] === 'X' || otherBoard[i][j] === 'D') {
+          } else if (otherBoard[i][j] === 'X') {
             squareOne.classList.add('hit');
+          }  else if (otherBoard[i][j] === 'D') {
+            squareOne.classList.add('sunk');
           } else if (otherBoard[i][j] === 'S') {
             squareOne.classList.add('ship');
             squareOne.setAttribute('draggable', 'false');
@@ -680,8 +682,10 @@ function gameBoard() {
             squareTwo.classList.add('miss');
           } else if (board[i][j] === 2) {
             squareTwo.classList.add('splash');
-          } else if (board[i][j] === 'X' || board[i][j] === 'D') {
+          } else if (board[i][j] === 'X') {
             squareTwo.classList.add('hit');
+          } else if (board[i][j] === 'D') {
+            squareTwo.classList.add('sunk');
           }
         } else {
           if (board[i][j] === 'S') {
@@ -701,16 +705,20 @@ function gameBoard() {
               squareOne.classList.add('miss');
             } else if (board[i][j] === 2) {
               squareOne.classList.add('splash');
-            } else if (board[i][j] === 'X' || board[i][j] === 'D') {
+            } else if (board[i][j] === 'X') {
               squareOne.classList.add('hit');
+            } else if (board[i][j] === 'D') {
+              squareOne.classList.add('sunk');
             }
 
             if (otherBoard[i][j] === 1) {
               squareTwo.classList.add('miss');
             } else if (otherBoard[i][j] === 2) {
               squareTwo.classList.add('splash');
-            } else if (otherBoard[i][j] === 'X' || otherBoard[i][j] === 'D') {
+            } else if (otherBoard[i][j] === 'X') {
               squareTwo.classList.add('hit');
+            } else if (otherBoard[i][j] === 'D') {
+              squareTwo.classList.add('sunk');
             }
           }
         }
@@ -818,24 +826,61 @@ function gameInfo(cs, cv) {
   const setCurrentTurn = (turn) => currentTurn = turn;
   const getCurrentTurn = () => currentTurn;
 
-  const displayResult = (playerNo) => {
+  const displayResult = (playerNo, waitRender) => {
+    const boardContainerOne = document.querySelector('.board-container-one');
+    const boardContainerTwo = document.querySelector('.board-container-two');
+
     if (playerNo === 1) {
-      const boardContainerTwo = document.querySelector('.board-container-two');
-      const dialogVictory = document.querySelector('.dialog-victory');
       boardContainerTwo.classList.add('dark');
 
+      const victoryHTML = `<div class="victory-container">
+        <h2>Mission Complete</h2>
+        <div class="alive-bonus">- Alive Bonus -</div>
+        <div class="bonus-row">
+          <div>Battleship</div>
+          <div class="bonus-score-board"></div>
+        </div>
+        <div class="bonus-row">
+          <div>Cruiser</div>
+          <div class="bonus-score-board"></div>
+        </div>
+        <div class="bonus-row">
+          <div>Destroyer</div>
+          <div class="bonus-score-board"></div>
+        </div>
+        <div class="bonus-row">
+          <div>Submarine</div>
+          <div class="bonus-score-board"></div>
+        </div>
+        <div class="bonus-row total-bonus-row">
+          <div>Total Bonus</div>
+          <div class="total-bonus-score-board"></div>
+        </div>
+        <button type="button" class="move-on-btn">Move on</button>
+      </div>`
+      
       setTimeout(() => {
         updateMessage('You win!');
-        dialogVictory.showModal();
+        boardContainerOne.innerHTML = victoryHTML;
+        waitRender();
       }, 1000);
-    } else {
-      const boardContainerOne = document.querySelector('.board-container-one');
-      const dialogDefeat = document.querySelector('.dialog-defeat');
+    } else if (playerNo === 2) {
       boardContainerOne.classList.add('dark');
+
+      const defeatHTML = `<div class="defeat-container">
+        <h2>Mission failed</h2>
+        <div>- Battle Result -</div>
+        <div class="final-victory-board"></div>
+        <div>Your rank:</div>
+        <div class="rank-board"></div>
+        <div class="comment">Good luck next time.</div>
+        <button type="button" class="try-again-btn">Try again</button>
+      </div>`;
 
       setTimeout(() => {
         updateMessage('You lose');
-        dialogDefeat.showModal();
+        boardContainerOne.classList.remove('dark');
+        boardContainerOne.innerHTML = defeatHTML;
 
         const rankList = ['Seaman', 'Petty Officer', 'Chief Petty Officer', 'Ensign', 'Lieutenant Jr. Grade', 'Lieutenant', 'Lieutenant Commander', 'Commander', 'Captain', 'Rear Admiral', 'Vice Admiral'];
         let rankIndex = Math.floor(currentVictory / 2) + 1;
@@ -848,7 +893,23 @@ function gameInfo(cs, cv) {
         const rankBoard = document.querySelector('.rank-board');
         finalVictoryBoard.textContent = currentVictory + ' wins';
         rankBoard.textContent = rankList[rankIndex];
+        waitRender()
       }, 1000);
+    } else {
+      updateMessage('You win!');
+      boardContainerTwo.classList.add('dark');
+
+      const finishHTML = `<div class="finish-container">
+        <h2>Congratulations!</h2>
+        <div>- Battle Result -</div>
+        <div>20 wins</div>
+        <div>Your rank:</div>
+        <div class="rank-board">Admiral</div>
+        <div class="comment">Honor your achievement!</div>
+        <button type="button" class="finale-btn">Finale</button>
+      </div>`;
+
+      boardContainerOne.innerHTML = finishHTML;
     }
   };
 

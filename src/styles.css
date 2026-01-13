@@ -15,9 +15,9 @@
 :root {
   --light-background-theme: #bbe2ff;
   --background-theme: #004f90;
-  --victory-theme: rgba(0, 79, 144, 0.85);
-  --defeat-theme: rgba(34, 34, 34, 0.75);
-  --finish-theme: rgba(102, 51, 153, 0.85);
+  --victory-theme: rgba(0, 79, 144, 0.8);
+  --defeat-theme: rgba(34, 34, 34, 0.8);
+  --finish-theme: rgba(102, 51, 153, 0.8);
   --text-theme: #eee;
   --text-shadow-theme: #555;
   --black-text-theme: #222;
@@ -29,8 +29,9 @@
   --square-dark-theme: #c0c7cd;
   --enemy-square-theme: #222;
   --border-theme: #555;
-  --ship-theme: rgba(0, 125, 227, 0.9);
+  --ship-theme: #007de3;
   --hit-theme: rgba(255, 69, 0, 0.9);
+  --sunk-theme: rgba(255, 69, 0, 0.5);
   --miss-theme: #888;
   --splash-theme: #bbb;
   --target-theme: gold;
@@ -52,35 +53,28 @@ button {
   cursor: pointer;
 }
 
-.dialog-victory,
-.dialog-defeat,
-.dialog-finish {
-  margin: 25rem auto;
-  width: 28rem;
-  height: 28rem;
-  padding: 2.4rem 2rem 2rem;
-  border: none;
-}
-
-.dialog-victory {
-  background-color: var(--victory-theme);
-}
-
-.dialog-defeat {
-  background-color: var(--defeat-theme);
-}
-
-.dialog-finish {
-  background-color: var(--finish-theme);
-}
-
-.dialog-victory form,
-.dialog-defeat form,
-.dialog-finish form {
+.victory-container,
+.defeat-container,
+.finish-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
+  width: 28rem;
+  height: 28rem;
+  padding: 2.4rem 2rem 2rem;
+}
+
+.victory-container {
+  background-color: var(--victory-theme);
+}
+
+.defeat-container {
+  background-color: var(--defeat-theme);
+}
+
+.finish-container {
+  background-color: var(--finish-theme);
 }
 
 h2 {
@@ -88,18 +82,18 @@ h2 {
   color: var(--square-theme);
 }
 
-.dialog-victory form h2 {
+.victory-container h2 {
   margin-bottom: 1.2rem;
 }
 
-.dialog-defeat form h2,
-.dialog-finish form h2 {
-  margin-bottom: 1.6rem;
+.defeat-container h2,
+.finish-container h2 {
+   margin-bottom: 1.6rem;
 }
 
-.dialog-victory form div,
-.dialog-defeat form div,
-.dialog-finish form div {
+.victory-container div,
+.defeat-container div,
+.finish-container div {
   font-size: 1.6rem;
   color: var(--square-theme);
 }
@@ -150,10 +144,10 @@ h2 {
   align-items: center;
   justify-content: center;
   gap: 2rem;
-  width: 42rem;
+  width: 44rem;
   height: 100%;
   margin: 0 auto;
-  padding: 0 5rem;
+  padding: 0 6.8rem;
   background-color: var(--wrapper-theme);
 }
 
@@ -180,7 +174,7 @@ h1 {
 .emblem {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   width: 1.6rem;
   height: 2.4rem;
   background-image: linear-gradient(var(--emblem-theme) 1.2rem, var(--star-theme) 0 1.3rem, var(--emblem-theme) 0 1.5rem, var(--star-theme) 0 1.6rem, var(--emblem-theme) 0 1.8rem, var(--star-theme) 0 1.9rem, var(--emblem-theme) 0 2.1rem, var(--star-theme) 0 2.2rem, var(--emblem-theme) 0);
@@ -189,14 +183,6 @@ h1 {
 .emblem-star {
   font-size: 1rem;
   color: var(--star-theme);
-}
-
-.left-star {
-  margin: -1.2rem 0 0 0.1rem;
-}
-
-.right-star {
-  margin: -1.2rem 0.1rem 0 0;
 }
 
 .victory-row {
@@ -242,22 +228,23 @@ h1 {
 }
 
 .message-board {
-  width: 17.2rem;
+  width: 15.6rem;
   padding: 0.4rem 0.8rem;
   background-color: var(--square-theme);
   color: var(--black-text-theme);
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   box-shadow: 0.2rem 0.2rem 0.2rem var(--text-shadow-theme);
 }
 
 .random-btn,
 .play-btn {
-  padding: 0.4rem 0.8rem;
   font-size: 1.5rem;
   border-radius: 0.4rem;
   color: var(--black-text-theme);
   box-shadow: 0.2rem 0.2rem 0.2rem 0 var(--text-shadow-theme);
 }
+
+
 
 .opacity {
   opacity: 0.35;
@@ -266,6 +253,7 @@ h1 {
 
 .random-btn {
   width: 8rem;
+  padding: 0.4rem;
   background-image: linear-gradient(var(--random-btn-theme), var(--random-btn-dark-theme));
 }
 
@@ -282,6 +270,7 @@ h1 {
 }
 
 .play-btn {
+  padding: 0.4rem 0.8rem;
   background-image: linear-gradient(var(--play-btn-theme), var(--play-btn-dark-theme));
 }
 
@@ -304,7 +293,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 1.44rem;
-  margin: 1rem 1.4rem 0 -2.52rem;
+  margin: 1rem 1.4rem 0 -2.6rem;
 }
 
 .marker-top div {
@@ -370,6 +359,11 @@ h1 {
   border: none;
 }
 
+.sunk {
+  background-color: var(--sunk-theme);
+  border: none;
+}
+
 .miss {
   background-color: var(--miss-theme);
 }
@@ -384,19 +378,23 @@ h1 {
 }
 
 .round-board {
-  display: none;
-  margin:-17.6rem 0 12.28rem;
+  visibility: hidden;
+  translate: 0 -17.6rem;
   font-size: 2.6rem;
   color: var(--text-theme);
 }
 
 .display-round {
-  display: block;
+  visibility: visible;
 }
 
 .dark {
   opacity: 0.35;
   cursor: default;
+}
+
+footer {
+  margin-top: -4.8rem;
 }
 
 footer a {
