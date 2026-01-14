@@ -174,15 +174,16 @@ h1 {
 .emblem {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   width: 1.6rem;
   height: 2.4rem;
   background-image: linear-gradient(var(--emblem-theme) 1.2rem, var(--star-theme) 0 1.3rem, var(--emblem-theme) 0 1.5rem, var(--star-theme) 0 1.6rem, var(--emblem-theme) 0 1.8rem, var(--star-theme) 0 1.9rem, var(--emblem-theme) 0 2.1rem, var(--star-theme) 0 2.2rem, var(--emblem-theme) 0);
 }
 
 .emblem-star {
-  font-size: 1rem;
-  color: var(--star-theme);
+  margin-top: -1.26rem;
+  width: 0.8rem;
+  filter: invert(82%) sepia(27%) saturate(3145%) hue-rotate(360deg) brightness(107%) contrast(103%);
 }
 
 .victory-row {
@@ -200,8 +201,8 @@ h1 {
 }
 
 .star {
-  margin-top: -0.2rem;
-  color: var(--star-theme);
+  width: 1.4rem;
+  filter: invert(82%) sepia(27%) saturate(3145%) hue-rotate(360deg) brightness(107%) contrast(103%);
 }
 
 .current-victory-board,
