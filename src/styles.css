@@ -200,6 +200,7 @@ h1 {
 }
 
 .star {
+  margin-top: -0.2rem;
   color: var(--star-theme);
 }
 
@@ -243,8 +244,6 @@ h1 {
   color: var(--black-text-theme);
   box-shadow: 0.2rem 0.2rem 0.2rem 0 var(--text-shadow-theme);
 }
-
-
 
 .opacity {
   opacity: 0.35;

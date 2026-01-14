@@ -131,10 +131,10 @@ boardContainerTwo.addEventListener('click', (e) => {
       const winner = playerTwo.board.checkTheWinner(1, playerTwo.list.getList());
 
       if (winner) {
-        playerOne.info.displayResult(1, waitRender);
+        playerOne.info.setCurrentTurn(3);
+        playerOne.info.displayResult(1, waitRender, playerOne.list.getList());
         // Callback for setTimeout.
-        function waitRender() {
-          const totalBonus = playerOne.info.getTotalBonus(playerOne.list.getList());
+        function waitRender(totalBonus) {
           playerOne.info.updateRecords(totalBonus, 'notRender');
 
           const moveOnBtn = document.querySelector('.move-on-btn');
@@ -171,6 +171,7 @@ boardContainerTwo.addEventListener('click', (e) => {
       // Callback for setTimeout.
       function waitComputerMove(winner) {
         if (winner) {
+          playerOne.info.setCurrentTurn(3);
           playerOne.info.displayResult(2, waitRender);
           // Callback for setTimeout.
           function waitRender() {

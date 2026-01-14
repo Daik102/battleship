@@ -826,7 +826,28 @@ function gameInfo(cs, cv) {
   const setCurrentTurn = (turn) => currentTurn = turn;
   const getCurrentTurn = () => currentTurn;
 
-  const displayResult = (playerNo, waitRender) => {
+  function getTotalBonus(list) {
+    const bonusScoreBoards = document.querySelectorAll('.bonus-score-board');
+    const totalBonusScoreBoard = document.querySelector('.total-bonus-score-board');
+    let totalBonus = 0;
+
+    bonusScoreBoards.forEach((bonusScoreBoard, i) => {
+      let bonus = 2000 - i * 500;
+      
+      if (!list[i].isSunk(list[i])) {
+        totalBonus += bonus;
+      } else {
+        bonus = 0;
+      }
+
+      bonusScoreBoard.textContent = bonus;
+    });
+
+    totalBonusScoreBoard.textContent = totalBonus;
+    return totalBonus;
+  };
+
+  const displayResult = (playerNo, waitRender, list) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
 
@@ -862,7 +883,8 @@ function gameInfo(cs, cv) {
       setTimeout(() => {
         updateMessage('You win!');
         boardContainerOne.innerHTML = victoryHTML;
-        waitRender();
+        const totalBonus = getTotalBonus(list);
+        waitRender(totalBonus);
       }, 1000);
     } else if (playerNo === 2) {
       boardContainerOne.classList.add('dark');
@@ -913,27 +935,6 @@ function gameInfo(cs, cv) {
     }
   };
 
-  const getTotalBonus = (list) => {
-    const bonusScoreBoards = document.querySelectorAll('.bonus-score-board');
-    const totalBonusScoreBoard = document.querySelector('.total-bonus-score-board');
-    let totalBonus = 0;
-
-    bonusScoreBoards.forEach((bonusScoreBoard, i) => {
-      let bonus = 2000 - i * 500;
-      
-      if (!list[i].isSunk(list[i])) {
-        totalBonus += bonus;
-      } else {
-        bonus = 0;
-      }
-
-      bonusScoreBoard.textContent = bonus;
-    });
-
-    totalBonusScoreBoard.textContent = totalBonus;
-    return totalBonus;
-  };
-
   let finished;
 
   const setFinished = (display) => {
@@ -955,7 +956,6 @@ function gameInfo(cs, cv) {
     setCurrentTurn,
     getCurrentTurn,
     displayResult,
-    getTotalBonus,
     setFinished,
     getFinished,
   }
