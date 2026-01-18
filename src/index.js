@@ -45,21 +45,71 @@ randomBtn.addEventListener('click', () => {
   
   if (currentTurn === 0) {
     playerOne.board.deployRandom(playerOne.list.getList());
+    playerOne.board.renderBoard();
   } else if (currentTurn === 1) {
     playerOne.info.updateRecords('reset');
     setUpGame();
   }
 });
 
+boardContainerOne.addEventListener('mouseenter', () => {
+  const squares = document.querySelectorAll('.square-one');
+
+  squares.forEach((square) => {
+    const currentTurn = playerOne.info.getCurrentTurn();
+
+    if (currentTurn !== 0) {
+      return;
+    }
+
+    const coordinatesIndexArray = [];
+
+    square.addEventListener('mouseenter', (e) => {
+      if (e.target.classList.contains('ship')) {
+        const x = Number(e.target.getAttribute('x'));
+        const y = Number(e.target.getAttribute('y'));
+        const list = playerOne.list.getList();
+        
+        for (let i = 0; i < list.length; i++) {
+          const ship = list[i];
+          
+          for (let j = 0; j < ship.length; j++) {
+            const coordinates = ship.coordinates[j];
+            const coordinateX = coordinates[0];
+            const coordinateY = coordinates[1];
+
+            if (x === coordinateX && y === coordinateY) {
+              for (let k = 0; k < ship.length; k++) {
+                const coordinates = ship.coordinates[k];
+                const coordinateX = coordinates[0];
+                const coordinateY = coordinates[1];
+                const coordinatesIndex = coordinateX * 8 + coordinateY;
+                coordinatesIndexArray.push(coordinatesIndex);
+                squares[coordinatesIndex].classList.add('ship-hover');
+              }
+            }
+          }
+        }
+      }
+    });
+
+    square.addEventListener('mouseleave', () => {
+      for (let i = 0; i < coordinatesIndexArray.length; i++) {
+        const index = coordinatesIndexArray[i];
+        squares[index].classList.remove('ship-hover');
+      }
+    });
+  });
+});
+
 boardContainerOne.addEventListener('click', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
-    const target = e.target;
-    const x = Number(target.getAttribute('x'));
-    const y = Number(target.getAttribute('y'));
+    const x = Number(e.target.getAttribute('x'));
+    const y = Number(e.target.getAttribute('y'));
 
-    if (target.classList.contains('ship')) {
+    if (e.target.classList.contains('ship')) {
       playerOne.board.rotateShip(x, y, playerOne.list.getList());
     }
   }
@@ -115,11 +165,10 @@ boardContainerTwo.addEventListener('click', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
   
   if (currentTurn === 1) {
-    const target = e.target;
-    const x = Number(target.getAttribute('x'));
-    const y = Number(target.getAttribute('y'));
+    const x = Number(e.target.getAttribute('x'));
+    const y = Number(e.target.getAttribute('y'));
 
-    if (target.classList.contains('board-container-two')) {
+    if (e.target.classList.contains('board-container-two')) {
       return;
     }
 
