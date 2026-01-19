@@ -31,15 +31,13 @@
   --border-theme: #555;
   --ship-theme: #007de3;
   --ship-hover-theme: #00e1e1;
-  --cannot-do-theme: rgba(255, 69, 0, 0.9);
-  --hit-one-theme: rgba(255, 69, 0, 0.9);
-  --sunk-one-theme: rgba(255, 69, 0, 0.5);
-  --hit-two-theme: rgba(255, 215, 0, 0.8);
-  --sunk-two-theme: rgba(255, 215, 0, 0.4);
-  --miss-one-theme: #888;
-  --splash-one-theme: #bbb;
-  --miss-two-theme: rgba(0, 225, 135, 0);
-  --splash-two-theme: rgba(0, 225, 135, 0.2);
+  --cannot-do-theme: orangered;
+  --hit-one-theme: rgb(255, 69, 0);
+  --hit-two-theme: rgb(255, 215, 0);
+  --miss-one-theme: rgba(255, 255, 255, 0.2);
+  --splash-one-theme: rgba(255, 255, 255, 0.45);
+  --miss-two-theme: rgba(0, 225, 135, 0.2);
+  --splash-two-theme: rgba(0, 225, 135, 0.45);
   --round-board-theme: rgba(51, 51, 51, 0.8);
   --target-theme: gold;
   --random-btn-theme: yellow;
@@ -106,7 +104,7 @@ h2 {
 }
 
 .alive-bonus {
-  margin:-1rem 0 0.4rem;
+  margin: -1rem 0 0.4rem;
 }
 
 .bonus-row {
@@ -359,12 +357,11 @@ h1 {
 .ship {
   background-color: var(--ship-theme);
   border: none;
-  opacity: 1;
-  transition: 0.15s;
+  transition: opacity 0.15s;
 }
 
 .ship-hover {
-  opacity: 0;
+  opacity: 0.85;
 }
 
 .caution {
@@ -379,27 +376,36 @@ h1 {
 .target {
   border: 0.6rem double var(--target-theme);
   cursor: crosshair;
-  transition: 0.15s;
+  opacity: 0;
+  transition: 0.3s ease-in;
+}
+
+.on-target {
+  opacity: 1;
 }
 
 .hit-one {
   background-color: var(--hit-one-theme);
   border: none;
+  opacity: 0.85;
 }
 
 .sunk-one {
-  background-color: var(--sunk-one-theme);
-  border: none;
+  opacity: 0.4;
 }
 
 .hit-two {
   background-color: var(--hit-two-theme);
   border: none;
+  opacity: 0.8;
 }
 
 .sunk-two {
-  background-color: var(--sunk-two-theme);
-  border: none;
+  opacity: 0.35;
+}
+
+.sunk-transition {
+  transition: opacity 2s;
 }
 
 .miss-one {
@@ -428,17 +434,19 @@ h1 {
 }
 
 .round-board {
-  visibility: hidden;
   font-size: 2.6rem;
   color: var(--round-board-theme);
   opacity: 0;
-  translate: 0 -17.6rem;
+  transform: translate(0, -17.6rem);
 }
 
 .display-round {
-  visibility: visible;
   opacity: 1;
-  transition: 1s;
+  transition: opacity 1s;
+}
+
+.erase-round {
+  visibility: hidden;
 }
 
 .dark {

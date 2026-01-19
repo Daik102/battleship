@@ -156,7 +156,7 @@ playBtn.addEventListener('click', () => {
     playerOne.info.setCurrentTurn(1);
     playerOne.info.updateMessage('Your turn');
     playerOne.info.updateBtn();
-    playerOne.board.renderBoard(1, playerTwo.board.getBoard(), currentVictory);
+    playerOne.board.renderBoard(1, playerTwo.board.getBoard(), '', currentVictory);
     playerOne.board.markupTarget(playerTwo.board.getBoard());
   }
 });
@@ -174,7 +174,7 @@ boardContainerTwo.addEventListener('click', (e) => {
 
     const result = playerTwo.board.receiveAttack(x, y, 2, playerTwo.list.getList(), playerOne.board.getBoard());
     
-    if (result === 'hit') {
+    if (result === 'hit' || result === 'sunk') {
       playerOne.info.updateRecords('hit');
       playerOne.board.markupTarget();
       const winner = playerTwo.board.checkTheWinner(1, playerTwo.list.getList());

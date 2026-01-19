@@ -447,6 +447,7 @@ function gameBoard() {
         });
 
         square.classList.add('target');
+        square.classList.add('on-target');
       });
 
       square.addEventListener('mouseleave', () => {
@@ -466,6 +467,7 @@ function gameBoard() {
         });
         
         square.classList.remove('target');
+        square.classList.remove('on-target');
       });
     });
   };
@@ -494,11 +496,13 @@ function gameBoard() {
 
     if (ship) {
       // Put splash after sinking.
+      const sunkCoordinates = [];
+
       for (let i = 0; i < ship.length; i++) {
         const coordinates = ship.coordinates[i];
         const coordinateX = coordinates[0];
         const coordinateY = coordinates[1];
-        board[coordinateX][coordinateY] = 'D';
+        sunkCoordinates.push(coordinates);
 
         if (board[coordinateX - 1]) {
           if (board[coordinateX - 1][coordinateY] === 0) {
@@ -520,12 +524,15 @@ function gameBoard() {
           }
         }
       }
+
+      return sunkCoordinates;
     }
   }
 
   const receiveAttack = (x, y, playerNo, list, otherBoard) => {
     const square = board[x][y];
     let result = '';
+    let sunkCoordinates = [];
     
     if (square === 0) {
       result = 'miss';
@@ -567,14 +574,15 @@ function gameBoard() {
             if (!sinking) {
               splashOnBoard(x, y);
             } else {
-              splashOnBoard(x, y, ship);
+              result = 'sunk';
+              sunkCoordinates = splashOnBoard(x, y, ship);
             }
           }
         }
       }
     }
     
-    renderBoard(playerNo, otherBoard);
+    renderBoard(playerNo, otherBoard, sunkCoordinates);
     return result;
   };
 
@@ -630,13 +638,17 @@ function gameBoard() {
       const result = receiveAttack(x, y, 1, list, otherBoard);
       
       if (result === 'hit') {
-        const winner = checkTheWinner(1, list);
+        getComputerMove(waitComputerMove, list, otherBoard);
+      } else if (result === 'sunk') {
+        setTimeout(() => {
+          const winner = checkTheWinner(1, list);
 
-        if (winner) {
-          waitComputerMove(winner);
-        } else {
-          getComputerMove(waitComputerMove, list, otherBoard);
-        }
+          if (winner) {
+            waitComputerMove(winner);
+          } else {
+            getComputerMove(waitComputerMove, list, otherBoard);
+          }
+        }, 1000);
       } else {
         waitComputerMove();
       }
@@ -653,7 +665,7 @@ function gameBoard() {
   
   const getBoard = () => board;
 
-  const renderBoard = (playerNo, otherBoard, currentVictory) => {
+  const renderBoard = (playerNo, otherBoard, sunkCoordinates, currentVictory) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
     boardContainerOne.innerHTML = '';
@@ -683,6 +695,7 @@ function gameBoard() {
           } else if (otherBoard[i][j] === 'X') {
             squareOne.classList.add('hit-one');
           }  else if (otherBoard[i][j] === 'D') {
+            squareOne.classList.add('hit-one');
             squareOne.classList.add('sunk-one');
           } else if (otherBoard[i][j] === 'S') {
             squareOne.classList.add('ship');
@@ -696,6 +709,7 @@ function gameBoard() {
           } else if (board[i][j] === 'X') {
             squareTwo.classList.add('hit-two');
           } else if (board[i][j] === 'D') {
+            squareTwo.classList.add('hit-two');
             squareTwo.classList.add('sunk-two');
           }
         } else {
@@ -719,6 +733,7 @@ function gameBoard() {
             } else if (board[i][j] === 'X') {
               squareOne.classList.add('hit-one');
             } else if (board[i][j] === 'D') {
+              squareOne.classList.add('hit-one');
               squareOne.classList.add('sunk-one');
             }
 
@@ -729,6 +744,7 @@ function gameBoard() {
             } else if (otherBoard[i][j] === 'X') {
               squareTwo.classList.add('hit-two');
             } else if (otherBoard[i][j] === 'D') {
+              squareTwo.classList.add('hit-two');
               squareTwo.classList.add('sunk-two');
             }
           }
@@ -737,6 +753,38 @@ function gameBoard() {
         boardContainerOne.appendChild(squareOne);
         boardContainerTwo.appendChild(squareTwo);
       }
+    }
+
+    if (sunkCoordinates) {
+      const squareOnes = document.querySelectorAll('.square-one');
+      const squareTwos = document.querySelectorAll('.square-two');
+
+      for (let i = 0; i < sunkCoordinates.length; i++) {
+        const coordinates = sunkCoordinates[i];
+        const coordinateX = coordinates[0];
+        const coordinateY = coordinates[1];
+        board[coordinateX][coordinateY] = 'D';
+        
+        if (playerNo === 2) {
+          squareTwos[coordinateX * row + coordinateY].classList.add('sunk-transition');
+        } else {
+          squareOnes[coordinateX * row + coordinateY].classList.add('sunk-transition');
+        }
+      }
+
+      setTimeout(() => {
+        for (let i = 0; i < sunkCoordinates.length; i++) {
+          const coordinates = sunkCoordinates[i];
+          const coordinateX = coordinates[0];
+          const coordinateY = coordinates[1];
+
+          if (playerNo === 2) {
+            squareTwos[coordinateX * row + coordinateY].classList.add('sunk-two');
+          } else {
+            squareOnes[coordinateX * row + coordinateY].classList.add('sunk-one');
+          }
+        }
+      }, 500);
     }
 
     if (!playerNo) {
@@ -763,11 +811,13 @@ function gameBoard() {
     if (currentVictory || currentVictory === 0) {
       const roundBoard = document.querySelector('.round-board');
       const round = currentVictory + 1;
+      roundBoard.classList.remove('erase-round');
       roundBoard.classList.add('display-round');
       roundBoard.textContent = 'Round ' + round;
 
       setTimeout(() => {
         roundBoard.classList.remove('display-round');
+        roundBoard.classList.add('erase-round');
       }, 1250);
 
       boardContainerOne.classList.remove('deploy-section');
@@ -933,7 +983,7 @@ function gameInfo(cs, cv) {
         boardContainerOne.innerHTML = victoryHTML;
         const totalBonus = getTotalBonus(list);
         waitRender(totalBonus);
-      }, 1000);
+      }, 2000);
     } else if (playerNo === 2) {
       const defeatHTML = `
         <div class="defeat-container">
