@@ -28,7 +28,7 @@ function setUpGame(initial) {
   playerTwo.board.deployBoard(playerTwo.list.getList());
   playerTwo.board.deployRandom(playerTwo.list.getList());
   playerOne.info.updateRecords();
-  playerOne.info.updateMessage('Deploy your fleet');
+  playerOne.info.updateMessage('deploy');
   playerOne.info.updateBtn();
   playerOne.board.renderBoard();
 }
@@ -154,7 +154,7 @@ playBtn.addEventListener('click', () => {
   
   if (currentTurn === 0) {
     playerOne.info.setCurrentTurn(1);
-    playerOne.info.updateMessage('Your turn');
+    playerOne.info.updateMessage('start');
     playerOne.info.updateBtn();
     playerOne.board.renderBoard(1, playerTwo.board.getBoard(), '', currentVictory);
     playerOne.board.markupTarget(playerTwo.board.getBoard());

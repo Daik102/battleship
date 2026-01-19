@@ -533,6 +533,7 @@ function gameBoard() {
     const square = board[x][y];
     let result = '';
     let sunkCoordinates = [];
+    let length = 0;
     
     if (square === 0) {
       result = 'miss';
@@ -552,6 +553,7 @@ function gameBoard() {
             result = 'hit';
             ship.hit(ship);
             board[x][y] = 'X';
+            length = ship.length;
 
             const wrapper = document.querySelector('.wrapper');
 
@@ -579,6 +581,23 @@ function gameBoard() {
             }
           }
         }
+      }
+    }
+
+    const info = gameInfo();
+    const shipTypes = ['submarine', 'destroyer', 'cruiser', 'battleship'];
+
+    if (result === 'hit') {
+      if (playerNo === 2) {
+        info.updateMessage('Hit!');
+      } else {
+        info.updateMessage('Ouch!');
+      }
+    } else if (result === 'sunk') {
+      if (playerNo === 2) {
+        info.updateMessage('Got ' + shipTypes[length - 1] + '!');
+      } else {
+        info.updateMessage('Lost ' + shipTypes[length - 1] + '!');
       }
     }
     
@@ -898,9 +917,36 @@ function gameInfo(cs, cv) {
 
   const getRecords = () => [currentScore, currentVictory];
 
+  let intervalId = 0;
+
   const updateMessage = (message) => {
     const messageBoard = document.querySelector('.message-board');
-    messageBoard.textContent = message;
+
+    if (message === 'deploy') {
+      let counter = 0;
+      messageBoard.textContent = 'Deploy your fleet';
+
+      intervalId = setInterval(() => {
+        counter += 1;
+
+        if (counter === 0) {
+          messageBoard.textContent = 'Deploy your fleet'
+        } else if (counter === 1) {
+          messageBoard.textContent = 'Drag to move'
+        } else if (counter === 2) {
+          messageBoard.textContent = 'Click to rotate'
+        }
+
+        if (counter === 2) {
+          counter = -1;
+        }
+      }, 3000);
+    } else if (message === 'start') {
+      clearInterval(intervalId);
+      messageBoard.textContent = 'Your turn';
+    } else {
+      messageBoard.textContent = message;
+    }
   };
 
   const updateBtn = () => {
