@@ -185,11 +185,11 @@ boardContainerTwo.addEventListener('click', (e) => {
         // Callback for setTimeout.
         function waitRender(totalBonus) {
           playerOne.info.updateRecords(totalBonus, 'notRender');
-
+          playerOne.info.rotateEmblem();
+          
           const moveOnBtn = document.querySelector('.move-on-btn');
 
           moveOnBtn.addEventListener('click', () => {
-            boardContainerTwo.classList.remove('dark');
             const records = playerOne.info.getRecords();
             const currentVictory = records[1];
             
@@ -205,6 +205,7 @@ boardContainerTwo.addEventListener('click', (e) => {
                 setUpGame();
               });
             } else {
+              playerOne.info.rotateEmblem();
               setUpGame();
             }
           });

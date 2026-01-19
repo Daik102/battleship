@@ -945,6 +945,18 @@ function gameInfo(cs, cv) {
     return totalBonus;
   };
 
+  const rotateEmblem = () => {
+    const emblems = document.querySelectorAll('.emblem');
+
+    emblems.forEach((emblem) => {
+      emblem.classList.add('rotate-emblem');
+
+      setTimeout(() => {
+        emblem.classList.remove('rotate-emblem');
+      }, 1000);
+    });
+  };
+
   const displayResult = (playerNo, waitRender, list) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
@@ -1068,6 +1080,7 @@ function gameInfo(cs, cv) {
     updateBtn,
     setCurrentTurn,
     getCurrentTurn,
+    rotateEmblem,
     displayResult,
     setFinished,
     getFinished,
