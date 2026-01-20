@@ -52,7 +52,7 @@ randomBtn.addEventListener('click', () => {
   }
 });
 
-boardContainerOne.addEventListener('mouseenter', () => {
+boardContainerOne.addEventListener('mouseover', () => {
   const squares = document.querySelectorAll('.square-one');
 
   squares.forEach((square) => {
