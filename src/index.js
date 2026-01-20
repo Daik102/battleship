@@ -190,6 +190,8 @@ boardContainerTwo.addEventListener('click', (e) => {
           const moveOnBtn = document.querySelector('.move-on-btn');
 
           moveOnBtn.addEventListener('click', () => {
+            boardContainerOne.classList.remove('erase-board', 'display-board');
+            playerOne.info.rotateEmblem();
             const records = playerOne.info.getRecords();
             const currentVictory = records[1];
             
@@ -200,12 +202,12 @@ boardContainerTwo.addEventListener('click', (e) => {
               const finaleBtn = document.querySelector('.finale-btn');
 
               finaleBtn.addEventListener('click', () => {
+                playerOne.info.rotateEmblem();
                 playerOne.info.updateRecords('reset');
                 playerOne.info.setFinished();
                 setUpGame();
               });
             } else {
-              playerOne.info.rotateEmblem();
               setUpGame();
             }
           });

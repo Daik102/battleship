@@ -30,10 +30,10 @@
   --enemy-square-theme: rgba(0, 225, 130, 0.8);
   --border-theme: #555;
   --ship-theme: #007de3;
-  --ship-hover-theme: #00e1e1;
+  --ship-hover-theme: #209bff;
   --cannot-do-theme: orangered;
-  --hit-one-theme: rgb(255, 69, 0);
-  --hit-two-theme: rgb(255, 215, 0);
+  --hit-one-theme: orangered;
+  --hit-two-theme: gold;
   --miss-one-theme: rgba(255, 255, 255, 0.2);
   --splash-one-theme: rgba(255, 255, 255, 0.45);
   --miss-two-theme: rgba(0, 225, 135, 0.2);
@@ -371,11 +371,10 @@ h1 {
 .ship {
   background-color: var(--ship-theme);
   border: none;
-  transition: opacity 0.15s;
 }
 
 .ship-hover {
-  opacity: 0.85;
+  background-color: var(--ship-hover-theme);
 }
 
 .caution {

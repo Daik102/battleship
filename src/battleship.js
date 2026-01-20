@@ -940,7 +940,7 @@ function gameInfo(cs, cv) {
         if (counter === 2) {
           counter = -1;
         }
-      }, 3000);
+      }, 2000);
     } else if (message === 'start') {
       clearInterval(intervalId);
       messageBoard.textContent = 'Your turn';
@@ -1006,9 +1006,10 @@ function gameInfo(cs, cv) {
   const displayResult = (playerNo, waitRender, list) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
+    let resultHTML = '';
 
     if (playerNo === 1) {
-      const victoryHTML = `
+      resultHTML = `
         <div class="victory-container">
           <h2>Mission Complete</h2>
           <div class="alive-bonus">- Alive Bonus -</div>
@@ -1038,12 +1039,12 @@ function gameInfo(cs, cv) {
       
       setTimeout(() => {
         updateMessage('You win!');
-        boardContainerOne.innerHTML = victoryHTML;
+        boardContainerOne.innerHTML = resultHTML;
         const totalBonus = getTotalBonus(list);
         waitRender(totalBonus);
       }, 2000);
     } else if (playerNo === 2) {
-      const defeatHTML = `
+      resultHTML = `
         <div class="defeat-container">
           <h2>Mission failed</h2>
           <div>- Battle Result -</div>
@@ -1072,7 +1073,7 @@ function gameInfo(cs, cv) {
 
         const footerLink = document.querySelector('.footer-link');
         footerLink.classList.add('dark');
-        boardContainerOne.innerHTML = defeatHTML;
+        boardContainerOne.innerHTML = resultHTML;
 
         const rankList = ['Seaman', 'Petty Officer', 'Chief Petty Officer', 'Ensign', 'Lieutenant Jr. Grade', 'Lieutenant', 'Lieutenant Commander', 'Commander', 'Captain', 'Rear Admiral', 'Vice Admiral'];
         let rankIndex = Math.floor(currentVictory / 2) + 1;
@@ -1085,12 +1086,12 @@ function gameInfo(cs, cv) {
         const rankBoard = document.querySelector('.rank-board');
         finalVictoryBoard.textContent = currentVictory + ' wins';
         rankBoard.textContent = rankList[rankIndex];
-        waitRender()
+        waitRender();
       }, 1000);
     } else {
       updateMessage('You win!');
       
-      const finishHTML = `
+      resultHTML = `
         <div class="finish-container">
           <h2>Congratulations!</h2>
           <div>- Battle Result -</div>
@@ -1102,7 +1103,7 @@ function gameInfo(cs, cv) {
         </div>
       `;
 
-      boardContainerOne.innerHTML = finishHTML;
+      boardContainerOne.innerHTML = resultHTML;
     }
   };
 
