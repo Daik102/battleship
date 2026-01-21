@@ -28,17 +28,17 @@
   --wrapper-theme: rgba(51, 51, 51, 0.5);
   --square-theme: aliceblue;
   --square-dark-theme: #c0c7cd;
-  --enemy-square-theme: rgba(0, 225, 130, 0.8);
+  --enemy-square-theme: rgba(0, 225, 130, 0.85);
   --border-theme: #555;
   --ship-theme: #007de3;
   --ship-hover-theme: #209bff;
   --cannot-do-theme: orangered;
   --hit-one-theme: orangered;
   --hit-two-theme: gold;
-  --miss-one-theme: rgba(255, 255, 255, 0.2);
-  --splash-one-theme: rgba(255, 255, 255, 0.45);
-  --miss-two-theme: rgba(0, 225, 135, 0.2);
-  --splash-two-theme: rgba(0, 225, 135, 0.45);
+  --miss-one-theme: aliceblue;
+  --splash-one-theme: aliceblue;
+  --miss-two-theme: rgba(0, 225, 135, 0.75);
+  --splash-two-theme: rgba(0, 225, 135, 0.75);
   --round-board-theme: rgba(51, 51, 51, 0.8);
   --target-theme: gold;
   --random-btn-theme: yellow;
@@ -188,6 +188,7 @@ header {
   width: 1.6rem;
   height: 2.4rem;
   background-image: linear-gradient(var(--emblem-theme) 1.2rem, var(--star-theme) 0 1.3rem, var(--emblem-theme) 0 1.5rem, var(--star-theme) 0 1.6rem, var(--emblem-theme) 0 1.8rem, var(--star-theme) 0 1.9rem, var(--emblem-theme) 0 2.1rem, var(--star-theme) 0 2.2rem, var(--emblem-theme) 0);
+  box-shadow: 0.2rem 0.2rem 0.4rem var(--text-shadow-theme);
 }
 
 .rotate-emblem {
@@ -270,7 +271,7 @@ header {
   background-color: var(--square-theme);
   color: var(--black-text-theme);
   font-size: 1.5rem;
-  box-shadow: 0.2rem 0.2rem 0.2rem var(--text-shadow-theme);
+  box-shadow: 0.2rem 0.2rem 0.4rem var(--text-shadow-theme);
 }
 
 .random-btn,
@@ -278,7 +279,7 @@ header {
   font-size: 1.5rem;
   border-radius: 0.4rem;
   color: var(--black-text-theme);
-  box-shadow: 0.2rem 0.2rem 0.2rem 0 var(--text-shadow-theme);
+  box-shadow: 0.2rem 0.2rem 0.4rem var(--text-shadow-theme);
 }
 
 .opacity {
@@ -421,23 +422,25 @@ header {
 }
 
 .hit-one {
-  background-color: var(--hit-one-theme);
-  border: none;
+  background-color: var(--transparent-theme);
+  background-image: repeating-linear-gradient(var(--hit-one-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem), repeating-linear-gradient(90deg, var(--hit-one-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem);
+  border: 0.1rem dotted var(--border-theme);
   opacity: 0.85;
 }
 
 .sunk-one {
-  opacity: 0.4;
+  opacity: 0;
 }
 
 .hit-two {
-  background-color: var(--hit-two-theme);
-  border: none;
-  opacity: 0.8;
+  background-color: var(--transparent-theme);
+  background-image: repeating-linear-gradient(var(--hit-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem), repeating-linear-gradient(90deg, var(--hit-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem);
+  border: 0.1rem dotted var(--border-theme);
+  opacity: 0.85;
 }
 
 .sunk-two {
-  opacity: 0.35;
+  opacity: 0;
 }
 
 .sunk-transition {
@@ -445,22 +448,26 @@ header {
 }
 
 .miss-one {
-  background-color: var(--miss-one-theme);
+  background-color: var(--transparent-theme);
+  background-image: repeating-linear-gradient(var(--miss-one-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem), repeating-linear-gradient(90deg, var(--miss-one-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem);
   border: 0.1rem dotted var(--border-theme);
 }
 
 .splash-one {
-  background-color: var(--splash-one-theme);
+  background-color: var(--transparent-theme);
+  background-image: repeating-linear-gradient(var(--miss-one-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem), repeating-linear-gradient(90deg, var(--miss-one-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem);
   border: 0.1rem dotted var(--border-theme);
 }
 
 .miss-two {
-  background-color: var(--miss-two-theme);
+  background-color: var(--transparent-theme);
+  background-image: repeating-linear-gradient(var(--miss-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem), repeating-linear-gradient(90deg, var(--miss-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem);
   border: 0.1rem dotted var(--border-theme);
 }
 
 .splash-two {
-  background-color: var(--splash-two-theme);
+  background-color: var(--transparent-theme);
+  background-image: repeating-linear-gradient(var(--miss-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem), repeating-linear-gradient(90deg, var(--miss-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem);
   border: 0.1rem dotted var(--border-theme);
 }
 
