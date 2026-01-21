@@ -728,9 +728,6 @@ function gameBoard() {
           } else if (board[i][j] === 'D') {
             squareTwo.classList.add('hit-two');
             squareTwo.classList.add('sunk-two');
-          } else if (board[i][j] === 'S') {
-            squareTwo.classList.add('ship');
-            squareTwo.setAttribute('draggable', 'false');
           }
         } else {
           if (board[i][j] === 'S') {
@@ -836,8 +833,12 @@ function gameBoard() {
       roundBoard.textContent = 'Round ' + round;
 
       setTimeout(() => {
-        roundBoard.classList.remove('display-round');
-        roundBoard.classList.add('erase-round');
+        roundBoard.textContent = 'Fight!';
+
+        setTimeout(() => {
+          roundBoard.classList.remove('display-round');
+          roundBoard.classList.add('erase-round');
+        }, 500);
       }, 1500);
 
       boardContainerOne.classList.remove('deploy-section');
