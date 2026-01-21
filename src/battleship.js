@@ -1008,7 +1008,6 @@ function gameInfo(cs, cv) {
   const displayResult = (playerNo, waitRender, list) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
-    const sunkCounter = list.reduce((acc, curr, i) => acc + curr.isSunk(list[i]), 0);
     let resultHTML = '';
 
     if (playerNo === 1) {
@@ -1039,6 +1038,8 @@ function gameInfo(cs, cv) {
           <button type="button" class="move-on-btn">Move on</button>
         </div>
       `;
+
+      const sunkCounter = list.reduce((acc, curr, i) => acc + curr.isSunk(list[i]), 0);
       
       setTimeout(() => {
         if (sunkCounter === 0) {
