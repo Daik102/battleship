@@ -2,8 +2,8 @@ function shipList() {
   const list = [];
 
   function ship(length, direction, bowX, bowY) {
-    const shipTypes = ['submarine', 'destroyer', 'cruiser', 'battleship'];
-    const type = shipTypes[length - 1];
+    const shipType = ['submarine', 'destroyer', 'cruiser', 'battleship'];
+    const type = shipType[length - 1];
     const coordinates = [];
 
     for (let j = 0; j < length; j++) {
@@ -17,13 +17,11 @@ function shipList() {
     const hit = (ship) => ship.damage += 1;
     
     const isSunk = (ship) => {
-      let sinking;
-      
       if (ship.length === ship.damage) {
-        sinking = true;
+        return true;
+      } else {
+        return false;
       }
-      
-      return sinking;
     };
 
     return {
@@ -585,7 +583,7 @@ function gameBoard() {
     }
 
     const info = gameInfo();
-    const shipTypes = ['submarine', 'destroyer', 'cruiser', 'battleship'];
+    const shipType = ['submarine', 'destroyer', 'cruiser', 'battleship'];
 
     if (result === 'hit') {
       if (playerNo === 2) {
@@ -595,9 +593,9 @@ function gameBoard() {
       }
     } else if (result === 'sunk') {
       if (playerNo === 2) {
-        info.updateMessage('Got ' + shipTypes[length - 1] + '!');
+        info.updateMessage('Got ' + shipType[length - 1] + '!');
       } else {
-        info.updateMessage('Lost ' + shipTypes[length - 1] + '!');
+        info.updateMessage('Lost ' + shipType[length - 1] + '!');
       }
     }
     
@@ -730,6 +728,9 @@ function gameBoard() {
           } else if (board[i][j] === 'D') {
             squareTwo.classList.add('hit-two');
             squareTwo.classList.add('sunk-two');
+          } else if (board[i][j] === 'S') {
+            squareTwo.classList.add('ship');
+            squareTwo.setAttribute('draggable', 'false');
           }
         } else {
           if (board[i][j] === 'S') {
@@ -837,7 +838,7 @@ function gameBoard() {
       setTimeout(() => {
         roundBoard.classList.remove('display-round');
         roundBoard.classList.add('erase-round');
-      }, 1250);
+      }, 1500);
 
       boardContainerOne.classList.remove('deploy-section');
 
@@ -1006,6 +1007,7 @@ function gameInfo(cs, cv) {
   const displayResult = (playerNo, waitRender, list) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
+    const sunkCounter = list.reduce((acc, curr, i) => acc + curr.isSunk(list[i]), 0);
     let resultHTML = '';
 
     if (playerNo === 1) {
@@ -1038,7 +1040,12 @@ function gameInfo(cs, cv) {
       `;
       
       setTimeout(() => {
-        updateMessage('You win!');
+        if (sunkCounter === 0) {
+          updateMessage('You win! Perfect');
+        } else {
+          updateMessage('You win!');
+        }
+        
         boardContainerOne.innerHTML = resultHTML;
         const totalBonus = getTotalBonus(list);
         waitRender(totalBonus);
