@@ -21,6 +21,7 @@
   --text-theme: #eee;
   --text-shadow-theme: #555;
   --black-text-theme: #222;
+  --white-text-theme: aliceblue;
   --transparent-theme: #0000;
   --star-theme: gold;
   --emblem-theme: #222;
@@ -51,6 +52,10 @@
 body {
   height: 100vh;
   background-image: linear-gradient(var(--light-background-theme), var(--background-theme));
+}
+
+ul {
+  list-style-type: none;
 }
 
 button {
@@ -84,7 +89,7 @@ button {
 
 h2 {
   font-size: 2.3rem;
-  color: var(--square-theme);
+  color: var(--white-text-theme);
 }
 
 .victory-container h2 {
@@ -96,11 +101,11 @@ h2 {
    margin-bottom: 1.6rem;
 }
 
-.victory-container div,
-.defeat-container div,
-.finish-container div {
+.victory-container p,
+.defeat-container p,
+.finish-container p {
   font-size: 1.6rem;
-  color: var(--square-theme);
+  color: var(--white-text-theme);
 }
 
 .alive-bonus {
@@ -116,7 +121,7 @@ h2 {
 .total-bonus-row {
   margin-top: 0.32rem;
   padding-top: 0.68rem;
-  border-top: 0.4rem dotted var(--square-theme);
+  border-top: 0.4rem dotted var(--white-text-theme);
 }
 
 .rank-board {
@@ -156,7 +161,7 @@ h2 {
   background-color: var(--wrapper-theme);
 }
 
-h1 {
+header {
   display: flex;
   justify-content: center;
   gap: 1.2rem;
@@ -206,6 +211,15 @@ h1 {
   filter: invert(82%) sepia(27%) saturate(3145%) hue-rotate(360deg) brightness(107%) contrast(103%);
 }
 
+.info-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+}
+
 .victory-row {
   display: flex;
   justify-content: space-between;
@@ -217,7 +231,6 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 1.5rem;
 }
 
 .star {
@@ -229,6 +242,7 @@ h1 {
 .current-victory-board,
 .highest-victory-board {
   color: var(--text-theme);
+  font-size: 1.5rem;
 }
 
 .score-board-row {
@@ -299,6 +313,15 @@ h1 {
   background-image: linear-gradient(var(--play-btn-theme));
 }
 
+.board-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+}
+
 .column-marker {
   display: flex;
   gap: 2.36rem;
@@ -317,12 +340,12 @@ h1 {
   margin: 1rem 1.4rem 0 -2.6rem;
 }
 
-.marker-top div {
+.marker-top li {
   font-size: 1.6rem;
   color: var(--text-theme);
 }
 
-.marker-bottom div {
+.marker-bottom li {
   font-size: 1.6rem;
 }
 
@@ -467,20 +490,20 @@ h1 {
   cursor: default;
 }
 
-footer {
+.link-section {
   margin-top: -4.8rem;
 }
 
-.footer-link {
+.admin-link {
   color: var(--enemy-square-theme);
   text-decoration: none;
   font-size: 1.3rem;
 }
 
-.initial-footer-link {
+.initial-admin-link {
   color: var(--wrapper-theme);
 }
 
-.footer-link:hover {
+.admin-link:hover {
   color: var(--target-theme);
 }

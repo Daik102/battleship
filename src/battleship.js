@@ -820,9 +820,9 @@ function gameBoard() {
         column.classList.remove('dark');
       });
 
-      const footerLink = document.querySelector('.footer-link');
-      footerLink.classList.add('initial-footer-link');
-      footerLink.classList.remove('dark');
+      const adminLink = document.querySelector('.admin-link');
+      adminLink.classList.add('initial-admin-link');
+      adminLink.classList.remove('dark');
     }
 
     if (currentVictory || currentVictory === 0) {
@@ -854,8 +854,8 @@ function gameBoard() {
         column.classList.remove('initial-line');
       });
 
-      const footerLink = document.querySelector('.footer-link');
-      footerLink.classList.remove('initial-footer-link');
+      const adminLink = document.querySelector('.admin-link');
+      adminLink.classList.remove('initial-admin-link');
     }
   };
   
@@ -1014,26 +1014,26 @@ function gameInfo(cs, cv) {
       resultHTML = `
         <div class="victory-container">
           <h2>Mission Complete</h2>
-          <div class="alive-bonus">- Alive Bonus -</div>
+          <p class="alive-bonus">- Alive Bonus -</p>
           <div class="bonus-row">
-            <div>Battleship</div>
-            <div class="bonus-score-board"></div>
+            <p>Battleship</p>
+            <p class="bonus-score-board"></p>
           </div>
           <div class="bonus-row">
-            <div>Cruiser</div>
-            <div class="bonus-score-board"></div>
+            <p>Cruiser</p>
+            <p class="bonus-score-board"></p>
           </div>
           <div class="bonus-row">
-            <div>Destroyer</div>
-            <div class="bonus-score-board"></div>
+            <p>Destroyer</p>
+            <p class="bonus-score-board"></p>
           </div>
           <div class="bonus-row">
-            <div>Submarine</div>
-            <div class="bonus-score-board"></div>
+            <p>Submarine</p>
+            <p class="bonus-score-board"></p>
           </div>
           <div class="bonus-row total-bonus-row">
-            <div>Total Bonus</div>
-            <div class="total-bonus-score-board"></div>
+            <p>Total Bonus</p>
+            <p class="total-bonus-score-board"></p>
           </div>
           <button type="button" class="move-on-btn">Move on</button>
         </div>
@@ -1056,11 +1056,11 @@ function gameInfo(cs, cv) {
       resultHTML = `
         <div class="defeat-container">
           <h2>Mission failed</h2>
-          <div>- Battle Result -</div>
-          <div class="final-victory-board"></div>
-          <div>Your rank:</div>
-          <div class="rank-board"></div>
-          <div class="comment">Good luck next time.</div>
+          <p>- Battle Result -</p>
+          <p class="final-victory-board"></p>
+          <p>Your rank:</p>
+          <p class="rank-board"></p>
+          <p class="comment">Good luck next time.</p>
           <button type="button" class="try-again-btn">Try again</button>
         </div>
       `;
@@ -1080,8 +1080,8 @@ function gameInfo(cs, cv) {
           column.classList.add('dark');
         });
 
-        const footerLink = document.querySelector('.footer-link');
-        footerLink.classList.add('dark');
+        const adminLink = document.querySelector('.admin-link');
+        adminLink.classList.add('dark');
         boardContainerOne.innerHTML = resultHTML;
 
         const rankList = ['Seaman', 'Petty Officer', 'Chief Petty Officer', 'Ensign', 'Lieutenant Jr. Grade', 'Lieutenant', 'Lieutenant Commander', 'Commander', 'Captain', 'Rear Admiral', 'Vice Admiral'];
@@ -1103,11 +1103,11 @@ function gameInfo(cs, cv) {
       resultHTML = `
         <div class="finish-container">
           <h2>Congratulations!</h2>
-          <div>- Battle Result -</div>
-          <div>20 wins</div>
-          <div>Your rank:</div>
-          <div class="rank-board">Admiral</div>
-          <div class="comment">Honor your achievement!</div>
+          <p>- Battle Result -</p>
+          <p>20 wins</p>
+          <p>Your rank:</p>
+          <p class="rank-board">Admiral</p>
+          <p class="comment">Honor your achievement!</p>
           <button type="button" class="finale-btn">Finale</button>
         </div>
       `;
