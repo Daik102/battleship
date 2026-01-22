@@ -336,7 +336,7 @@ function gameBoard() {
     if (!startTarget.classList.contains('ship')) {
       return;
     }
-      
+    
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
       
@@ -346,7 +346,7 @@ function gameBoard() {
         const coordinateY = coordinates[1];
         const startX = Number(startTarget.getAttribute('x'));
         const startY = Number(startTarget.getAttribute('Y'));
-
+        
         if (coordinateX === startX && coordinateY === startY) {
           const direction = ship.direction;
           const bow = ship.coordinates[0];
@@ -373,6 +373,8 @@ function gameBoard() {
           } else {
             renderBoard();
           }
+
+          return cannotMove;
         }
       }
     }
@@ -423,7 +425,7 @@ function gameBoard() {
         return;
       }
 
-      square.addEventListener('mouseenter', () => {
+      function getFocus() {
         const x = Number(square.getAttribute('x'));
         const y = Number(square.getAttribute('y'));
         const boardSquare = otherBoard[x][y];
@@ -446,9 +448,9 @@ function gameBoard() {
 
         square.classList.add('target');
         square.classList.add('on-target');
-      });
+      }
 
-      square.addEventListener('mouseleave', () => {
+      function loseFocus() {
         const x = Number(square.getAttribute('x'));
         const y = Number(square.getAttribute('y'));
         
@@ -466,7 +468,12 @@ function gameBoard() {
         
         square.classList.remove('target');
         square.classList.remove('on-target');
-      });
+      }
+
+      square.addEventListener('mouseenter', () => getFocus());
+      square.addEventListener('focus', () => getFocus());
+      square.addEventListener('mouseleave', () => loseFocus());
+      square.addEventListener('blur', () => loseFocus());
     });
   };
 
@@ -682,6 +689,17 @@ function gameBoard() {
   
   const getBoard = () => board;
 
+  const addTabIndex = (list) => {
+    for (let i = 0; i < list.length; i++) {
+      const bow = list[i].coordinates[0];
+      const bowX = bow[0];
+      const bowY = bow[1];
+      const index = bowX * row + bowY;
+      const squareOnes = document.querySelectorAll('.square-one');
+      squareOnes[index].setAttribute('tabindex', '0');
+    }
+  };
+
   const renderBoard = (playerNo, otherBoard, sunkCoordinates, currentVictory) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
@@ -719,15 +737,21 @@ function gameBoard() {
             squareOne.setAttribute('draggable', 'false');
           }
 
+          squareTwo.setAttribute('tabindex', '0');
+
           if (board[i][j] === 1) {
             squareTwo.classList.add('miss-two');
+            squareTwo.removeAttribute('tabindex', '0');
           } else if (board[i][j] === 2) {
             squareTwo.classList.add('splash-two');
+            squareTwo.removeAttribute('tabindex', '0');
           } else if (board[i][j] === 'X') {
             squareTwo.classList.add('hit-two');
+            squareTwo.removeAttribute('tabindex', '0');
           } else if (board[i][j] === 'D') {
             squareTwo.classList.add('hit-two');
             squareTwo.classList.add('sunk-two');
+            squareTwo.removeAttribute('tabindex', '0');
           }
         } else {
           if (board[i][j] === 'S') {
@@ -754,15 +778,21 @@ function gameBoard() {
               squareOne.classList.add('sunk-one');
             }
 
+            squareTwo.setAttribute('tabindex', '0');
+
             if (otherBoard[i][j] === 1) {
               squareTwo.classList.add('miss-two');
+              squareTwo.removeAttribute('tabindex', '0');
             } else if (otherBoard[i][j] === 2) {
               squareTwo.classList.add('splash-two');
+              squareTwo.removeAttribute('tabindex', '0');
             } else if (otherBoard[i][j] === 'X') {
               squareTwo.classList.add('hit-two');
+              squareTwo.removeAttribute('tabindex', '0');
             } else if (otherBoard[i][j] === 'D') {
               squareTwo.classList.add('hit-two');
               squareTwo.classList.add('sunk-two');
+              squareTwo.removeAttribute('tabindex', '0');
             }
           }
         }
@@ -869,6 +899,7 @@ function gameBoard() {
     getComputerMove,
     checkTheWinner,
     getBoard,
+    addTabIndex,
     renderBoard,
   };
 }

@@ -31,6 +31,7 @@ function setUpGame(initial) {
   playerOne.info.updateMessage('deploy');
   playerOne.info.updateBtn();
   playerOne.board.renderBoard();
+  playerOne.board.addTabIndex(playerOne.list.getList());
 }
 
 setUpGame('initial');
@@ -46,6 +47,7 @@ randomBtn.addEventListener('click', () => {
   if (currentTurn === 0) {
     playerOne.board.deployRandom(playerOne.list.getList());
     playerOne.board.renderBoard();
+    playerOne.board.addTabIndex(playerOne.list.getList());
   } else if (currentTurn === 1) {
     playerOne.info.updateRecords('reset');
     setUpGame();
@@ -102,18 +104,30 @@ boardContainerOne.addEventListener('mouseover', () => {
   });
 });
 
-boardContainerOne.addEventListener('click', (e) => {
-  const currentTurn = playerOne.info.getCurrentTurn();
+function sendLocationToRotateShip(e) {
+  if (e instanceof KeyboardEvent) {
+    if (e.key !== 'Enter' && e.key !==' ') {
+      return;
+    }
 
+    e.preventDefault();
+  }
+
+  const currentTurn = playerOne.info.getCurrentTurn();
+  
   if (currentTurn === 0) {
     const x = Number(e.target.getAttribute('x'));
     const y = Number(e.target.getAttribute('y'));
-
+  
     if (e.target.classList.contains('ship')) {
       playerOne.board.rotateShip(x, y, playerOne.list.getList());
+      playerOne.board.addTabIndex(playerOne.list.getList());
     }
   }
-});
+}
+
+boardContainerOne.addEventListener('click', (e) => sendLocationToRotateShip(e));
+boardContainerOne.addEventListener('keydown', (e) => sendLocationToRotateShip(e));
 
 boardContainerOne.addEventListener('dragstart', (e) => {
   playerOne.board.setMoveLocation(e.target);
@@ -129,6 +143,77 @@ boardContainerOne.addEventListener('dragover', (e) => {
 
 boardContainerOne.addEventListener('drop', (e) => {
   playerOne.board.setMoveLocation(e.target, playerOne.list.getList());
+  playerOne.board.addTabIndex(playerOne.list.getList());
+});
+
+let focusIndex;
+
+document.addEventListener('keydown', (e) => {
+  const squareOnes = document.querySelectorAll('.square-one');
+
+  squareOnes.forEach((squareOne, i) => {
+    if (squareOne.addEventListener('focus', () => {
+      focusIndex = i;
+    }));
+  });
+
+  if (focusIndex !== undefined) {
+    const row = 8;
+    const column = 8;
+    const list = playerOne.list.getList();
+    let length = 1;
+    let cannotMove;
+
+    for (let i = 0; i < list.length; i++) {
+      const coordinates = list[i].coordinates[0];
+      const coordinateX = coordinates[0];
+      const coordinateY = coordinates[1];
+      const squareX = Number(squareOnes[focusIndex].getAttribute('x'));
+      const squareY = Number(squareOnes[focusIndex].getAttribute('y'));
+      const direction = list[i].direction;
+
+      if (coordinateX === squareX && coordinateY === squareY) {
+        if (direction === 'horizontal') {
+          length = list[i].length;
+        }
+      }
+    }
+    
+    if (e.key === 'ArrowRight' && focusIndex % column + length + 1 <= column) {
+      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
+      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex + 1], playerOne.list.getList());
+
+      if (!cannotMove) {
+        playerOne.board.addTabIndex(playerOne.list.getList());
+        focusIndex += 1;
+      }
+    } else if (e.key === 'ArrowLeft' && focusIndex % column !== 0) {
+      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
+      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex - 1], playerOne.list.getList());
+
+      if (!cannotMove) {
+        playerOne.board.addTabIndex(playerOne.list.getList());
+        focusIndex -= 1;
+      }
+    } else if (e.key === 'ArrowDown' && focusIndex + row <= squareOnes.length - 1) {
+      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
+      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex + row], playerOne.list.getList());
+
+      if (!cannotMove) {
+        playerOne.board.addTabIndex(playerOne.list.getList());
+        focusIndex += row;
+      }
+    }  else if (e.key === 'ArrowUp' && focusIndex - row >= 0) {
+      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
+      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex - row], playerOne.list.getList());
+
+      if (!cannotMove) {
+        playerOne.board.addTabIndex(playerOne.list.getList());
+        focusIndex -= row;
+      }
+    }
+    console.log(focusIndex);
+  }
 });
 
 playBtn.addEventListener('mouseenter', () => {
@@ -161,10 +246,82 @@ playBtn.addEventListener('click', () => {
   }
 });
 
-boardContainerTwo.addEventListener('click', (e) => {
+let squareIndex = 0;
+let pressingShift;
+
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'Shift') {
+    pressingShift = false;
+  }
+});
+
+document.addEventListener('keydown', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
   
   if (currentTurn === 1) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+    }
+
+    if (e.key === 'Shift') {
+      pressingShift = true;
+      return;
+    }
+
+    const squareTwos = document.querySelectorAll('.square-two');
+    const row = 8;
+    const column = 8;
+
+    function moveSquare() {
+      if (e.key === 'ArrowRight') {
+        squareIndex += 1;
+      } else if (e.key === 'ArrowLeft') {
+        squareIndex -= 1;
+      } else if (e.key === 'ArrowDown') {
+        squareIndex += row;
+      } else if (e.key === 'ArrowUp') {
+        squareIndex -= row;
+      } else if (e.key === 'Tab') {
+        if (pressingShift) {
+          squareIndex -= 1;
+        } else {
+          squareIndex += 1;
+        }
+      } 
+
+      if (squareIndex >= squareTwos.length) {
+        squareIndex -= squareTwos.length;
+      } else if (squareIndex <= -1) {
+        squareIndex += squareTwos.length;
+      }
+    }
+
+    moveSquare();
+
+    const board = playerTwo.board.getBoard();
+    const i = Math.floor(squareIndex / row);
+    const j = squareIndex % column;
+
+    if (board[i][j] !== 0 && board[i][j] !== 'S') {
+      moveSquare();
+    }
+    console.log(squareIndex);
+    squareTwos[squareIndex].focus();
+  }
+});
+
+function handleGame(e) {
+  const currentTurn = playerOne.info.getCurrentTurn();
+  
+  if (currentTurn === 1) {
+    if (e instanceof KeyboardEvent) {
+      if (e.key !== 'Enter' && e.key !==' ') {
+        return;
+      }
+
+      e.preventDefault();
+    }
+
     const x = Number(e.target.getAttribute('x'));
     const y = Number(e.target.getAttribute('y'));
 
@@ -188,6 +345,7 @@ boardContainerTwo.addEventListener('click', (e) => {
           playerOne.info.rotateEmblem();
           
           const moveOnBtn = document.querySelector('.move-on-btn');
+          moveOnBtn.focus();
 
           moveOnBtn.addEventListener('click', () => {
             boardContainerOne.classList.remove('erase-board', 'display-board');
@@ -200,6 +358,7 @@ boardContainerTwo.addEventListener('click', (e) => {
               playerOne.info.updateRecords();
 
               const finaleBtn = document.querySelector('.finale-btn');
+              finaleBtn.focus();
 
               finaleBtn.addEventListener('click', () => {
                 playerOne.info.rotateEmblem();
@@ -228,6 +387,7 @@ boardContainerTwo.addEventListener('click', (e) => {
           // Callback for setTimeout.
           function waitRender() {
             const tryAgainBtn = document.querySelector('.try-again-btn');
+            tryAgainBtn.focus();
             
             tryAgainBtn.addEventListener('click', () => {
               playerOne.info.updateRecords('reset');
@@ -242,4 +402,7 @@ boardContainerTwo.addEventListener('click', (e) => {
       }
     }
   }
-});
+}
+
+boardContainerTwo.addEventListener('click', (e) => handleGame(e));
+boardContainerTwo.addEventListener('keydown', (e) => handleGame(e));
