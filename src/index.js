@@ -40,12 +40,15 @@ const randomBtn = document.querySelector('.random-btn');
 const playBtn = document.querySelector('.play-btn');
 const boardContainerOne = document.querySelector('.board-container-one');
 const boardContainerTwo = document.querySelector('.board-container-two');
+const adminLink = document.querySelector('.admin-link');
 
 function randomOrReset(e) {
   if (e instanceof KeyboardEvent) {
     if (e.key !== 'Enter' && e.key !== ' ') {
       return;
     }
+
+    e.preventDefault();
   }
   
   const currentTurn = playerOne.info.getCurrentTurn();
@@ -61,65 +64,22 @@ function randomOrReset(e) {
 }
 
 randomBtn.addEventListener('click', () => randomOrReset());
-randomBtn.addEventListener('keydown', (e) => randomOrReset(e))
+randomBtn.addEventListener('keydown', (e) => randomOrReset(e));
 
+// Change the ship's color when hovering.
 boardContainerOne.addEventListener('mouseover', () => {
-  const squares = document.querySelectorAll('.square-one');
+  const currentTurn = playerOne.info.getCurrentTurn();
 
-  squares.forEach((square) => {
-    const currentTurn = playerOne.info.getCurrentTurn();
-
-    if (currentTurn !== 0) {
-      return;
-    }
-
-    const coordinatesIndexArray = [];
-
-    square.addEventListener('mouseenter', (e) => {
-      if (e.target.classList.contains('ship')) {
-        const x = Number(e.target.getAttribute('x'));
-        const y = Number(e.target.getAttribute('y'));
-        const list = playerOne.list.getList();
-        
-        for (let i = 0; i < list.length; i++) {
-          const ship = list[i];
-          
-          for (let j = 0; j < ship.length; j++) {
-            const coordinates = ship.coordinates[j];
-            const coordinateX = coordinates[0];
-            const coordinateY = coordinates[1];
-
-            if (x === coordinateX && y === coordinateY) {
-              for (let k = 0; k < ship.length; k++) {
-                const coordinates = ship.coordinates[k];
-                const coordinateX = coordinates[0];
-                const coordinateY = coordinates[1];
-                const coordinatesIndex = coordinateX * 8 + coordinateY;
-                coordinatesIndexArray.push(coordinatesIndex);
-                squares[coordinatesIndex].classList.add('ship-hover');
-              }
-            }
-          }
-        }
-      }
-    });
-
-    square.addEventListener('mouseleave', () => {
-      for (let i = 0; i < coordinatesIndexArray.length; i++) {
-        const index = coordinatesIndexArray[i];
-        squares[index].classList.remove('ship-hover');
-      }
-    });
-  });
+  if (currentTurn === 0) {
+    playerOne.board.hoverShip(playerOne.list.getList());
+  }
 });
 
-function sendLocationToRotateShip(e) {
+function sendLocationToRotate(e) {
   if (e instanceof KeyboardEvent) {
     if (e.key !== 'Enter' && e.key !== ' ') {
       return;
     }
-
-    e.preventDefault();
   }
 
   const currentTurn = playerOne.info.getCurrentTurn();
@@ -135,8 +95,8 @@ function sendLocationToRotateShip(e) {
   }
 }
 
-boardContainerOne.addEventListener('click', (e) => sendLocationToRotateShip(e));
-boardContainerOne.addEventListener('keydown', (e) => sendLocationToRotateShip(e));
+boardContainerOne.addEventListener('click', (e) => sendLocationToRotate(e));
+boardContainerOne.addEventListener('keydown', (e) => sendLocationToRotate(e));
 
 boardContainerOne.addEventListener('dragstart', (e) => {
   playerOne.board.setMoveLocation(e.target);
@@ -155,78 +115,11 @@ boardContainerOne.addEventListener('drop', (e) => {
   playerOne.board.addTabIndex(playerOne.list.getList());
 });
 
-let focusIndex;
-
 document.addEventListener('keydown', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
 
-  if (currentTurn !== 0) {
-    return;
-  }
-
-  const squareOnes = document.querySelectorAll('.square-one');
-
-  squareOnes.forEach((squareOne, i) => {
-    if (squareOne.addEventListener('focus', () => {
-      focusIndex = i;
-    }));
-  });
-
-  if (focusIndex !== undefined) {
-    const row = 8;
-    const column = 8;
-    const list = playerOne.list.getList();
-    let length = 1;
-    let cannotMove;
-
-    for (let i = 0; i < list.length; i++) {
-      const coordinates = list[i].coordinates[0];
-      const coordinateX = coordinates[0];
-      const coordinateY = coordinates[1];
-      const squareX = Number(squareOnes[focusIndex].getAttribute('x'));
-      const squareY = Number(squareOnes[focusIndex].getAttribute('y'));
-      const direction = list[i].direction;
-
-      if (coordinateX === squareX && coordinateY === squareY) {
-        if (direction === 'horizontal') {
-          length = list[i].length;
-        }
-      }
-    }
-    
-    if (e.key === 'ArrowRight' && focusIndex % column + length + 1 <= column) {
-      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
-      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex + 1], playerOne.list.getList());
-
-      if (!cannotMove) {
-        playerOne.board.addTabIndex(playerOne.list.getList());
-        focusIndex += 1;
-      }
-    } else if (e.key === 'ArrowLeft' && focusIndex % column !== 0) {
-      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
-      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex - 1], playerOne.list.getList());
-
-      if (!cannotMove) {
-        playerOne.board.addTabIndex(playerOne.list.getList());
-        focusIndex -= 1;
-      }
-    } else if (e.key === 'ArrowDown' && focusIndex + row <= squareOnes.length - 1) {
-      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
-      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex + row], playerOne.list.getList());
-
-      if (!cannotMove) {
-        playerOne.board.addTabIndex(playerOne.list.getList());
-        focusIndex += row;
-      }
-    }  else if (e.key === 'ArrowUp' && focusIndex - row >= 0) {
-      playerOne.board.setMoveLocation(squareOnes[focusIndex]);
-      cannotMove = playerOne.board.setMoveLocation(squareOnes[focusIndex - row], playerOne.list.getList());
-
-      if (!cannotMove) {
-        playerOne.board.addTabIndex(playerOne.list.getList());
-        focusIndex -= row;
-      }
-    }
+  if (currentTurn === 0) {
+    playerOne.board.moveWithArrowKey(e, playerOne.list.getList());
   }
 });
 
@@ -260,50 +153,12 @@ playBtn.addEventListener('click', () => {
   }
 });
 
-let squareIndex = 0;
-
+// Move focus with arrow key.
 document.addEventListener('keydown', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
   
   if (currentTurn === 1 && e.key !== 'Tab') {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      e.preventDefault();
-    }
-
-    
-    const squareTwos = document.querySelectorAll('.square-two');
-    const row = 8;
-    const column = 8;
-
-    function moveSquare() {
-      if (e.key === 'ArrowRight') {
-        squareIndex += 1;
-      } else if (e.key === 'ArrowLeft') {
-        squareIndex -= 1;
-      } else if (e.key === 'ArrowDown') {
-        squareIndex += row;
-      } else if (e.key === 'ArrowUp') {
-        squareIndex -= row;
-      }
-
-      if (squareIndex >= squareTwos.length) {
-        squareIndex -= squareTwos.length;
-      } else if (squareIndex <= -1) {
-        squareIndex += squareTwos.length;
-      }
-    }
-
-    moveSquare();
-
-    const board = playerTwo.board.getBoard();
-    const i = Math.floor(squareIndex / row);
-    const j = squareIndex % column;
-
-    if (board[i][j] !== 0 && board[i][j] !== 'S') {
-      moveSquare();
-    }
-    
-    squareTwos[squareIndex].focus();
+    playerOne.board.focusWithArrowKey(e, playerTwo.board.getBoard());
   }
 });
 
@@ -341,17 +196,12 @@ function handleGame(e) {
           
           const moveOnBtn = document.querySelector('.move-on-btn');
           moveOnBtn.focus();
-          let done;
 
           function moveOn(e) {
-            if (done) {
-              return;
-            }
-
-            done = true;
-
-            if (e.key !== 'Enter' && e.key !==' ') {
-              return;
+            if (e instanceof KeyboardEvent) {
+              if (e.key !== 'Enter' && e.key !==' ') {
+                return;
+              }
             }
             
             boardContainerOne.classList.remove('erase-board', 'display-board');
@@ -359,23 +209,18 @@ function handleGame(e) {
             const records = playerOne.info.getRecords();
             const currentVictory = records[1];
             
-            if (currentVictory === 1) {
+            if (currentVictory === 20) {
               playerOne.info.displayResult('finish');
               playerOne.info.updateRecords();
 
               const finaleBtn = document.querySelector('.finale-btn');
               finaleBtn.focus();
-              let done;
 
               function finale(e) {
-                if (done) {
-                  return;
-                }
-
-                done = true;
-
-                if (e.key !== 'Enter' && e.key !==' ') {
-                  return;
+                if (e instanceof KeyboardEvent) {
+                  if (e.key !== 'Enter' && e.key !==' ') {
+                    return;
+                  }
                 }
 
                 playerOne.info.rotateEmblem();
@@ -411,17 +256,12 @@ function handleGame(e) {
           function waitRender() {
             const tryAgainBtn = document.querySelector('.try-again-btn');
             tryAgainBtn.focus();
-            let done;
 
             function tryAgain(e) {
-              if (done) {
-                return;
-              }
-
-              done = true;
-
-              if (e.key !== 'Enter' && e.key !==' ') {
-                return;
+              if (e instanceof KeyboardEvent) {
+                if (e.key !== 'Enter' && e.key !==' ') {
+                  return;
+                }
               }
 
               playerOne.info.updateRecords('reset');
@@ -436,6 +276,10 @@ function handleGame(e) {
           playerOne.info.setCurrentTurn(1);
           playerOne.info.updateMessage('Your turn');
           playerOne.board.markupTarget(playerTwo.board.getBoard());
+
+          if (e instanceof KeyboardEvent) {
+            playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard());
+          }
         }
       }
     }
@@ -445,7 +289,6 @@ function handleGame(e) {
 boardContainerTwo.addEventListener('click', (e) => handleGame(e));
 boardContainerTwo.addEventListener('keydown', (e) => handleGame(e));
 
-const adminLink = document.querySelector('.admin-link');
 adminLink.addEventListener('keydown', (e) => {
   if (e.key !== 'Enter' && e.key !==' ') {
     return;

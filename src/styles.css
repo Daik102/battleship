@@ -40,7 +40,7 @@
   --splash-one-theme: rgba(240, 248, 255, 0.5);
   --miss-two-theme: rgba(0, 225, 135, 0.75);
   --splash-two-theme: rgba(0, 225, 135, 0.45);
-  --round-board-theme: rgba(51, 51, 51, 0.8);
+  --round-board-theme: rgba(51, 51, 51, 0.75);
   --target-theme: gold;
   --random-btn-theme: yellow;
   --random-btn-dark-theme: #cdcd00;
@@ -393,13 +393,13 @@ header {
   background-color: var(--enemy-square-theme);
 }
 
-.square-one:focus {
-  outline: none;
-  background-color: var(--ship-focus-theme);
-}
-
+.square-one:focus,
 .square-two:focus {
   outline: none;
+}
+
+.square-one:focus {
+  background-color: var(--ship-focus-theme);
 }
 
 .ship {
@@ -409,10 +409,11 @@ header {
 
 .ship-hover {
   background-color: var(--ship-hover-theme);
+  border: none;
 }
 
 .caution {
-  background-color: var(--cannot-do-theme);
+  background-color: var(--cannot-do-theme) !important;
   border: none;
 }
 
@@ -438,10 +439,6 @@ header {
   opacity: 0.85;
 }
 
-.sunk-one {
-  opacity: 0;
-}
-
 .hit-two {
   background-color: var(--transparent-theme);
   background-image: repeating-linear-gradient(var(--hit-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem), repeating-linear-gradient(90deg, var(--hit-two-theme) 0 0.3rem, var(--transparent-theme) 0 0.6rem);
@@ -449,6 +446,7 @@ header {
   opacity: 0.85;
 }
 
+.sunk-one,
 .sunk-two {
   opacity: 0;
 }

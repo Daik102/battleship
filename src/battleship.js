@@ -80,7 +80,7 @@ function gameBoard() {
   const row = 8;
   const column = 8;
   let board = Array.from({ length: row }, () => Array(column).fill(0));
-  
+
   const deployBoard = (list) => {
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
@@ -100,6 +100,49 @@ function gameBoard() {
     }
     // For testing.
     return board;
+  };
+
+  const hoverShip = (list) => {
+    const squareOnes = document.querySelectorAll('.square-one');
+
+    squareOnes.forEach((squareOne) => {
+      const coordinatesIndexArray = [];
+
+      squareOne.addEventListener('mouseenter', (e) => {
+        if (e.target.classList.contains('ship')) {
+          const x = Number(e.target.getAttribute('x'));
+          const y = Number(e.target.getAttribute('y'));
+          
+          for (let i = 0; i < list.length; i++) {
+            const ship = list[i];
+            
+            for (let j = 0; j < ship.length; j++) {
+              const coordinates = ship.coordinates[j];
+              const coordinateX = coordinates[0];
+              const coordinateY = coordinates[1];
+
+              if (x === coordinateX && y === coordinateY) {
+                for (let k = 0; k < ship.length; k++) {
+                  const coordinates = ship.coordinates[k];
+                  const coordinateX = coordinates[0];
+                  const coordinateY = coordinates[1];
+                  const coordinatesIndex = coordinateX * column + coordinateY;
+                  coordinatesIndexArray.push(coordinatesIndex);
+                  squareOnes[coordinatesIndex].classList.add('ship-hover');
+                }
+              }
+            }
+          }
+        }
+      });
+
+      squareOne.addEventListener('mouseleave', () => {
+        for (let i = 0; i < coordinatesIndexArray.length; i++) {
+          const index = coordinatesIndexArray[i];
+          squareOnes[index].classList.remove('ship-hover');
+        }
+      });
+    });
   };
 
   const rotateShip = (x, y, list) => {
@@ -380,6 +423,68 @@ function gameBoard() {
     }
   };
 
+  let focusIndex = -1;
+
+  const moveWithArrowKey = (e, list) => {
+    const playBtn = document.querySelector('.play-btn');
+    const adminLink = document.querySelector('.admin-link');
+
+    playBtn.addEventListener('focus', () => {
+      focusIndex = -1;
+    });
+
+    adminLink.addEventListener('focus', () => {
+      focusIndex = -1;
+    });
+
+    const squareOnes = document.querySelectorAll('.square-one');
+
+    squareOnes.forEach((squareOne, i) => {
+      squareOne.addEventListener('focus', () => {
+        focusIndex = i;
+      });
+    });
+
+    if (focusIndex >= 0) {
+      let length = 1;
+      let cannotMove;
+
+      for (let i = 0; i < list.length; i++) {
+        const ship = list[i];
+        const coordinates = ship.coordinates[0];
+        const coordinateX = coordinates[0];
+        const coordinateY = coordinates[1];
+        const squareX = Number(squareOnes[focusIndex].getAttribute('x'));
+        const squareY = Number(squareOnes[focusIndex].getAttribute('y'));
+        const direction = ship.direction;
+        
+        if (coordinateX === squareX && coordinateY === squareY && direction === 'horizontal') {
+          length = ship.length;
+        }
+      }
+
+      function sendLocationToMove(adjustmentNum) {
+        setMoveLocation(squareOnes[focusIndex]);
+        cannotMove = setMoveLocation(squareOnes[focusIndex + adjustmentNum], list);
+
+        if (!cannotMove) {
+          addTabIndex(list);
+          focusIndex += adjustmentNum;
+        }
+      }
+      
+      if (e.key === 'ArrowRight' && focusIndex % column + length + 1 <= column) {
+        sendLocationToMove(1);
+      } else if (e.key === 'ArrowLeft' && focusIndex % column !== 0) {
+        sendLocationToMove(-1);
+      } else if (e.key === 'ArrowDown' && focusIndex + column <= squareOnes.length - 1) {
+        sendLocationToMove(column);
+      }  else if (e.key === 'ArrowUp' && focusIndex - column >= 0) {
+        sendLocationToMove(-column);
+      }
+    }
+  };
+
   const deployRandom = (list) => {
     board = Array.from({ length: row }, () => Array(column).fill(0));
 
@@ -475,6 +580,56 @@ function gameBoard() {
       square.addEventListener('mouseleave', () => loseFocus());
       square.addEventListener('blur', () => loseFocus());
     });
+  };
+
+  let squareIndex = -1;
+
+  const focusWithArrowKey = (e, board) => {
+    const squareTwos = document.querySelectorAll('.square-two');
+
+    function moveSquare() {
+      if (e.key === 'ArrowRight') {
+        squareIndex += 1;
+      } else if (e.key === 'ArrowLeft') {
+        squareIndex -= 1;
+      } else if (e.key === 'ArrowDown') {
+        squareIndex += column;
+      } else if (e.key === 'ArrowUp') {
+        squareIndex -= column;
+      } else if (!e) {
+        squareIndex += 1;
+      }
+
+      if (squareIndex >= squareTwos.length) {
+        squareIndex -= squareTwos.length;
+      } else if (squareIndex < 0) {
+        squareIndex += squareTwos.length;
+      }
+    }
+
+    if (squareIndex === -1) {
+      squareIndex = 0;
+    } else {
+      moveSquare();
+    }
+
+    let squareRow = Math.floor(squareIndex / column);
+    let squareColumn = squareIndex % column;
+
+    if (board[squareRow][squareColumn] !== 0 && board[squareRow][squareColumn] !== 'S') {
+      for (let i = 0; i < row * column - 1; i++) {
+        squareRow = Math.floor(squareIndex / column);
+        squareColumn = squareIndex % column;
+
+        if (board[squareRow][squareColumn] !== 0 && board[squareRow][squareColumn] !== 'S') {
+          moveSquare();
+        } else {
+          break;
+        }
+      }
+    }
+    
+    squareTwos[squareIndex].focus();
   };
 
   function splashOnBoard(x, y, ship) {
@@ -623,25 +778,25 @@ function gameBoard() {
         if (square === 'X') {
           if (board[i - 1]) {
             if (board[i - 1][j] === 0 || board[i - 1][j] === 'S') {
-              adjacentSquares.push((i - 1) * row + j);
+              adjacentSquares.push((i - 1) * column + j);
             }
           }
           
           if (board[i][j - 1] === 0 || board[i][j - 1] === 'S') {
-            adjacentSquares.push(i * row + j - 1);
+            adjacentSquares.push(i * column + j - 1);
           }
           
           if (board[i][j + 1] === 0 || board[i][j + 1] === 'S') {
-            adjacentSquares.push(i * row + j + 1);
+            adjacentSquares.push(i * column + j + 1);
           }
           
           if (board[i + 1]) {
             if (board[i + 1][j] === 0 || board[i + 1][j] === 'S') {
-              adjacentSquares.push((i + 1) * row + j);
+              adjacentSquares.push((i + 1) * column + j);
             }
           }
         } else if (square === 0 || square === 'S') {
-          const restSquare = i * row + j;
+          const restSquare = i * column + j;
           restSquares.push(restSquare);
         }
       }
@@ -655,7 +810,7 @@ function gameBoard() {
       targetSquare = adjacentSquares[randomIndex];
     }
 
-    const x = Math.floor(targetSquare / row);
+    const x = Math.floor(targetSquare / column);
     const y = targetSquare % column;
     
     setTimeout(() => {
@@ -694,7 +849,7 @@ function gameBoard() {
       const bow = list[i].coordinates[0];
       const bowX = bow[0];
       const bowY = bow[1];
-      const index = bowX * row + bowY;
+      const index = bowX * column + bowY;
       const squareOnes = document.querySelectorAll('.square-one');
       squareOnes[index].setAttribute('tabindex', '0');
     }
@@ -737,21 +892,17 @@ function gameBoard() {
             squareOne.setAttribute('draggable', 'false');
           }
 
-          squareTwo.setAttribute('tabindex', '0');
-
           if (board[i][j] === 1) {
             squareTwo.classList.add('miss-two');
-            squareTwo.removeAttribute('tabindex', '0');
           } else if (board[i][j] === 2) {
             squareTwo.classList.add('splash-two');
-            squareTwo.removeAttribute('tabindex', '0');
           } else if (board[i][j] === 'X') {
             squareTwo.classList.add('hit-two');
-            squareTwo.removeAttribute('tabindex', '0');
           } else if (board[i][j] === 'D') {
             squareTwo.classList.add('hit-two');
             squareTwo.classList.add('sunk-two');
-            squareTwo.removeAttribute('tabindex', '0');
+          } else {
+            squareTwo.setAttribute('tabindex', '0');
           }
         } else {
           if (board[i][j] === 'S') {
@@ -778,21 +929,17 @@ function gameBoard() {
               squareOne.classList.add('sunk-one');
             }
 
-            squareTwo.setAttribute('tabindex', '0');
-
             if (otherBoard[i][j] === 1) {
               squareTwo.classList.add('miss-two');
-              squareTwo.removeAttribute('tabindex', '0');
             } else if (otherBoard[i][j] === 2) {
               squareTwo.classList.add('splash-two');
-              squareTwo.removeAttribute('tabindex', '0');
             } else if (otherBoard[i][j] === 'X') {
               squareTwo.classList.add('hit-two');
-              squareTwo.removeAttribute('tabindex', '0');
             } else if (otherBoard[i][j] === 'D') {
               squareTwo.classList.add('hit-two');
               squareTwo.classList.add('sunk-two');
-              squareTwo.removeAttribute('tabindex', '0');
+            } else {
+              squareTwo.setAttribute('tabindex', '0');
             }
           }
         }
@@ -813,9 +960,9 @@ function gameBoard() {
         board[coordinateX][coordinateY] = 'D';
         
         if (playerNo === 2) {
-          squareTwos[coordinateX * row + coordinateY].classList.add('sunk-transition');
+          squareTwos[coordinateX * column + coordinateY].classList.add('sunk-transition');
         } else {
-          squareOnes[coordinateX * row + coordinateY].classList.add('sunk-transition');
+          squareOnes[coordinateX * column + coordinateY].classList.add('sunk-transition');
         }
       }
 
@@ -826,9 +973,9 @@ function gameBoard() {
           const coordinateY = coordinates[1];
 
           if (playerNo === 2) {
-            squareTwos[coordinateX * row + coordinateY].classList.add('sunk-two');
+            squareTwos[coordinateX * column + coordinateY].classList.add('sunk-two');
           } else {
-            squareOnes[coordinateX * row + coordinateY].classList.add('sunk-one');
+            squareOnes[coordinateX * column + coordinateY].classList.add('sunk-one');
           }
         }
       }, 500);
@@ -891,10 +1038,13 @@ function gameBoard() {
   
   return {
     deployBoard,
+    hoverShip,
     rotateShip,
     setMoveLocation,
+    moveWithArrowKey,
     deployRandom,
     markupTarget,
+    focusWithArrowKey,
     receiveAttack,
     getComputerMove,
     checkTheWinner,
@@ -963,14 +1113,16 @@ function gameInfo(cs, cv) {
         counter += 1;
 
         if (counter === 0) {
-          messageBoard.textContent = 'Deploy your fleet'
+          messageBoard.textContent = 'Deploy your fleet';
         } else if (counter === 1) {
-          messageBoard.textContent = 'Drag to move'
+          messageBoard.textContent = 'Drag to move';
         } else if (counter === 2) {
-          messageBoard.textContent = 'Click to rotate'
+          messageBoard.textContent = 'Click to rotate';
+        } else if (counter === 3) {
+          messageBoard.textContent = 'Keyboard usable';
         }
 
-        if (counter === 2) {
+        if (counter === 3) {
           counter = -1;
         }
       }, 2000);
