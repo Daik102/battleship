@@ -210,6 +210,14 @@ header {
   box-shadow: 0.2rem 0.2rem 0.4rem var(--text-shadow-theme);
 }
 
+.emblem-star {
+  margin-top: -1.26rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  background: url(./icons/star.svg) no-repeat;
+  filter: invert(82%) sepia(27%) saturate(3145%) hue-rotate(360deg) brightness(107%) contrast(103%);
+}
+
 .rotate-emblem {
   animation: rotate-emblem 1s;
 }
@@ -222,13 +230,6 @@ header {
   to {
     transform: rotate(1, 0, 0, 1turn);
   }
-}
-
-.emblem-star {
-  margin-top: -1.26rem;
-  width: 0.8rem;
-  height: 0.8rem;
-  filter: invert(82%) sepia(27%) saturate(3145%) hue-rotate(360deg) brightness(107%) contrast(103%);
 }
 
 .info-section {
