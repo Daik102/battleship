@@ -58,13 +58,73 @@ function randomOrReset(e) {
     playerOne.board.renderBoard();
     playerOne.board.addTabIndex(playerOne.list.getList());
   } else if (currentTurn === 1) {
-    playerOne.info.updateRecords('reset');
-    setUpGame();
+    playerOne.board.focusWithArrowKey('on');
+    playerOne.info.displayConfirmation();
+    const doResetBtn = document.querySelector('.do-reset-btn');
+    const cancelBtn = document.querySelector('.cancel-btn');
+
+    setTimeout(() => {
+      doResetBtn.focus();
+    },10);
+
+    function resetGame(e) {
+      if (e instanceof KeyboardEvent) {
+        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowRight') {
+          return;
+        }
+
+        if (e.key === 'ArrowRight') {
+          setTimeout(() => {
+            cancelBtn.focus();
+          },10);
+
+          return;
+        }
+      }
+
+      playerOne.board.focusWithArrowKey('off');
+      playerOne.info.updateRecords('reset');
+      setUpGame();
+    }
+
+    doResetBtn.addEventListener('click', () => resetGame());
+    doResetBtn.addEventListener('keydown', (e) => resetGame(e));
+
+    function cancelReset(e) {
+      if (e instanceof KeyboardEvent) {
+        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowLeft') {
+          return;
+        }
+
+        if (e.key === 'ArrowLeft') {
+          setTimeout(() => {
+            doResetBtn.focus();
+          },10);
+
+          return;
+        }
+      }
+
+      playerOne.board.focusWithArrowKey('off');
+      playerOne.board.renderBoard(1, playerTwo.board.getBoard());
+      playerOne.board.markupTarget(playerTwo.board.getBoard());
+    }
+    
+    cancelBtn.addEventListener('click', () => cancelReset());
+    cancelBtn.addEventListener('keydown', (e) => cancelReset(e));
   }
 }
 
 randomBtn.addEventListener('click', () => randomOrReset());
 randomBtn.addEventListener('keydown', (e) => randomOrReset(e));
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'r') {
+    randomOrReset();
+  } else if (e.key === 'p') {
+    startGame();
+  }
+});
 
 // Change the ship's color when hovering.
 boardContainerOne.addEventListener('mouseover', () => {
@@ -139,7 +199,7 @@ playBtn.addEventListener('mouseleave', () => {
   }
 });
 
-playBtn.addEventListener('click', () => {
+function startGame() {
   const currentTurn = playerOne.info.getCurrentTurn();
   const records = playerOne.info.getRecords();
   const currentVictory = records[1];
@@ -151,14 +211,18 @@ playBtn.addEventListener('click', () => {
     playerOne.board.renderBoard(1, playerTwo.board.getBoard(), '', currentVictory);
     playerOne.board.markupTarget(playerTwo.board.getBoard());
   }
+}
+
+playBtn.addEventListener('click', () => {
+  startGame();
 });
 
 // Move focus with arrow key.
 document.addEventListener('keydown', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
   
-  if (currentTurn === 1 && e.key !== 'Tab') {
-    playerOne.board.focusWithArrowKey(e, playerTwo.board.getBoard());
+  if (currentTurn === 1 && e.key !== 'Tab' && e.key !== 'Shift' && e.key !== 'p') {
+    playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard(), e);
   }
 });
 

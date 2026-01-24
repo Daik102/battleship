@@ -583,12 +583,24 @@ function gameBoard() {
   };
 
   let squareIndex = -1;
+  let onConfirmation;
 
-  const focusWithArrowKey = (e, board) => {
+  const focusWithArrowKey = (confirmation, board, e) => {
+    if (confirmation === 'on') {
+      onConfirmation = true;
+    } else if (confirmation === 'off') {
+      onConfirmation = false;
+      return;
+    }
+
+    if (onConfirmation) {
+      return;
+    }
+
     const squareTwos = document.querySelectorAll('.square-two');
 
     function moveSquare() {
-      if (e.key === 'ArrowRight') {
+      if (!e || e.key === 'ArrowRight') {
         squareIndex += 1;
       } else if (e.key === 'ArrowLeft') {
         squareIndex -= 1;
@@ -596,8 +608,6 @@ function gameBoard() {
         squareIndex += column;
       } else if (e.key === 'ArrowUp') {
         squareIndex -= column;
-      } else if (!e) {
-        squareIndex += 1;
       }
 
       if (squareIndex >= squareTwos.length) {
@@ -1155,6 +1165,22 @@ function gameInfo(cs, cv) {
   const setCurrentTurn = (turn) => currentTurn = turn;
   const getCurrentTurn = () => currentTurn;
 
+  const displayConfirmation = () => {
+    const boardContainerOne = document.querySelector('.board-container-one');
+
+    const confirmationHTML = `
+      <div class="confirmation-container">
+        <h2>Are you sure to reset?</h2>
+        <div class="btn-container">
+          <button type="button" class="do-reset-btn">Reset</button>
+          <button type="button" class="cancel-btn">Cancel</button>
+        </div>
+      </div>
+    `;
+
+    boardContainerOne.innerHTML = confirmationHTML;
+  };
+
   function getTotalBonus(list) {
     const bonusScoreBoards = document.querySelectorAll('.bonus-score-board');
     const totalBonusScoreBoard = document.querySelector('.total-bonus-score-board');
@@ -1319,6 +1345,7 @@ function gameInfo(cs, cv) {
     updateBtn,
     setCurrentTurn,
     getCurrentTurn,
+    displayConfirmation,
     rotateEmblem,
     displayResult,
     setFinished,
