@@ -40,15 +40,14 @@ const randomBtn = document.querySelector('.random-btn');
 const playBtn = document.querySelector('.play-btn');
 const boardContainerOne = document.querySelector('.board-container-one');
 const boardContainerTwo = document.querySelector('.board-container-two');
-const adminLink = document.querySelector('.admin-link');
 
 function randomOrReset(e) {
   if (e instanceof KeyboardEvent) {
-    if (e.key !== 'Enter' && e.key !== ' ') {
+    if (e.key === ' ') {
+      e.preventDefault();
+    } else {
       return;
     }
-
-    e.preventDefault();
   }
   
   const currentTurn = playerOne.info.getCurrentTurn();
@@ -58,33 +57,25 @@ function randomOrReset(e) {
     playerOne.board.renderBoard();
     playerOne.board.addTabIndex(playerOne.list.getList());
   } else if (currentTurn === 1) {
-    playerOne.board.focusWithArrowKey('on');
+    playerOne.board.focusWithArrowKey('confirmation-on');
     playerOne.info.displayConfirmation();
     const doResetBtn = document.querySelector('.do-reset-btn');
     const cancelBtn = document.querySelector('.cancel-btn');
-
-    setTimeout(() => {
-      doResetBtn.focus();
-    },10);
-
+    doResetBtn.focus();
+    
     function resetGame(e) {
       if (e instanceof KeyboardEvent) {
-        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowRight') {
-          return;
-        }
-
-        if (e.key === 'ArrowRight') {
-          setTimeout(() => {
-            cancelBtn.focus();
-          },10);
-
-          return;
+        if (e.key === 'ArrowRight' || e.key === 'Tab') {
+          e.preventDefault();
+          cancelBtn.focus();
         }
       }
-
-      playerOne.board.focusWithArrowKey('off');
-      playerOne.info.updateRecords('reset');
-      setUpGame();
+      
+      if (!e || e.key === ' ') {
+        playerOne.board.focusWithArrowKey('confirmation-off');
+        playerOne.info.updateRecords('reset');
+        setUpGame();
+      }
     }
 
     doResetBtn.addEventListener('click', () => resetGame());
@@ -92,22 +83,17 @@ function randomOrReset(e) {
 
     function cancelReset(e) {
       if (e instanceof KeyboardEvent) {
-        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'ArrowLeft') {
-          return;
-        }
-
-        if (e.key === 'ArrowLeft') {
-          setTimeout(() => {
-            doResetBtn.focus();
-          },10);
-
-          return;
+        if(e.key === 'ArrowLeft' || e.key === 'Tab') {
+          e.preventDefault();
+          doResetBtn.focus();
         }
       }
 
-      playerOne.board.focusWithArrowKey('off');
-      playerOne.board.renderBoard(1, playerTwo.board.getBoard());
-      playerOne.board.markupTarget(playerTwo.board.getBoard());
+      if (!e || e.key === ' ') {
+        playerOne.board.focusWithArrowKey('confirmation-off');
+        playerOne.board.renderBoard(1, playerTwo.board.getBoard());
+        playerOne.board.markupTarget(playerTwo.board.getBoard());
+      }
     }
     
     cancelBtn.addEventListener('click', () => cancelReset());
@@ -119,7 +105,22 @@ randomBtn.addEventListener('click', () => randomOrReset());
 randomBtn.addEventListener('keydown', (e) => randomOrReset(e));
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'r') {
+  const currentTurn = playerOne.info.getCurrentTurn();
+
+  if (currentTurn === 0) {
+    if (e.key === 'Tab' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      playerOne.board.moveWithArrowKey(e, playerOne.list.getList());
+    }
+  } else if (currentTurn === 1) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard(), e);
+    }
+  } else if (currentTurn === 3) {
+    e.preventDefault();
+    return;
+  }
+
+ if (e.key === 'r') {
     randomOrReset();
   } else if (e.key === 'p') {
     startGame();
@@ -175,14 +176,6 @@ boardContainerOne.addEventListener('drop', (e) => {
   playerOne.board.addTabIndex(playerOne.list.getList());
 });
 
-document.addEventListener('keydown', (e) => {
-  const currentTurn = playerOne.info.getCurrentTurn();
-
-  if (currentTurn === 0) {
-    playerOne.board.moveWithArrowKey(e, playerOne.list.getList());
-  }
-});
-
 playBtn.addEventListener('mouseenter', () => {
   const currentTurn = playerOne.info.getCurrentTurn();
 
@@ -213,18 +206,7 @@ function startGame() {
   }
 }
 
-playBtn.addEventListener('click', () => {
-  startGame();
-});
-
-// Move focus with arrow key.
-document.addEventListener('keydown', (e) => {
-  const currentTurn = playerOne.info.getCurrentTurn();
-  
-  if (currentTurn === 1 && e.key !== 'Tab' && e.key !== 'Shift' && e.key !== 'p') {
-    playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard(), e);
-  }
-});
+playBtn.addEventListener('click', () => startGame());
 
 function handleGame(e) {
   const currentTurn = playerOne.info.getCurrentTurn();
@@ -330,7 +312,6 @@ function handleGame(e) {
 
               playerOne.info.updateRecords('reset');
               setUpGame();
-              document.removeEventListener('keydown', () => tryAgain());
             }
             
             tryAgainBtn.addEventListener('click', () => tryAgain());
@@ -352,11 +333,3 @@ function handleGame(e) {
 
 boardContainerTwo.addEventListener('click', (e) => handleGame(e));
 boardContainerTwo.addEventListener('keydown', (e) => handleGame(e));
-
-adminLink.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter' && e.key !==' ') {
-    return;
-  }
-
-  window.open('https://daik102.github.io/admin-dashboard/', '_blank');
-});

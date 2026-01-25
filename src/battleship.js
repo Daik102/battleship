@@ -512,28 +512,44 @@ function gameBoard() {
     }
   };
 
+  let currentMode = '';
+
   const markupTarget = (otherBoard) => {
     const squares = document.querySelectorAll('.square-two');
     const columns = document.querySelectorAll('.column');
     const rows = document.querySelectorAll('.row');
 
+    function loseFocus() {
+      columns.forEach((column) => {
+        column.classList.remove('target-line');
+      });
+      
+      rows.forEach((row) => {
+        row.classList.remove('target-line');
+      });
+
+      squares.forEach((square) => {
+        square.classList.remove('target');
+        square.classList.remove('on-target');
+      });
+    }
+    
     squares.forEach((square) => {
       if (!otherBoard) {
-        columns.forEach((column) => {
-          column.classList.remove('target-line');
-        });
-
-        rows.forEach((row) => {
-          row.classList.remove('target-line');
-        });
-
+        loseFocus();
         return;
       }
 
-      function getFocus() {
+      function getFocus(action) {
         const x = Number(square.getAttribute('x'));
         const y = Number(square.getAttribute('y'));
         const boardSquare = otherBoard[x][y];
+        
+        if (currentMode !== action) {
+          loseFocus();
+        }
+
+        currentMode = action;
         
         columns.forEach((column, i) => {
           if (y === i) {
@@ -553,30 +569,15 @@ function gameBoard() {
 
         square.classList.add('target');
         square.classList.add('on-target');
+
+        if (currentMode === 'hover') {
+          squareIndex = x * column + y;
+          square.focus();
+        }
       }
 
-      function loseFocus() {
-        const x = Number(square.getAttribute('x'));
-        const y = Number(square.getAttribute('y'));
-        
-        columns.forEach((column, i) => {
-          if (y === i) {
-            column.classList.remove('target-line');
-          }
-        });
-
-        rows.forEach((row, i) => {
-          if (x === i) {
-            row.classList.remove('target-line');
-          }
-        });
-        
-        square.classList.remove('target');
-        square.classList.remove('on-target');
-      }
-
-      square.addEventListener('mouseenter', () => getFocus());
-      square.addEventListener('focus', () => getFocus());
+      square.addEventListener('mouseenter', () => getFocus('hover'));
+      square.addEventListener('focus', () => getFocus('focus'));
       square.addEventListener('mouseleave', () => loseFocus());
       square.addEventListener('blur', () => loseFocus());
     });
@@ -586,9 +587,9 @@ function gameBoard() {
   let onConfirmation;
 
   const focusWithArrowKey = (confirmation, board, e) => {
-    if (confirmation === 'on') {
+    if (confirmation === 'confirmation-on') {
       onConfirmation = true;
-    } else if (confirmation === 'off') {
+    } else if (confirmation === 'confirmation-off') {
       onConfirmation = false;
       return;
     }
