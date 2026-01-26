@@ -194,10 +194,11 @@ playBtn.addEventListener('mouseleave', () => {
 
 function startGame() {
   const currentTurn = playerOne.info.getCurrentTurn();
-  const records = playerOne.info.getRecords();
-  const currentVictory = records[1];
   
   if (currentTurn === 0) {
+    const records = playerOne.info.getRecords();
+    const currentVictory = records[1];
+
     playerOne.info.setCurrentTurn(1);
     playerOne.info.updateMessage('start');
     playerOne.info.updateBtn();
@@ -218,22 +219,21 @@ function handleGame(e) {
       }
     }
 
-    const x = Number(e.target.getAttribute('x'));
-    const y = Number(e.target.getAttribute('y'));
-
     if (e.target.classList.contains('board-container-two')) {
       return;
     }
 
+    const x = Number(e.target.getAttribute('x'));
+    const y = Number(e.target.getAttribute('y'));
     const result = playerTwo.board.receiveAttack(x, y, 2, playerTwo.list.getList(), playerOne.board.getBoard());
     
     if (result === 'hit' || result === 'sunk') {
       playerOne.info.updateRecords('hit');
-      playerOne.board.markupTarget();
       const winner = playerTwo.board.checkTheWinner(1, playerTwo.list.getList());
 
       if (winner) {
         playerOne.info.setCurrentTurn(3);
+        playerOne.board.markupTarget();
         playerOne.info.displayResult(1, waitRender, playerOne.list.getList());
         // Callback for setTimeout.
         function waitRender(totalBonus) {

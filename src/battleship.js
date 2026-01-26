@@ -84,13 +84,12 @@ function gameBoard() {
   const deployBoard = (list) => {
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
-      const length = ship.length;
       const direction = ship.direction;
       const bow = ship.coordinates[0];
       const bowX = bow[0];
       const bowY = bow[1];
     
-      for (let j = 0; j < length; j++) {
+      for (let j = 0; j < ship.length; j++) {
         if (direction === 'horizontal') {
           board[bowX][bowY + j] = 'S';
         } else {
@@ -104,10 +103,9 @@ function gameBoard() {
 
   const hoverShip = (list) => {
     const squareOnes = document.querySelectorAll('.square-one');
+    const coordinatesIndexArray = [];
 
     squareOnes.forEach((squareOne) => {
-      const coordinatesIndexArray = [];
-
       squareOne.addEventListener('mouseenter', (e) => {
         if (e.target.classList.contains('ship')) {
           const x = Number(e.target.getAttribute('x'));
@@ -137,9 +135,8 @@ function gameBoard() {
       });
 
       squareOne.addEventListener('mouseleave', () => {
-        for (let i = 0; i < coordinatesIndexArray.length; i++) {
-          const index = coordinatesIndexArray[i];
-          squareOnes[index].classList.remove('ship-hover');
+        for (const coordinates of coordinatesIndexArray) {
+          squareOnes[coordinates].classList.remove('ship-hover');
         }
       });
     });
@@ -533,46 +530,34 @@ function gameBoard() {
         square.classList.remove('on-target');
       });
     }
+
+    if (!otherBoard) {
+      loseFocus();
+      return;
+    }
     
     squares.forEach((square) => {
-      if (!otherBoard) {
-        loseFocus();
-        return;
-      }
-
       function getFocus(action) {
         const x = Number(square.getAttribute('x'));
         const y = Number(square.getAttribute('y'));
-        const boardSquare = otherBoard[x][y];
+        const squareOnBoard = otherBoard[x][y];
         
         if (currentMode !== action) {
           loseFocus();
         }
-
-        currentMode = action;
         
-        columns.forEach((column, i) => {
-          if (y === i) {
-            if (boardSquare === 0 || boardSquare === 'S') {
-              column.classList.add('target-line');
-            }
-          }
-        });
-
-        rows.forEach((row, i) => {
-          if (x === i) {
-            if (boardSquare === 0 || boardSquare === 'S') {
-              row.classList.add('target-line');
-            }
-          }
-        });
-
-        square.classList.add('target');
-        square.classList.add('on-target');
+        currentMode = action;
 
         if (currentMode === 'hover') {
           squareIndex = x * column + y;
           square.focus();
+        }
+        
+        if (squareOnBoard === 0 || squareOnBoard === 'S') {
+          columns[y].classList.add('target-line');
+          rows[x].classList.add('target-line');
+          square.classList.add('target');
+          square.classList.add('on-target');
         }
       }
 
@@ -856,12 +841,13 @@ function gameBoard() {
   const getBoard = () => board;
 
   const addTabIndex = (list) => {
+    const squareOnes = document.querySelectorAll('.square-one');
+
     for (let i = 0; i < list.length; i++) {
       const bow = list[i].coordinates[0];
       const bowX = bow[0];
       const bowY = bow[1];
       const index = bowX * column + bowY;
-      const squareOnes = document.querySelectorAll('.square-one');
       squareOnes[index].setAttribute('tabindex', '0');
     }
   };
@@ -993,29 +979,30 @@ function gameBoard() {
     }
 
     if (!playerNo) {
-      boardContainerOne.classList.add('deploy-section');
+      boardContainerOne.classList.add('deploy-time');
 
       const rows = document.querySelectorAll('.row');
       const columns = document.querySelectorAll('.column');
+      const adminLink = document.querySelector('.admin-link');
 
       rows.forEach((row) => {
-        row.classList.add('initial-line');
         row.classList.remove('dark');
+        row.classList.add('initial-line');
       });
 
       columns.forEach((column) => {
-        column.classList.add('initial-line');
         column.classList.remove('dark');
+        column.classList.add('initial-line');
       });
-
-      const adminLink = document.querySelector('.admin-link');
-      adminLink.classList.add('initial-admin-link');
+      
       adminLink.classList.remove('dark');
+      adminLink.classList.add('initial-admin-link');
     }
 
-    if (currentVictory || currentVictory === 0) {
+    if (currentVictory >= 0) {
       const roundBoard = document.querySelector('.round-board');
       const round = currentVictory + 1;
+      
       roundBoard.classList.remove('erase-round');
       roundBoard.classList.add('display-round');
       roundBoard.textContent = 'Round ' + round;
@@ -1029,10 +1016,11 @@ function gameBoard() {
         }, 500);
       }, 1500);
 
-      boardContainerOne.classList.remove('deploy-section');
+      boardContainerOne.classList.remove('deploy-time');
 
       const rows = document.querySelectorAll('.row');
       const columns = document.querySelectorAll('.column');
+      const adminLink = document.querySelector('.admin-link');
 
       rows.forEach((row) => {
         row.classList.remove('initial-line');
@@ -1042,7 +1030,6 @@ function gameBoard() {
         column.classList.remove('initial-line');
       });
 
-      const adminLink = document.querySelector('.admin-link');
       adminLink.classList.remove('initial-admin-link');
     }
   };
@@ -1152,13 +1139,12 @@ function gameInfo(cs, cv) {
     if (currentTurn === 0) {
       randomBtn.textContent = 'Random';
       randomBtn.classList.remove('reset-btn');
-      playBtn.classList.remove('opacity');
-      playBtn.classList.remove('play-btn-hover');
+      playBtn.classList.remove('disabled');
     } else {
       randomBtn.textContent = 'Reset';
-      randomBtn.classList.remove('opacity');
       randomBtn.classList.add('reset-btn');
-      playBtn.classList.add('opacity');
+      playBtn.classList.remove('play-btn-hover');
+      playBtn.classList.add('disabled');
     }
   };
 
