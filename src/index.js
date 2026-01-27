@@ -143,8 +143,8 @@ function sendLocationToRotate(e) {
     const y = Number(e.target.getAttribute('y'));
   
     if (e.target.classList.contains('ship')) {
-      playerOne.board.rotateShip(x, y, playerOne.list.getList());
-      playerOne.board.addTabIndex(playerOne.list.getList());
+      playerOne.board.rotateShip(x, y, playerOne.list.getList(), e);
+      playerOne.board.addTabIndex(playerOne.list.getList(), x, y);
     }
   }
 }
