@@ -292,6 +292,8 @@ function gameBoard() {
     }
   };
 
+  let cannotMoveVertically;
+
   function moveShip(x, y, x2, y2, ship, randomDirection) {
     const length = ship.length;
     let direction = ship.direction;;
@@ -364,6 +366,8 @@ function gameBoard() {
           }
         } else {
           cannotMove = true;
+          //To prevent adding caution class when trying to move a ship below the board.
+          cannotMoveVertically = true;
           break;
         }
       }
@@ -441,18 +445,22 @@ function gameBoard() {
           const cannotMove = moveShip(bowX, bowY, endX, endY, ship);
     
           if (cannotMove) {
-            const squareOnes = document.querySelectorAll('.square-one');
+            if (!cannotMoveVertically) {
+              const squareOnes = document.querySelectorAll('.square-one');
 
-            for (let k = 0; k < ship.length; k++) {
-              const coordinates = ship.coordinates[k];
-              const coordinateX = coordinates[0];
-              const coordinateY = coordinates[1];
-              const index = coordinateX * column + coordinateY;
-              squareOnes[index].classList.add('caution');
+              for (let k = 0; k < ship.length; k++) {
+                const coordinates = ship.coordinates[k];
+                const coordinateX = coordinates[0];
+                const coordinateY = coordinates[1];
+                const index = coordinateX * column + coordinateY;
+                squareOnes[index].classList.add('caution');
 
-              setTimeout(() => {
-                squareOnes[index].classList.remove('caution');
-              }, 200);
+                setTimeout(() => {
+                  squareOnes[index].classList.remove('caution');
+                }, 200);
+              }
+            } else {
+              cannotMoveVertically = false;
             }
           } else {
             renderBoard();
