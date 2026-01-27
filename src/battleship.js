@@ -906,7 +906,7 @@ function gameBoard() {
       const index = bowX * column + bowY;
       squareOnes[index].setAttribute('tabindex', '0');
     }
-    
+    // Add focus after rotating a ship.
     if (x >= 0) {
       const index = x * column + y;
       focusShip(list);

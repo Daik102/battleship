@@ -43,6 +43,10 @@ const boardContainerTwo = document.querySelector('.board-container-two');
 
 function randomOrReset(e) {
   if (e instanceof KeyboardEvent) {
+    if (e.key === 'ArrowRight') {
+      playBtn.focus();
+    }
+    
     if (e.key === ' ') {
       e.preventDefault();
     } else {
@@ -104,22 +108,6 @@ function randomOrReset(e) {
 randomBtn.addEventListener('click', () => randomOrReset());
 randomBtn.addEventListener('keydown', (e) => randomOrReset(e));
 
-playBtn.addEventListener('mouseenter', () => {
-  const currentTurn = playerOne.info.getCurrentTurn();
-
-  if (currentTurn === 0) {
-    playBtn.classList.add('play-btn-hover');
-  }
-});
-
-playBtn.addEventListener('mouseleave', () => {
-  const currentTurn = playerOne.info.getCurrentTurn();
-
-  if (currentTurn === 0) {
-    playBtn.classList.remove('play-btn-hover');
-  }
-});
-
 // Change the ship's color when hovering.
 boardContainerOne.addEventListener('mouseover', () => {
   const currentTurn = playerOne.info.getCurrentTurn();
@@ -173,6 +161,15 @@ document.addEventListener('keydown', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
+    const currentFocus = document.activeElement;
+
+    if (currentFocus === document.body) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        randomBtn.focus();
+        return;
+      }
+    }
+
     if (e.key === 'Tab') {
       playerOne.board.focusShip(playerOne.list.getList());
     }
@@ -196,6 +193,22 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+playBtn.addEventListener('mouseenter', () => {
+  const currentTurn = playerOne.info.getCurrentTurn();
+
+  if (currentTurn === 0) {
+    playBtn.classList.add('play-btn-hover');
+  }
+});
+
+playBtn.addEventListener('mouseleave', () => {
+  const currentTurn = playerOne.info.getCurrentTurn();
+
+  if (currentTurn === 0) {
+    playBtn.classList.remove('play-btn-hover');
+  }
+});
+
 function startGame() {
   const currentTurn = playerOne.info.getCurrentTurn();
   
@@ -212,6 +225,12 @@ function startGame() {
 }
 
 playBtn.addEventListener('click', () => startGame());
+
+playBtn.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') {
+    randomBtn.focus();
+  }
+});
 
 function handleGame(e) {
   const currentTurn = playerOne.info.getCurrentTurn();
