@@ -1181,15 +1181,29 @@ function gameInfo(cs, cv) {
           messageBoard.textContent = 'Click to rotate';
         } else if (counter === 3) {
           messageBoard.textContent = 'Keyboard usable';
+        } else if (counter === 4) {
+          messageBoard.textContent = 'Tab to choose';
+        } else if (counter === 5) {
+          messageBoard.textContent = 'Arrows to move';
+        } else if (counter === 6) {
+          messageBoard.textContent = 'Space to rotate';
+        } else if (counter === 7) {
+          messageBoard.textContent = 'R to Random';
+        } else if (counter === 8) {
+          messageBoard.textContent = 'P to Play';
         }
 
-        if (counter === 3) {
+        if (counter === 8) {
           counter = -1;
         }
       }, 2000);
     } else if (message === 'start') {
       clearInterval(intervalId);
-      messageBoard.textContent = 'Your turn';
+      messageBoard.textContent = 'Good luck!';
+
+      setTimeout(() => {
+        messageBoard.textContent = 'Your turn';
+      }, 1500);
     } else {
       messageBoard.textContent = message;
     }
