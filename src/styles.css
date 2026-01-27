@@ -31,8 +31,8 @@
   --enemy-square-theme: rgba(0, 225, 130, 0.85);
   --border-theme: #555;
   --ship-theme: #007de3;
-  --ship-hover-theme: #209bff;
-  --ship-focus-theme: #99d0fe;
+  --ship-hover-theme: #55b2ff;
+  --ship-focus-theme: #55b2ff;
   --cannot-do-theme: orangered;
   --hit-one-theme: orangered;
   --hit-two-theme: gold;
@@ -314,10 +314,6 @@ button {
   outline: none;
 }
 
-.square-one:focus {
-  background-color: var(--ship-focus-theme);
-}
-
 .ship {
   background-color: var(--ship-theme);
   border: none;
@@ -325,7 +321,10 @@ button {
 
 .ship-hover {
   background-color: var(--ship-hover-theme);
-  border: none;
+}
+
+.square-one-focus {
+  background-color: var(--ship-focus-theme);
 }
 
 .caution {

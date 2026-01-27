@@ -104,26 +104,19 @@ function randomOrReset(e) {
 randomBtn.addEventListener('click', () => randomOrReset());
 randomBtn.addEventListener('keydown', (e) => randomOrReset(e));
 
-document.addEventListener('keydown', (e) => {
+playBtn.addEventListener('mouseenter', () => {
   const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
-    if (e.key === 'Tab' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      playerOne.board.moveWithArrowKey(e, playerOne.list.getList());
-    }
-  } else if (currentTurn === 1) {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard(), e);
-    }
-  } else if (currentTurn === 3) {
-    e.preventDefault();
-    return;
+    playBtn.classList.add('play-btn-hover');
   }
+});
 
- if (e.key === 'r') {
-    randomOrReset();
-  } else if (e.key === 'p') {
-    startGame();
+playBtn.addEventListener('mouseleave', () => {
+  const currentTurn = playerOne.info.getCurrentTurn();
+
+  if (currentTurn === 0) {
+    playBtn.classList.remove('play-btn-hover');
   }
 });
 
@@ -176,19 +169,30 @@ boardContainerOne.addEventListener('drop', (e) => {
   playerOne.board.addTabIndex(playerOne.list.getList());
 });
 
-playBtn.addEventListener('mouseenter', () => {
+document.addEventListener('keydown', (e) => {
   const currentTurn = playerOne.info.getCurrentTurn();
 
   if (currentTurn === 0) {
-    playBtn.classList.add('play-btn-hover');
+    if (e.key === 'Tab') {
+      playerOne.board.focusShip(playerOne.list.getList());
+    }
+
+    if (e.key === 'Tab' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      playerOne.board.moveWithArrowKey(e, playerOne.list.getList());
+    }
+  } else if (currentTurn === 1) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard(), e);
+    }
+  } else if (currentTurn === 3) {
+    e.preventDefault();
+    return;
   }
-});
 
-playBtn.addEventListener('mouseleave', () => {
-  const currentTurn = playerOne.info.getCurrentTurn();
-
-  if (currentTurn === 0) {
-    playBtn.classList.remove('play-btn-hover');
+ if (e.key === 'r') {
+    randomOrReset();
+  } else if (e.key === 'p') {
+    startGame();
   }
 });
 

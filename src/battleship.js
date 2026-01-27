@@ -142,6 +142,42 @@ function gameBoard() {
     });
   };
 
+  const focusShip = (list) => {
+    const squareOnes = document.querySelectorAll('.square-one');
+    const focusingArray = [];
+    
+    squareOnes.forEach((squareOne) => {
+      squareOne.addEventListener('focus', () => {
+        const x = Number(squareOne.getAttribute('x'));
+        const y = Number(squareOne.getAttribute('y'));
+
+        for (let i = 0; i < list.length; i++) {
+          const ship = list[i];
+          const bow = ship.coordinates[0];
+          const bowX = bow[0];
+          const bowY = bow[1];
+
+          if (x === bowX && y === bowY) {
+            for (let j = 0; j < ship.length; j++) {
+              const coordinates = ship.coordinates[j];
+              const coordinateX = coordinates[0];
+              const coordinateY = coordinates[1];
+              const focusIndex = coordinateX * column + coordinateY;
+              focusingArray.push(focusIndex);
+              squareOnes[focusIndex].classList.add('square-one-focus');
+            }
+          }
+        }
+      });
+
+      squareOne.addEventListener('blur', () => {
+        for (const index of focusingArray) {
+          squareOnes[index].classList.remove('square-one-focus');
+        }
+      });
+    });
+  };
+
   const rotateShip = (x, y, list) => {
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
@@ -465,8 +501,12 @@ function gameBoard() {
         cannotMove = setMoveLocation(squareOnes[focusIndex + adjustmentNum], list);
 
         if (!cannotMove) {
-          addTabIndex(list);
           focusIndex += adjustmentNum;
+          addTabIndex(list);
+          focusShip(list);
+
+          const squareOnes = document.querySelectorAll('.square-one');
+          squareOnes[focusIndex].focus();
         }
       }
       
@@ -1037,6 +1077,7 @@ function gameBoard() {
   return {
     deployBoard,
     hoverShip,
+    focusShip,
     rotateShip,
     setMoveLocation,
     moveWithArrowKey,
