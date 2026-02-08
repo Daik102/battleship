@@ -7,7 +7,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-size: 10px;
+  font-size: 1.01vh;
   font-family: BlackOpsOne, Arial, Helvetica, sans-serif;
   font-weight: 400;
 }
@@ -26,6 +26,7 @@
   --star-theme: gold;
   --emblem-theme: #222;
   --wrapper-theme: rgba(51, 51, 51, 0.5);
+  --initial-theme: rgba(51, 51, 51, 0.5);
   --square-theme: aliceblue;
   --square-dark-theme: #c0c7cd;
   --enemy-square-theme: rgba(0, 225, 130, 0.85);
@@ -69,11 +70,9 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
   width: 44rem;
   height: 100%;
   margin: 0 auto;
-  padding: 0 6.8rem;
   background-color: var(--wrapper-theme);
 }
 
@@ -134,15 +133,14 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
   width: 100%;
+  margin:2rem 0 1.2rem;
 }
 
 .victory-row {
   display: flex;
   justify-content: space-between;
-  width: 100%;
-  margin: -0.4rem 0 -2rem;
+  width: 30rem;
 }
 
 .victory-row div {
@@ -166,8 +164,8 @@ button {
 .score-board-row {
   display: flex;
   justify-content: space-between;
-  width: 100%;
-  margin-bottom: -1rem;
+  width: 30rem;
+  margin: -0.4rem 0 0.8rem;
 }
 
 .current-score-board,
@@ -179,7 +177,7 @@ button {
 .message-row {
   display: flex;
   justify-content: space-between;
-  width: 100%;
+  width: 30rem;
 }
 
 .message-board {
@@ -240,14 +238,28 @@ button {
   width: 100%;
 }
 
+.board-area-one,
+.board-area-two {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.board-area-one {
+  margin-bottom: -1rem;
+}
+
+.board-area-two {
+  align-items: center;
+}
+
 .column-marker {
   display: flex;
   gap: 2.36rem;
-  margin: 0rem 0 -1.2rem;
 }
 
-.board-area-one,
-.board-area-two {
+.board-area-one-row,
+.board-area-two-row {
   display: flex;
 }
 
@@ -255,7 +267,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 1.44rem;
-  margin: 1rem 1.4rem 0 -2.6rem;
+  margin: 1rem 1.2rem 0 -2.6rem;
 }
 
 .marker-top li {
@@ -273,7 +285,7 @@ button {
 }
 
 .initial-line {
-  color: var(--wrapper-theme)
+  color: var(--initial-theme)
 }
 
 .target-line {
@@ -399,14 +411,14 @@ button {
 
 .initial {
   cursor: default;
-  background-color: var(--wrapper-theme);
+  background-color: var(--initial-theme);
 }
 
 .round-board {
   font-size: 2.6rem;
   color: var(--round-board-theme);
   opacity: 0;
-  transform: translate(0, -17.6rem);
+  transform: translate(0, -16.8rem);
 }
 
 .display-round {
@@ -529,7 +541,7 @@ h2 {
 }
 
 .link-section {
-  margin-top: -4.8rem;
+  margin-top: -2rem;
 }
 
 .admin-link {
@@ -539,9 +551,15 @@ h2 {
 }
 
 .initial-admin-link {
-  color: var(--wrapper-theme);
+  color: var(--initial-theme);
 }
 
 .admin-link:hover {
   color: var(--target-theme);
+}
+
+@media screen and (orientation: portrait) {
+  .wrapper {
+    width: 100%;
+  }
 }
