@@ -774,13 +774,13 @@ function gameBoard() {
 
               setTimeout(() => {
                 wrapper.classList.remove('hit-one');
-              }, 100);
+              }, 150);
             } else {
               wrapper.classList.add('hit-two');
 
               setTimeout(() => {
                 wrapper.classList.remove('hit-two');
-              }, 100);
+              }, 150);
             }
 
             const sinking = ship.isSunk(ship);
