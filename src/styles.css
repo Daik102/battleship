@@ -7,7 +7,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-size: 1.01vh;
+  font-size: 1.04vh;
   font-family: BlackOpsOne, Arial, Helvetica, sans-serif;
   font-weight: 400;
 }
@@ -79,12 +79,13 @@ button {
 .header {
   display: flex;
   justify-content: center;
-  gap: 1.2rem;
+  gap: 1.6rem;
+  margin-top: -4rem;
 }
 
 .title {
   color: var(--text-theme);
-  font-size: 2.4rem;
+  font-size: 2.6rem;
   text-shadow: 0.4rem 0.4rem 0 var(--text-shadow-theme);
 }
 
@@ -134,7 +135,7 @@ button {
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin:2rem 0 1.2rem;
+  margin:1.2rem 0;
 }
 
 .victory-row {
@@ -234,7 +235,7 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 2.4rem;
   width: 100%;
 }
 
@@ -242,15 +243,12 @@ button {
 .board-area-two {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1.2rem;
 }
 
 .board-area-one {
   margin-bottom: -1rem;
-}
-
-.board-area-two {
-  align-items: center;
 }
 
 .column-marker {
@@ -541,7 +539,7 @@ h2 {
 }
 
 .link-section {
-  margin-top: -2rem;
+  margin-top: -2.4rem;
 }
 
 .admin-link {
