@@ -7,7 +7,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-size: 1.04vh;
   font-family: BlackOpsOne, Arial, Helvetica, sans-serif;
   font-weight: 400;
 }
@@ -51,8 +50,11 @@
   --play-btn-dark-theme: #00cdcd;
 }
 
+html {
+  font-size: 10px;
+}
+
 body {
-  height: 100vh;
   background-image: linear-gradient(var(--light-background-theme), var(--background-theme));
 }
 
@@ -69,10 +71,10 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   width: 44rem;
-  height: 100%;
+  height: 100vh;
   margin: 0 auto;
+  padding: 6rem 0 12rem;
   background-color: var(--wrapper-theme);
 }
 
@@ -80,7 +82,6 @@ button {
   display: flex;
   justify-content: center;
   gap: 1.6rem;
-  margin-top: -4rem;
 }
 
 .title {
@@ -559,5 +560,53 @@ h2 {
 @media screen and (orientation: portrait) {
   .wrapper {
     width: 100%;
+  }
+}
+
+@media screen and (orientation: landscape) and (max-width: 60rem) {
+  .wrapper {
+    height: auto;
+  }
+}
+
+@media screen and (max-height: 40rem) {
+  html {
+    font-size: 5.75px;
+  }
+}
+
+@media screen and (min-height: 40.01rem) and (max-height: 48rem) {
+  html {
+    font-size: 6.75px;
+  }
+}
+
+@media screen and (min-height: 48.01rem) and (max-height: 54rem) {
+  html {
+    font-size: 8px;
+  }
+}
+
+@media screen and (min-height: 54.01rem) and (max-height: 60rem) {
+  html {
+    font-size: 9px;
+  }
+}
+
+@media screen and (min-height: 60.01rem) and (max-height: 70rem) {
+  html {
+    font-size: 10px;
+  }
+}
+
+@media screen and (min-height: 70.01rem) and (max-height: 80rem) {
+  html {
+    font-size: 12px;
+  }
+}
+
+@media screen and (min-height: 80.01rem) {
+  html {
+    font-size: 14px;
   }
 }
