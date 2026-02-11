@@ -563,50 +563,62 @@ h2 {
   }
 }
 
-@media screen and (orientation: landscape) and (max-width: 60rem) {
+@media screen and (orientation: landscape) and (max-width: 80rem) {
   .wrapper {
     height: auto;
   }
 }
 
-@media screen and (max-height: 40rem) {
+@media screen and (max-width: 20rem) {
   html {
     font-size: 5.75px;
   }
 }
 
-@media screen and (min-height: 40.01rem) and (max-height: 48rem) {
+@media screen and (min-width: 20.01rem) and (max-width: 24rem) {
   html {
     font-size: 6.75px;
   }
 }
 
-@media screen and (min-height: 48.01rem) and (max-height: 54rem) {
+@media screen and (min-width: 20.01rem) and (max-width: 24rem) and (min-height: calc(44rem - 100px)) {
   html {
-    font-size: 8px;
+    font-size: 7.5px;
   }
 }
 
-@media screen and (min-height: 54.01rem) and (max-height: 60rem) {
+@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) {
   html {
-    font-size: 9px;
+    font-size: 7.5px;
   }
 }
 
-@media screen and (min-height: 60.01rem) and (max-height: 70rem) {
+@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(50rem - 100px)) {
+  html {
+    font-size: 8.75px;
+  }
+}
+
+@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(54rem - 100px)) {
+  html {
+    font-size: 9.5px;
+  }
+}
+
+@media screen and (min-width: 48rem) {
   html {
     font-size: 10px;
   }
 }
 
-@media screen and (min-height: 70.01rem) and (max-height: 80rem) {
+@media screen and (min-width: 48rem) and (min-height: calc(70rem - 100px)) {
   html {
     font-size: 12px;
   }
 }
 
-@media screen and (min-height: 80.01rem) {
+@media screen and (min-width: 48rem) and (min-height: calc(80rem - 100px)) {
   html {
-    font-size: 14px;
+    font-size: 13.5px;
   }
 }
