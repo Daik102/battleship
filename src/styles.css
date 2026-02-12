@@ -571,13 +571,13 @@ h2 {
 
 @media screen and (max-width: 20rem) {
   html {
-    font-size: 5.75px;
+    font-size: 5.5px;
   }
 }
 
 @media screen and (min-width: 20.01rem) and (max-width: 24rem) {
   html {
-    font-size: 6.75px;
+    font-size: 6.5px;
   }
 }
 
@@ -595,13 +595,13 @@ h2 {
 
 @media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(50rem - 100px)) {
   html {
-    font-size: 8.75px;
+    font-size: 8.5px;
   }
 }
 
 @media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(54rem - 100px)) {
   html {
-    font-size: 9.5px;
+    font-size: 9px;
   }
 }
 
@@ -617,8 +617,8 @@ h2 {
   }
 }
 
-@media screen and (min-width: 48rem) and (min-height: calc(80rem - 100px)) {
+@media screen and (min-width: 48rem) and (min-height: calc(82rem - 100px)) {
   html {
-    font-size: 13.5px;
+    font-size: 14px;
   }
 }
