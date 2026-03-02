@@ -1,37 +1,40 @@
 import "./styles.css";
-import { player } from "./battleship.js";
+import { createPlayer } from "./battleship.js";
 
-let playerOne = player(1, 'human');
-let playerTwo = player(2, 'computer');
+const hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
+const highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
+let playerOne = createPlayer(1, 'human', 0, hiScore, 0, highestVictory, false, []);
+let playerTwo = createPlayer(2, 'computer');
 
 function setUpGame(initial) {
-  let customSets;
+  let customSet = [];
 
   if (!initial) {
-    const records = playerOne.info.getRecords();
-    const currentScore = records[0];
-    const currentVictory = records[1];
-    const finished = playerOne.info.getFinished();
-    customSets = playerOne.list.getDeploySets();
+    const currentScore = playerOne.currentScore;
+    const highScore = playerOne.hiScore;
+    const currentVictory = playerOne.currentVictory;
+    const highestVictory = playerOne.highestVictory;
+    const finishedGame = playerOne.finishedGame;
+    customSet = playerOne.ship.getDeploySet(playerOne);
+
+    playerOne = createPlayer(playerOne.playerNo, playerOne.playerType, currentScore, highScore, currentVictory, highestVictory, finishedGame, customSet);
+    playerTwo = createPlayer(playerTwo.playerNo, playerTwo.playerType);
     
-    playerOne = player(playerOne.playerNo, playerOne.playerType, currentScore, currentVictory);
-    playerTwo = player(playerTwo.playerNo, playerTwo.playerType);
-    
-    if (finished) {
-      playerOne.info.setFinished('display');
+    if (finishedGame) {
+      playerOne.info.setFinished();
     }
   }
   
-  playerOne.list.deployShip(customSets);
-  playerTwo.list.deployShip();
-  playerOne.board.deployBoard(playerOne.list.getList());
-  playerTwo.board.deployBoard(playerTwo.list.getList());
-  playerTwo.board.deployRandom(playerTwo.list.getList());
-  playerOne.info.updateRecords();
+  playerOne.ship.deployShip(customSet);
+  playerTwo.ship.deployShip();
+  playerOne.board.deployBoard(playerOne.ship.getList());
+  playerTwo.board.deployBoard(playerTwo.ship.getList());
+  playerTwo.board.deployRandom(playerTwo.ship.getList());
+  playerOne.info.updateRecords(playerOne);
   playerOne.info.updateMessage('deploy');
-  playerOne.info.updateBtn();
+  playerOne.info.updateBtn(playerOne.currentTurn);
   playerOne.board.renderBoard();
-  playerOne.board.addTabIndex(playerOne.list.getList());
+  playerOne.board.addTabIndex(playerOne.ship.getList());
 }
 
 setUpGame('initial');
@@ -43,10 +46,10 @@ const boardContainerTwo = document.querySelector('.board-container-two');
 
 function randomOrReset(e) {
   if (e instanceof KeyboardEvent) {
-    if (e.key === 'ArrowRight') {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       playBtn.focus();
     }
-    
+
     if (e.key === ' ') {
       e.preventDefault();
     } else {
@@ -54,66 +57,62 @@ function randomOrReset(e) {
     }
   }
   
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
   
   if (currentTurn === 0) {
-    playerOne.board.deployRandom(playerOne.list.getList());
+    playerOne.board.deployRandom(playerOne.ship.getList());
     playerOne.board.renderBoard();
-    playerOne.board.addTabIndex(playerOne.list.getList());
+    playerOne.board.addTabIndex(playerOne.ship.getList());
   } else if (currentTurn === 1) {
     playerOne.board.focusWithArrowKey('confirmation-on');
     playerOne.info.displayConfirmation();
     const doResetBtn = document.querySelector('.do-reset-btn');
     const cancelBtn = document.querySelector('.cancel-btn');
-    doResetBtn.focus();
+    cancelBtn.focus();
     
     function resetGame(e) {
       if (e instanceof KeyboardEvent) {
-        if (e.key === 'ArrowRight' || e.key === 'Tab') {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Tab') {
           e.preventDefault();
           cancelBtn.focus();
         }
-      }
-      
-      if (!e || e.key === ' ') {
+      } else {
         playerOne.board.focusWithArrowKey('confirmation-off');
-        playerOne.info.updateRecords('reset');
+        playerOne.info.updateRecords(playerOne, 'reset');
         setUpGame();
       }
     }
 
-    doResetBtn.addEventListener('click', () => resetGame());
-    doResetBtn.addEventListener('keydown', (e) => resetGame(e));
+    doResetBtn.addEventListener('click', resetGame);
+    doResetBtn.addEventListener('keydown', resetGame);
 
     function cancelReset(e) {
       if (e instanceof KeyboardEvent) {
-        if(e.key === 'ArrowLeft' || e.key === 'Tab') {
+        if(e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Tab') {
           e.preventDefault();
           doResetBtn.focus();
         }
-      }
-
-      if (!e || e.key === ' ') {
+      } else {
         playerOne.board.focusWithArrowKey('confirmation-off');
         playerOne.board.renderBoard(1, playerTwo.board.getBoard());
         playerOne.board.markupTarget(playerTwo.board.getBoard());
       }
     }
     
-    cancelBtn.addEventListener('click', () => cancelReset());
-    cancelBtn.addEventListener('keydown', (e) => cancelReset(e));
+    cancelBtn.addEventListener('click', cancelReset);
+    cancelBtn.addEventListener('keydown', cancelReset);
   }
 }
 
-randomBtn.addEventListener('click', () => randomOrReset());
-randomBtn.addEventListener('keydown', (e) => randomOrReset(e));
+randomBtn.addEventListener('click', randomOrReset);
+randomBtn.addEventListener('keydown', randomOrReset);
 
 // Change the ship's color when hovering.
 boardContainerOne.addEventListener('mouseover', () => {
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
-    playerOne.board.hoverShip(playerOne.list.getList());
+    playerOne.board.hoverShip(playerOne.ship.getList());
   }
 });
 
@@ -124,28 +123,28 @@ function sendLocationToRotate(e) {
     }
   }
 
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
   
   if (currentTurn === 0) {
     const x = Number(e.target.getAttribute('x'));
     const y = Number(e.target.getAttribute('y'));
   
     if (e.target.classList.contains('ship')) {
-      playerOne.board.rotateShip(x, y, playerOne.list.getList(), e);
-      playerOne.board.addTabIndex(playerOne.list.getList(), x, y);
+      playerOne.board.rotateShip(x, y, playerOne.ship.getList(), e);
+      playerOne.board.addTabIndex(playerOne.ship.getList(), x, y);
     }
   }
 }
 
-boardContainerOne.addEventListener('click', (e) => sendLocationToRotate(e));
-boardContainerOne.addEventListener('keydown', (e) => sendLocationToRotate(e));
+boardContainerOne.addEventListener('click', sendLocationToRotate);
+boardContainerOne.addEventListener('keydown', sendLocationToRotate);
 
 boardContainerOne.addEventListener('dragstart', (e) => {
   playerOne.board.setMoveLocation(e.target);
 });
 
 boardContainerOne.addEventListener('dragover', (e) => {
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     e.preventDefault();
@@ -153,12 +152,12 @@ boardContainerOne.addEventListener('dragover', (e) => {
 });
 
 boardContainerOne.addEventListener('drop', (e) => {
-  playerOne.board.setMoveLocation(e.target, playerOne.list.getList());
-  playerOne.board.addTabIndex(playerOne.list.getList());
+  playerOne.board.setMoveLocation(e.target, playerOne.ship.getList());
+  playerOne.board.addTabIndex(playerOne.ship.getList());
 });
 
 document.addEventListener('keydown', (e) => {
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     const currentFocus = document.activeElement;
@@ -171,11 +170,11 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (e.key === 'Tab') {
-      playerOne.board.focusShip(playerOne.list.getList());
+      playerOne.board.focusShip(playerOne.ship.getList());
     }
 
     if (e.key === 'Tab' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      playerOne.board.moveWithArrowKey(e, playerOne.list.getList());
+      playerOne.board.moveWithArrowKey(e, playerOne.ship.getList());
     }
   } else if (currentTurn === 1) {
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
@@ -194,7 +193,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 playBtn.addEventListener('mouseenter', () => {
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     playBtn.classList.add('play-btn-hover');
@@ -202,7 +201,7 @@ playBtn.addEventListener('mouseenter', () => {
 });
 
 playBtn.addEventListener('mouseleave', () => {
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     playBtn.classList.remove('play-btn-hover');
@@ -210,30 +209,29 @@ playBtn.addEventListener('mouseleave', () => {
 });
 
 function startGame() {
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
   
   if (currentTurn === 0) {
-    const records = playerOne.info.getRecords();
-    const currentVictory = records[1];
+    const currentVictory = playerOne.currentVictory;
 
-    playerOne.info.setCurrentTurn(1);
+    playerOne.info.setCurrentTurn(playerOne, 1);
     playerOne.info.updateMessage('start');
-    playerOne.info.updateBtn();
+    playerOne.info.updateBtn(playerOne.currentTurn);
     playerOne.board.renderBoard(1, playerTwo.board.getBoard(), '', currentVictory);
     playerOne.board.markupTarget(playerTwo.board.getBoard());
   }
 }
 
-playBtn.addEventListener('click', () => startGame());
+playBtn.addEventListener('click', startGame);
 
 playBtn.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft') {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
     randomBtn.focus();
   }
 });
 
 function handleGame(e) {
-  const currentTurn = playerOne.info.getCurrentTurn();
+  const currentTurn = playerOne.currentTurn;
   
   if (currentTurn === 1) {
     if (e instanceof KeyboardEvent) {
@@ -248,19 +246,19 @@ function handleGame(e) {
 
     const x = Number(e.target.getAttribute('x'));
     const y = Number(e.target.getAttribute('y'));
-    const result = playerTwo.board.receiveAttack(x, y, 2, playerTwo.list.getList(), playerOne.board.getBoard());
+    const result = playerTwo.board.receiveAttack(x, y, 2, playerTwo.ship.getList(), playerOne.board.getBoard());
     
     if (result === 'hit' || result === 'sunk') {
-      playerOne.info.updateRecords('hit');
-      const winner = playerTwo.board.checkTheWinner(1, playerTwo.list.getList());
+      playerOne.info.updateRecords(playerOne, 'hit');
+      const winner = playerTwo.board.checkTheWinner(1, playerTwo.ship.getList());
 
       if (winner) {
-        playerOne.info.setCurrentTurn(3);
+        playerOne.info.setCurrentTurn(playerOne, 3);
         playerOne.board.markupTarget();
-        playerOne.info.displayResult(1, waitRender, playerOne.list.getList());
+        playerOne.info.displayResult(1, waitRender, playerOne.ship.getList());
         // Callback for setTimeout.
         function waitRender(totalBonus) {
-          playerOne.info.updateRecords(totalBonus, 'notRender');
+          playerOne.info.updateRecords(playerOne, totalBonus, 'notRender');
           playerOne.info.rotateEmblem();
           
           const moveOnBtn = document.querySelector('.move-on-btn');
@@ -275,12 +273,11 @@ function handleGame(e) {
             
             boardContainerOne.classList.remove('erase-board', 'display-board');
             playerOne.info.rotateEmblem();
-            const records = playerOne.info.getRecords();
-            const currentVictory = records[1];
+            const currentVictory = playerOne.currentVictory;
             
             if (currentVictory === 20) {
               playerOne.info.displayResult('finish');
-              playerOne.info.updateRecords();
+              playerOne.info.updateRecords(playerOne);
 
               const finaleBtn = document.querySelector('.finale-btn');
               finaleBtn.focus();
@@ -293,34 +290,34 @@ function handleGame(e) {
                 }
 
                 playerOne.info.rotateEmblem();
-                playerOne.info.updateRecords('reset');
-                playerOne.info.setFinished();
+                playerOne.info.updateRecords(playerOne, 'reset');
+                playerOne.info.setFinished(playerOne);
                 setUpGame();
               }
 
-              finaleBtn.addEventListener('click', () => finale());
-              finaleBtn.addEventListener('keydown', (e) => finale(e));
+              finaleBtn.addEventListener('click', finale);
+              finaleBtn.addEventListener('keydown', finale);
             } else {
               setUpGame();
             }
           }
 
-          moveOnBtn.addEventListener('click', () => moveOn());
-          moveOnBtn.addEventListener('keydown', (e) => moveOn(e));
+          moveOnBtn.addEventListener('click', moveOn);
+          moveOnBtn.addEventListener('keydown', moveOn);
         }
       } else {
         playerOne.board.markupTarget(playerTwo.board.getBoard());
       }
     } else if (result === 'miss') {
-      playerOne.info.setCurrentTurn(2);
+      playerOne.info.setCurrentTurn(playerOne, 2);
       playerOne.info.updateMessage('Computer\'s turn');
       playerOne.board.markupTarget();
-      playerOne.board.getComputerMove(waitComputerMove, playerOne.list.getList(), playerTwo.board.getBoard());
+      playerOne.board.getComputerMove(waitComputerMove, playerOne.ship.getList(), playerTwo.board.getBoard());
       // Callback for setTimeout.
       function waitComputerMove(winner) {
         if (winner) {
-          playerOne.info.setCurrentTurn(3);
-          playerOne.info.displayResult(2, waitRender);
+          playerOne.info.setCurrentTurn(playerOne, 3);
+          playerOne.info.displayResult(2, waitRender, '', playerOne.currentVictory);
           // Callback for setTimeout.
           function waitRender() {
             const tryAgainBtn = document.querySelector('.try-again-btn');
@@ -333,15 +330,15 @@ function handleGame(e) {
                 }
               }
 
-              playerOne.info.updateRecords('reset');
+              playerOne.info.updateRecords(playerOne, 'reset');
               setUpGame();
             }
             
-            tryAgainBtn.addEventListener('click', () => tryAgain());
-            tryAgainBtn.addEventListener('keydown', (e) => tryAgain(e));
+            tryAgainBtn.addEventListener('click', tryAgain);
+            tryAgainBtn.addEventListener('keydown', tryAgain);
           }
         } else {
-          playerOne.info.setCurrentTurn(1);
+          playerOne.info.setCurrentTurn(playerOne, 1);
           playerOne.info.updateMessage('Your turn');
           playerOne.board.markupTarget(playerTwo.board.getBoard());
 
@@ -354,5 +351,5 @@ function handleGame(e) {
   }
 }
 
-boardContainerTwo.addEventListener('click', (e) => handleGame(e));
-boardContainerTwo.addEventListener('keydown', (e) => handleGame(e));
+boardContainerTwo.addEventListener('click', handleGame);
+boardContainerTwo.addEventListener('keydown', handleGame);

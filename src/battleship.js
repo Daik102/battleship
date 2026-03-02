@@ -1,7 +1,7 @@
-function shipList() {
+function handleShip() {
   const list = [];
 
-  function ship(length, direction, bowX, bowY) {
+  function createShip(length, direction, bowX, bowY) {
     const shipType = ['submarine', 'destroyer', 'cruiser', 'battleship'];
     const type = shipType[length - 1];
     const coordinates = [];
@@ -35,24 +35,29 @@ function shipList() {
     };
   }
 
-  const deployShip = (customSets) => {
-    const defaultSets = [[0, 1, 4, 'horizontal'], [5, 3, 3, 'vertical'], [3, 6, 2, 'horizontal'], [6, 1, 1, 'vertical']];
-    let fleetSets = [];
-    customSets ? fleetSets = customSets : fleetSets = defaultSets;
+  const deployShip = (customSet) => {
+    const defaultSet = [[0, 1, 4, 'horizontal'], [5, 3, 3, 'vertical'], [3, 6, 2, 'horizontal'], [6, 1, 1, 'vertical']];
+    let fleetSet = [];
     
-    for (let i = 0; i < fleetSets.length; i++) {
-      const fleetSet = fleetSets[i];
-      const bowX = fleetSet[0];
-      const bowY = fleetSet[1];
-      const length = fleetSet[2];
-      const direction = fleetSet[3];
-      const newShip = ship(length, direction, bowX, bowY);
+    if (!customSet || customSet.length === 0) {
+      fleetSet = defaultSet;
+    } else {
+      fleetSet = customSet;
+    }
+    
+    for (let i = 0; i < fleetSet.length; i++) {
+      const set = fleetSet[i];
+      const bowX = set[0];
+      const bowY = set[1];
+      const length = set[2];
+      const direction = set[3];
+      const newShip = createShip(length, direction, bowX, bowY);
       list.push(newShip);
     }
   };
 
-  const getDeploySets = () => {
-    const customSets = [];
+  const getDeploySet = (playerOne) => {
+    const customSet = [];
     
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
@@ -60,23 +65,24 @@ function shipList() {
       const y = ship.coordinates[0][1];
       const length = ship.length;
       const direction = ship.direction;
-      const customSet = [x, y, length, direction];
-      customSets.push(customSet);
+      const set = [x, y, length, direction];
+      customSet.push(set);
     }
 
-    return customSets;
+    playerOne.customSet = customSet;
+    return customSet;
   };
 
   const getList = () => list;
 
   return {
     deployShip,
-    getDeploySets,
+    getDeploySet,
     getList,
   }
 }
 
-function gameBoard() {
+function handleGameBoard() {
   const row = 8;
   const column = 8;
   let board = Array.from({ length: row }, () => Array(column).fill(0));
@@ -796,7 +802,7 @@ function gameBoard() {
       }
     }
 
-    const info = gameInfo();
+    const info = handleInfo();
     const shipType = ['submarine', 'destroyer', 'cruiser', 'battleship'];
 
     if (result === 'hit') {
@@ -1115,31 +1121,26 @@ function gameBoard() {
   };
 }
 
-function gameInfo(cs, cv) {
-  let currentScore = cs || 0;
-  let hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
-  let currentVictory = cv || 0;
-  let highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
-
-  const updateRecords = (score, notRender) => {
+function handleInfo() {
+  const updateRecords = (playerOne, score, notRender) => {
     if (score === 'hit') {
-      currentScore += 500;
+      playerOne.currentScore += 500;
     } else if (score === 'reset') {
-      currentScore = 0;
-      currentVictory = 0;
+      playerOne.currentScore = 0;
+      playerOne.currentVictory = 0;
     } else if (score) {
-      currentScore += score;
-      currentVictory += 1;
+      playerOne.currentScore += score;
+      playerOne.currentVictory += 1;
     }
 
-    if (currentScore > hiScore) {
-      hiScore = currentScore;
-      localStorage.setItem('hiScore', JSON.stringify(hiScore));
+    if (playerOne.currentScore > playerOne.hiScore) {
+      playerOne.hiScore = playerOne.currentScore;
+      localStorage.setItem('hiScore', JSON.stringify(playerOne.hiScore));
     }
 
-    if (currentVictory > highestVictory) {
-      highestVictory = currentVictory;
-      localStorage.setItem('highestVictory', JSON.stringify(highestVictory));
+    if (playerOne.currentVictory > playerOne.highestVictory) {
+      playerOne.highestVictory = playerOne.currentVictory;
+      localStorage.setItem('highestVictory', JSON.stringify(playerOne.highestVictory));
     }
     
     if (notRender) {
@@ -1150,16 +1151,14 @@ function gameInfo(cs, cv) {
     const hiScoreBoard = document.querySelector('.hi-score-board');
     const currentVictoryBoard = document.querySelector('.current-victory-board');
     const highestVictoryBoard = document.querySelector('.highest-victory-board');
-    let padScore = currentScore.toString().padStart(6, '0');
-    let padHiScore = hiScore.toString().padStart(6, '0');
+    let padScore = playerOne.currentScore.toString().padStart(6, '0');
+    let padHiScore = playerOne.hiScore.toString().padStart(6, '0');
 
     currentScoreBoard.textContent = padScore;
     hiScoreBoard.textContent = 'Hi ' + padHiScore;
-    currentVictoryBoard.textContent = currentVictory;
-    highestVictoryBoard.textContent = highestVictory;
+    currentVictoryBoard.textContent = playerOne.currentVictory;
+    highestVictoryBoard.textContent = playerOne.highestVictory;
   };
-
-  const getRecords = () => [currentScore, currentVictory];
 
   let intervalId = 0;
 
@@ -1209,7 +1208,7 @@ function gameInfo(cs, cv) {
     }
   };
 
-  const updateBtn = () => {
+  const updateBtn = (currentTurn) => {
     const randomBtn = document.querySelector('.random-btn');
     const playBtn = document.querySelector('.play-btn');
 
@@ -1225,9 +1224,7 @@ function gameInfo(cs, cv) {
     }
   };
 
-  let currentTurn = 0;
-  const setCurrentTurn = (turn) => currentTurn = turn;
-  const getCurrentTurn = () => currentTurn;
+  const setCurrentTurn = (playerOne, turn) => playerOne.currentTurn = turn;
 
   const displayConfirmation = () => {
     const boardContainerOne = document.querySelector('.board-container-one');
@@ -1236,8 +1233,8 @@ function gameInfo(cs, cv) {
       <div class="confirmation-container">
         <h2>Are you sure to reset?</h2>
         <div class="btn-container">
-          <button type="button" class="do-reset-btn">Reset</button>
           <button type="button" class="cancel-btn">Cancel</button>
+          <button type="button" class="do-reset-btn">Reset</button>
         </div>
       </div>
     `;
@@ -1278,7 +1275,7 @@ function gameInfo(cs, cv) {
     });
   };
 
-  const displayResult = (playerNo, waitRender, list) => {
+  const displayResult = (playerNo, waitRender, list, currentVictory) => {
     const boardContainerOne = document.querySelector('.board-container-one');
     const boardContainerTwo = document.querySelector('.board-container-two');
     let resultHTML = '';
@@ -1389,44 +1386,40 @@ function gameInfo(cs, cv) {
     }
   };
 
-  let finished;
-
-  const setFinished = (display) => {
-    if (display) {
+  const setFinished = (playerOne) => {
+    if (playerOne) {
+      playerOne.finishedGame = true;
+    } else {
       const title = document.querySelector('.title');
       title.classList.add('golden-title');
-    } else {
-      finished = true;
     }
   };
 
-  const getFinished = () => finished;
-
   return {
     updateRecords,
-    getRecords,
     updateMessage,
     updateBtn,
     setCurrentTurn,
-    getCurrentTurn,
     displayConfirmation,
     rotateEmblem,
     displayResult,
     setFinished,
-    getFinished,
   }
 }
 
-export function player(playerNo, playerType, currentScore, currentVictory) {
+export function createPlayer(playerNo, playerType, currentScore, hiScore, currentVictory, highestVictory, finishedGame, customSet) {
   return {
     playerNo,
     playerType,
-    list: shipList(),
-    board: gameBoard(),
-    info: gameInfo(currentScore, currentVictory),
+    currentTurn: 0,
+    currentScore,
+    hiScore,
+    currentVictory,
+    highestVictory,
+    finishedGame,
+    customSet,
+    ship: handleShip(),
+    board: handleGameBoard(),
+    info: handleInfo(),
   };
-}
-
-if (typeof module === 'object' && module.exports) {
-  module.exports = gameBoard;
 }
