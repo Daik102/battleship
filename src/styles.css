@@ -48,6 +48,7 @@
   --reset-btn-dark-theme: #62cd00;
   --play-btn-theme: aqua;
   --play-btn-dark-theme: #00cdcd;
+  --cancel-btn-hover-theme: aliceblue;
 }
 
 html {
@@ -122,11 +123,11 @@ button {
 
 @keyframes rotate-emblem {
   from {
-    transform: rotate3d(1, 0, 0, 1turn);
+    transform: rotate3d(1, 0, 0, 0);
   }
 
   to {
-    transform: rotate(1, 0, 0, 1turn);
+    transform: rotate3d(1, 0, 0, 1turn);
   }
 }
 
@@ -516,14 +517,14 @@ h2 {
 
 .btn-container {
   display: flex;
-  gap: 2rem;
+  gap: 2.8rem;
 }
 
 .move-on-btn,
 .try-again-btn,
 .finale-btn,
-.do-reset-btn,
-.cancel-btn {
+.cancel-btn,
+.do-reset-btn {
   margin-top: 1.2rem;
   padding: 0.4rem 0.8rem;
   font-size: 1.5rem;
@@ -531,12 +532,30 @@ h2 {
   background-image: linear-gradient(var(--square-theme), var(--square-dark-theme));
 }
 
+.move-on-btn,
+.try-again-btn,
+.finale-btn,
+.cancel-btn,
+.do-reset-btn {
+  background-image: linear-gradient(var(--square-theme), var(--square-dark-theme));
+}
+
+.do-reset-btn {
+  background-image: linear-gradient(var(--reset-btn-theme), var(--reset-btn-dark-theme));
+}
+
 .move-on-btn:hover,
 .try-again-btn:hover,
-.finale-btn:hover,
-.do-reset-btn:hover,
-.cancel-btn:hover {
+.finale-btn:hover {
   opacity: 0.85;
+}
+
+.cancel-btn:hover {
+  background-image: linear-gradient(var(--cancel-btn-hover-theme));
+}
+
+.do-reset-btn:hover {
+  background-image: linear-gradient(var(--reset-btn-theme));
 }
 
 .link-section {
@@ -581,7 +600,7 @@ h2 {
   }
 }
 
-@media screen and (min-width: 20.01rem) and (max-width: 24rem) and (min-height: calc(44rem - 100px)) {
+@media screen and (min-width: 20.01rem) and (max-width: 24rem) and (min-height: calc(44rem - 80px)) {
   html {
     font-size: 7.5px;
   }
@@ -593,13 +612,13 @@ h2 {
   }
 }
 
-@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(50rem - 100px)) {
+@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(50rem - 80px)) {
   html {
     font-size: 8.5px;
   }
 }
 
-@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(54rem - 100px)) {
+@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(54rem - 80px)) {
   html {
     font-size: 9px;
   }
@@ -611,13 +630,13 @@ h2 {
   }
 }
 
-@media screen and (min-width: 48rem) and (min-height: calc(70rem - 100px)) {
+@media screen and (min-width: 48rem) and (min-height: calc(70rem - 80px)) {
   html {
     font-size: 12px;
   }
 }
 
-@media screen and (min-width: 48rem) and (min-height: calc(82rem - 100px)) {
+@media screen and (min-width: 48rem) and (min-height: calc(82rem - 80px)) {
   html {
     font-size: 14px;
   }
