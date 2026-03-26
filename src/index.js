@@ -1,11 +1,6 @@
 import "./styles.css";
 import { createPlayer } from "./battleship.js";
 
-const hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
-const highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
-let playerOne = createPlayer(1, 'human', 0, hiScore, 0, highestVictory, false, []);
-let playerTwo = createPlayer(2, 'computer');
-
 function setUpGame(initial) {
   let customSet = [];
 
@@ -36,13 +31,6 @@ function setUpGame(initial) {
   playerOne.board.renderBoard();
   playerOne.board.addTabIndex(playerOne.ship.getList());
 }
-
-setUpGame('initial');
-
-const randomBtn = document.querySelector('.random-btn');
-const playBtn = document.querySelector('.play-btn');
-const boardContainerOne = document.querySelector('.board-container-one');
-const boardContainerTwo = document.querySelector('.board-container-two');
 
 function randomOrReset(e) {
   if (e instanceof KeyboardEvent) {
@@ -104,19 +92,15 @@ function randomOrReset(e) {
   }
 }
 
-randomBtn.addEventListener('click', randomOrReset);
-randomBtn.addEventListener('keydown', randomOrReset);
-
-// Change the ship's color when hovering.
-boardContainerOne.addEventListener('mouseover', () => {
+function addHoverOnShip() {
   const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     playerOne.board.hoverShip(playerOne.ship.getList());
   }
-});
+}
 
-function sendLocationToRotate(e) {
+function sendRotatingLocation(e) {
   if (e instanceof KeyboardEvent) {
     if (e.key !== 'Enter' && e.key !== ' ') {
       return;
@@ -125,38 +109,23 @@ function sendLocationToRotate(e) {
 
   const currentTurn = playerOne.currentTurn;
   
-  if (currentTurn === 0) {
+  if (currentTurn === 0 && e.target.classList.contains('ship')) {
     const x = Number(e.target.getAttribute('x'));
     const y = Number(e.target.getAttribute('y'));
-  
-    if (e.target.classList.contains('ship')) {
-      playerOne.board.rotateShip(x, y, playerOne.ship.getList(), e);
-      playerOne.board.addTabIndex(playerOne.ship.getList(), x, y);
-    }
+    playerOne.board.rotateShip(x, y, playerOne.ship.getList(), e);
+    playerOne.board.addTabIndex(playerOne.ship.getList(), x, y);
   }
 }
 
-boardContainerOne.addEventListener('click', sendLocationToRotate);
-boardContainerOne.addEventListener('keydown', sendLocationToRotate);
-
-boardContainerOne.addEventListener('dragstart', (e) => {
-  playerOne.board.setMoveLocation(e.target);
-});
-
-boardContainerOne.addEventListener('dragover', (e) => {
+function preventDefault(e) {
   const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     e.preventDefault();
   }
-});
+}
 
-boardContainerOne.addEventListener('drop', (e) => {
-  playerOne.board.setMoveLocation(e.target, playerOne.ship.getList());
-  playerOne.board.addTabIndex(playerOne.ship.getList());
-});
-
-document.addEventListener('keydown', (e) => {
+function handleKeyDown(e) {
   const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
@@ -190,23 +159,23 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'p') {
     startGame();
   }
-});
+}
 
-playBtn.addEventListener('mouseenter', () => {
+function addHoverOnPlayBtn() {
   const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     playBtn.classList.add('play-btn-hover');
   }
-});
+}
 
-playBtn.addEventListener('mouseleave', () => {
+function removeHoverOnPlayBtn() {
   const currentTurn = playerOne.currentTurn;
 
   if (currentTurn === 0) {
     playBtn.classList.remove('play-btn-hover');
   }
-});
+}
 
 function startGame() {
   const currentTurn = playerOne.currentTurn;
@@ -222,13 +191,11 @@ function startGame() {
   }
 }
 
-playBtn.addEventListener('click', startGame);
-
-playBtn.addEventListener('keydown', (e) => {
+function focusRandomBtn(e) {
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
     randomBtn.focus();
   }
-});
+}
 
 function handleGame(e) {
   const currentTurn = playerOne.currentTurn;
@@ -351,5 +318,33 @@ function handleGame(e) {
   }
 }
 
+const randomBtn = document.querySelector('.random-btn');
+const playBtn = document.querySelector('.play-btn');
+const boardContainerOne = document.querySelector('.board-container-one');
+const boardContainerTwo = document.querySelector('.board-container-two');
+const hiScore = JSON.parse(localStorage.getItem('hiScore')) || 5000;
+const highestVictory = JSON.parse(localStorage.getItem('highestVictory')) || 0;
+let playerOne = createPlayer(1, 'human', 0, hiScore, 0, highestVictory, false, []);
+let playerTwo = createPlayer(2, 'computer');
+
+setUpGame('initial');
+randomBtn.addEventListener('click', randomOrReset);
+randomBtn.addEventListener('keydown', randomOrReset);
+playBtn.addEventListener('mouseenter', addHoverOnPlayBtn);
+playBtn.addEventListener('mouseleave', removeHoverOnPlayBtn);
+playBtn.addEventListener('click', startGame);
+playBtn.addEventListener('keydown', focusRandomBtn);
+boardContainerOne.addEventListener('mouseover', addHoverOnShip);
+boardContainerOne.addEventListener('click', sendRotatingLocation);
+boardContainerOne.addEventListener('keydown', sendRotatingLocation);
+boardContainerOne.addEventListener('dragstart', (e) => playerOne.board.setMovingLocation(e.target));
+boardContainerOne.addEventListener('dragover', preventDefault);
+
+boardContainerOne.addEventListener('drop', (e) => {
+  playerOne.board.setMovingLocation(e.target, playerOne.ship.getList());
+  playerOne.board.addTabIndex(playerOne.ship.getList());
+});
+
 boardContainerTwo.addEventListener('click', handleGame);
 boardContainerTwo.addEventListener('keydown', handleGame);
+document.addEventListener('keydown', handleKeyDown);

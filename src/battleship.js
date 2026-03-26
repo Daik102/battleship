@@ -413,7 +413,7 @@ function handleGameBoard() {
 
   let startTarget = {};
 
-  const setMoveLocation = (target, list) => {
+  const setMovingLocation = (target, list) => {
     if (!list) {
       startTarget = target;
       return;
@@ -518,9 +518,9 @@ function handleGameBoard() {
         }
       }
 
-      function sendLocationToMove(adjustmentNum) {
-        setMoveLocation(squareOnes[focusIndex]);
-        cannotMove = setMoveLocation(squareOnes[focusIndex + adjustmentNum], list);
+      function sendMovingLocation(adjustmentNum) {
+        setMovingLocation(squareOnes[focusIndex]);
+        cannotMove = setMovingLocation(squareOnes[focusIndex + adjustmentNum], list);
 
         if (!cannotMove) {
           focusIndex += adjustmentNum;
@@ -533,13 +533,13 @@ function handleGameBoard() {
       }
       
       if (e.key === 'ArrowRight' && focusIndex % column + length + 1 <= column) {
-        sendLocationToMove(1);
+        sendMovingLocation(1);
       } else if (e.key === 'ArrowLeft' && focusIndex % column !== 0) {
-        sendLocationToMove(-1);
+        sendMovingLocation(-1);
       } else if (e.key === 'ArrowDown' && focusIndex + column <= squareOnes.length - 1) {
-        sendLocationToMove(column);
+        sendMovingLocation(column);
       }  else if (e.key === 'ArrowUp' && focusIndex - column >= 0) {
-        sendLocationToMove(-column);
+        sendMovingLocation(-column);
       }
     }
   };
@@ -1107,7 +1107,7 @@ function handleGameBoard() {
     hoverShip,
     focusShip,
     rotateShip,
-    setMoveLocation,
+    setMovingLocation,
     moveWithArrowKey,
     deployRandom,
     markupTarget,
@@ -1231,7 +1231,7 @@ function handleInfo() {
 
     const confirmationHTML = `
       <div class="confirmation-container">
-        <h2>Are you sure to reset?</h2>
+        <h2 class="dialog-header">Are you sure to reset?</h2>
         <div class="btn-container">
           <button type="button" class="cancel-btn">Cancel</button>
           <button type="button" class="do-reset-btn">Reset</button>
@@ -1283,7 +1283,7 @@ function handleInfo() {
     if (playerNo === 1) {
       resultHTML = `
         <div class="victory-container">
-          <h2>Mission Complete</h2>
+          <h2 class="dialog-header">Mission Complete</h2>
           <p class="alive-bonus">- Alive Bonus -</p>
           <div class="bonus-row">
             <p>Battleship</p>
@@ -1325,7 +1325,7 @@ function handleInfo() {
     } else if (playerNo === 2) {
       resultHTML = `
         <div class="defeat-container">
-          <h2>Mission failed</h2>
+          <h2 class="dialog-header">Mission failed</h2>
           <p>- Battle Result -</p>
           <p class="final-victory-board"></p>
           <p>Your rank:</p>
@@ -1372,7 +1372,7 @@ function handleInfo() {
       
       resultHTML = `
         <div class="finish-container">
-          <h2>Congratulations!</h2>
+          <h2 class="dialog-header">Congratulations!</h2>
           <p>- Battle Result -</p>
           <p>20 wins</p>
           <p>Your rank:</p>

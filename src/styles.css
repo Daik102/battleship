@@ -7,8 +7,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: BlackOpsOne, Arial, Helvetica, sans-serif;
   font-weight: 400;
+  font-family: BlackOpsOne, Arial, Helvetica, sans-serif;
 }
 
 :root {
@@ -59,23 +59,13 @@ body {
   background-image: linear-gradient(var(--light-background-theme), var(--background-theme));
 }
 
-ul {
-  list-style-type: none;
-}
-
-button {
-  border: none;
-  cursor: pointer;
-}
-
 .wrapper {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   width: 44rem;
   height: 100vh;
-  margin: 0 auto;
-  padding: 6rem 0 12rem;
   background-color: var(--wrapper-theme);
 }
 
@@ -83,11 +73,12 @@ button {
   display: flex;
   justify-content: center;
   gap: 1.6rem;
+  width: 100%;
 }
 
 .title {
-  color: var(--text-theme);
   font-size: 2.6rem;
+  color: var(--text-theme);
   text-shadow: 0.4rem 0.4rem 0 var(--text-shadow-theme);
 }
 
@@ -110,9 +101,9 @@ button {
 }
 
 .emblem-star {
-  margin-top: -1.26rem;
   width: 0.8rem;
   height: 0.8rem;
+  margin-top: -1.26rem;
   background: url(./icons/star.svg) no-repeat;
   filter: invert(82%) sepia(27%) saturate(3145%) hue-rotate(360deg) brightness(107%) contrast(103%);
 }
@@ -134,8 +125,8 @@ button {
 .info-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   width: 100%;
   margin:1.2rem 0;
 }
@@ -160,8 +151,8 @@ button {
 
 .current-victory-board,
 .highest-victory-board {
-  color: var(--text-theme);
   font-size: 1.5rem;
+  color: var(--text-theme);
 }
 
 .score-board-row {
@@ -173,8 +164,8 @@ button {
 
 .current-score-board,
 .hi-score-board {
-  color: var(--text-theme);
   font-size: 1.6rem;
+  color: var(--text-theme);
 }
 
 .message-row {
@@ -183,20 +174,25 @@ button {
   width: 30rem;
 }
 
+.message-row button {
+  border: none;
+  cursor: pointer;
+}
+
 .message-board {
   width: 15.6rem;
   padding: 0.4rem 0.8rem;
-  background-color: var(--square-theme);
-  color: var(--black-text-theme);
   font-size: 1.5rem;
+  color: var(--black-text-theme);
+  background-color: var(--square-theme);
   box-shadow: 0.2rem 0.2rem 0.4rem var(--text-shadow-theme);
 }
 
 .random-btn,
 .play-btn {
   font-size: 1.5rem;
-  border-radius: 0.4rem;
   color: var(--black-text-theme);
+  border-radius: 0.4rem;
   box-shadow: 0.2rem 0.2rem 0.4rem var(--text-shadow-theme);
 }
 
@@ -235,10 +231,14 @@ button {
 .board-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   gap: 2.4rem;
   width: 100%;
+}
+
+.board-section ul {
+  list-style-type: none;
 }
 
 .board-area-one,
@@ -299,6 +299,11 @@ button {
   grid-template-rows: repeat(8, 1fr);
   width: 28rem;
   height: 28rem;
+}
+
+.board-container-one button {
+  border: none;
+  cursor: pointer;
 }
 
 .deploy-time {
@@ -410,8 +415,8 @@ button {
 }
 
 .initial {
-  cursor: default;
   background-color: var(--initial-theme);
+  cursor: default;
 }
 
 .round-board {
@@ -466,21 +471,21 @@ button {
   padding-bottom: 4rem;
 }
 
-h2 {
+.dialog-header {
   font-size: 2.3rem;
   color: var(--white-text-theme);
 }
 
-.victory-container h2 {
+.victory-container .dialog-header {
   margin-bottom: 1.2rem;
 }
 
-.defeat-container h2,
-.finish-container h2 {
+.defeat-container .dialog-header,
+.finish-container .dialog-header {
    margin-bottom: 1.6rem;
 }
 
-.confirmation-container h2 {
+.confirmation-container .dialog-header {
   font-size: 1.9rem;
 }
 
@@ -528,8 +533,8 @@ h2 {
   margin-top: 1.2rem;
   padding: 0.4rem 0.8rem;
   font-size: 1.5rem;
-  border-radius: 0.4rem;
   background-image: linear-gradient(var(--square-theme), var(--square-dark-theme));
+  border-radius: 0.4rem;
 }
 
 .move-on-btn,
@@ -538,6 +543,11 @@ h2 {
 .cancel-btn,
 .do-reset-btn {
   background-image: linear-gradient(var(--square-theme), var(--square-dark-theme));
+}
+
+.cancel-btn,
+.do-reset-btn {
+  width: 7.2rem;
 }
 
 .do-reset-btn {
@@ -563,9 +573,9 @@ h2 {
 }
 
 .admin-link {
+  font-size: 1.3rem;
   color: var(--enemy-square-theme);
   text-decoration: none;
-  font-size: 1.3rem;
 }
 
 .initial-admin-link {
@@ -575,69 +585,73 @@ h2 {
 .admin-link:hover {
   color: var(--target-theme);
 }
-
+/* For smartphones in portrait mode */
 @media screen and (orientation: portrait) {
+  html {
+    font-size: 6.5px;
+  }
+
   .wrapper {
     width: 100%;
   }
 }
 
-@media screen and (orientation: landscape) and (max-width: 80rem) {
-  .wrapper {
-    height: auto;
-  }
-}
-
-@media screen and (max-width: 20rem) {
+@media screen and (orientation: portrait) and (min-width: 22.5em) {
   html {
-    font-size: 5.5px;
+    font-size: 7.75px;
   }
 }
 
-@media screen and (min-width: 20.01rem) and (max-width: 24rem) {
+@media screen and (orientation: portrait) and (min-width: 22.5em) and (min-height: 44rem) {
   html {
-    font-size: 6.5px;
+    font-size: 9.25px;
   }
 }
-
-@media screen and (min-width: 20.01rem) and (max-width: 24rem) and (min-height: calc(44rem - 80px)) {
-  html {
-    font-size: 7.5px;
-  }
-}
-
-@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) {
-  html {
-    font-size: 7.5px;
-  }
-}
-
-@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(50rem - 80px)) {
-  html {
-    font-size: 8.5px;
-  }
-}
-
-@media screen and (min-width: 24.01rem) and (max-width: 47.99rem) and (min-height: calc(54rem - 80px)) {
-  html {
-    font-size: 9px;
-  }
-}
-
-@media screen and (min-width: 48rem) {
+/* For large smartphones and tablets in portrait mode */
+@media screen and (orientation: portrait) and (min-width: 25.75em) and (min-height: 44rem) {
   html {
     font-size: 10px;
   }
 }
-
-@media screen and (min-width: 48rem) and (min-height: calc(70rem - 80px)) {
+/* For smartphones in landscape mode */
+@media screen and (orientation: landscape) {
   html {
-    font-size: 12px;
+    font-size: 6.5px;
+  }
+
+  .wrapper {
+    height: auto;
+    margin: 0 auto;
+    padding: 4.8rem 0;
   }
 }
 
-@media screen and (min-width: 48rem) and (min-height: calc(82rem - 80px)) {
+@media screen and (orientation: landscape) and (min-width: 41.6em) {
   html {
-    font-size: 14px;
+    font-size: 7.75px;
+  }
+}
+
+@media screen and (orientation: landscape) and (min-width: 50em) {
+  html {
+    font-size: 9.25px;
+  }
+}
+
+@media screen and (orientation: landscape) and (min-width: 55.75em) {
+  html {
+    font-size: 10px;
+  }
+}
+/* For small and middle tablets in landscape mode */
+@media screen and (orientation: landscape) and (min-width: 64em) {
+  html {
+    font-size: 10px;
+  }
+}
+/* For large tablets in landscape mode, laptops and desktops */
+@media screen and (orientation: landscape) and (min-width: 85em) {
+  .wrapper {
+    height: 100vh;
   }
 }
