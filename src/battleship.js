@@ -482,23 +482,13 @@ function handleGameBoard() {
 
   const moveWithArrowKey = (e, list) => {
     const playBtn = document.querySelector('.play-btn');
-    const adminLink = document.querySelector('.admin-link');
+    const link = document.querySelector('.link');
 
-    playBtn.addEventListener('focus', () => {
-      focusIndex = -1;
-    });
-
-    adminLink.addEventListener('focus', () => {
-      focusIndex = -1;
-    });
+    playBtn.addEventListener('focus', () => focusIndex = -1);
+    link.addEventListener('focus', () => focusIndex = -1);
 
     const squareOnes = document.querySelectorAll('.square-one');
-
-    squareOnes.forEach((squareOne, i) => {
-      squareOne.addEventListener('focus', () => {
-        focusIndex = i;
-      });
-    });
+    squareOnes.forEach((squareOne, i) => squareOne.addEventListener('focus', () => focusIndex = i));
 
     if (focusIndex >= 0) {
       let length = 1;
@@ -579,13 +569,8 @@ function handleGameBoard() {
     const rows = document.querySelectorAll('.row');
 
     function loseFocus() {
-      columns.forEach((column) => {
-        column.classList.remove('target-line');
-      });
-      
-      rows.forEach((row) => {
-        row.classList.remove('target-line');
-      });
+      columns.forEach((column) => column.classList.remove('target-line'));
+      rows.forEach((row) => row.classList.remove('target-line'));
 
       squares.forEach((square) => {
         square.classList.remove('target');
@@ -1051,7 +1036,7 @@ function handleGameBoard() {
 
       const rows = document.querySelectorAll('.row');
       const columns = document.querySelectorAll('.column');
-      const adminLink = document.querySelector('.admin-link');
+      const link = document.querySelector('.link');
 
       rows.forEach((row) => {
         row.classList.remove('dark');
@@ -1063,8 +1048,8 @@ function handleGameBoard() {
         column.classList.add('initial-line');
       });
       
-      adminLink.classList.remove('dark');
-      adminLink.classList.add('initial-admin-link');
+      link.classList.remove('dark');
+      link.classList.add('initial-link');
     }
 
     if (currentVictory >= 0) {
@@ -1088,17 +1073,11 @@ function handleGameBoard() {
 
       const rows = document.querySelectorAll('.row');
       const columns = document.querySelectorAll('.column');
-      const adminLink = document.querySelector('.admin-link');
+      const link = document.querySelector('.link');
 
-      rows.forEach((row) => {
-        row.classList.remove('initial-line');
-      });
-
-      columns.forEach((column) => {
-        column.classList.remove('initial-line');
-      });
-
-      adminLink.classList.remove('initial-admin-link');
+      rows.forEach((row) => row.classList.remove('initial-line'));
+      columns.forEach((column) => column.classList.remove('initial-line'));
+      link.classList.remove('initial-link');
     }
   };
   
@@ -1341,17 +1320,11 @@ function handleInfo() {
         
         const rows = document.querySelectorAll('.row');
         const columns = document.querySelectorAll('.column');
+        rows.forEach((row) => row.classList.add('dark'));
+        columns.forEach((column) => column.classList.add('dark'));
 
-        rows.forEach((row) => {
-          row.classList.add('dark');
-        });
-
-        columns.forEach((column) => {
-          column.classList.add('dark');
-        });
-
-        const adminLink = document.querySelector('.admin-link');
-        adminLink.classList.add('dark');
+        const link = document.querySelector('.link');
+        link.classList.add('dark');
         boardContainerOne.innerHTML = resultHTML;
 
         const rankList = ['Seaman', 'Petty Officer', 'Chief Petty Officer', 'Ensign', 'Lieutenant Jr. Grade', 'Lieutenant', 'Lieutenant Commander', 'Commander', 'Captain', 'Rear Admiral', 'Vice Admiral'];

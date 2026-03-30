@@ -65,7 +65,8 @@ body {
   justify-content: center;
   align-items: center;
   width: 44rem;
-  height: 100vh;
+  min-height: 100vh;
+  margin: 0 auto;
   background-color: var(--wrapper-theme);
 }
 
@@ -78,8 +79,8 @@ body {
 
 .title {
   font-size: 2.6rem;
-  color: var(--text-theme);
   text-shadow: 0.4rem 0.4rem 0 var(--text-shadow-theme);
+  color: var(--text-theme);
 }
 
 .golden-title {
@@ -192,8 +193,8 @@ body {
 .play-btn {
   font-size: 1.5rem;
   color: var(--black-text-theme);
-  border-radius: 0.4rem;
   box-shadow: 0.2rem 0.2rem 0.4rem var(--text-shadow-theme);
+  border-radius: 0.4rem;
 }
 
 .disabled {
@@ -572,17 +573,17 @@ body {
   margin-top: -2.4rem;
 }
 
-.admin-link {
+.link {
   font-size: 1.3rem;
-  color: var(--enemy-square-theme);
   text-decoration: none;
+  color: var(--enemy-square-theme);
 }
 
-.initial-admin-link {
+.initial-link {
   color: var(--initial-theme);
 }
 
-.admin-link:hover {
+.link:hover {
   color: var(--target-theme);
 }
 /* For smartphones in portrait mode */
@@ -598,17 +599,29 @@ body {
 
 @media screen and (orientation: portrait) and (min-width: 22.5em) {
   html {
-    font-size: 7.75px;
+    font-size: 7.5px;
   }
 }
 
-@media screen and (orientation: portrait) and (min-width: 22.5em) and (min-height: 44rem) {
+@media screen and (orientation: portrait) and (min-width: 24.3em) {
   html {
-    font-size: 9.25px;
+    font-size: 8px;
   }
 }
-/* For large smartphones and tablets in portrait mode */
-@media screen and (orientation: portrait) and (min-width: 25.75em) and (min-height: 44rem) {
+
+@media screen and (orientation: portrait) and (min-width: 25.75em) {
+  html {
+    font-size: 8.5px;
+  }
+}
+
+@media screen and (orientation: portrait) and (min-width: 26.75em) {
+  html {
+    font-size: 8.75px;
+  }
+}
+/* For tablets in portrait mode */
+@media screen and (orientation: portrait) and (min-width: 48em) {
   html {
     font-size: 10px;
   }
@@ -620,38 +633,36 @@ body {
   }
 
   .wrapper {
-    height: auto;
-    margin: 0 auto;
-    padding: 4.8rem 0;
+    padding: 6rem 0;
   }
 }
 
 @media screen and (orientation: landscape) and (min-width: 41.6em) {
   html {
-    font-size: 7.75px;
+    font-size: 7.5px;
   }
 }
 
 @media screen and (orientation: landscape) and (min-width: 50em) {
   html {
-    font-size: 9.25px;
+    font-size: 8px;
   }
 }
 
 @media screen and (orientation: landscape) and (min-width: 55.75em) {
   html {
-    font-size: 10px;
+    font-size: 8.5px;
   }
 }
-/* For small and middle tablets in landscape mode */
+
+@media screen and (orientation: landscape) and (min-width: 58em) {
+  html {
+    font-size: 8.75px;
+  }
+}
+/* For tablets in landscape mode, laptops, and desktops */
 @media screen and (orientation: landscape) and (min-width: 64em) {
   html {
     font-size: 10px;
-  }
-}
-/* For large tablets in landscape mode, laptops and desktops */
-@media screen and (orientation: landscape) and (min-width: 85em) {
-  .wrapper {
-    height: 100vh;
   }
 }
