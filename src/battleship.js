@@ -1,7 +1,7 @@
-function handleShip() {
-  const list = [];
+function Ship() {
+  let list = [];
 
-  function createShip(length, direction, bowX, bowY) {
+  const createShip = (length, direction, bowX, bowY) => {
     const shipType = ['submarine', 'destroyer', 'cruiser', 'battleship'];
     const type = shipType[length - 1];
     const coordinates = [];
@@ -36,6 +36,7 @@ function handleShip() {
   }
 
   const deployShip = (customSet) => {
+    list = [];
     const defaultSet = [[0, 1, 4, 'horizontal'], [5, 3, 3, 'vertical'], [3, 6, 2, 'horizontal'], [6, 1, 1, 'vertical']];
     let fleetSet = [];
     
@@ -82,18 +83,38 @@ function handleShip() {
   }
 }
 
-function handleGameBoard() {
+function GameBoard() {
   const row = 8;
   const column = 8;
   let board = Array.from({ length: row }, () => Array(column).fill(0));
 
   const deployBoard = (list) => {
+    board = Array.from({ length: row }, () => Array(column).fill(0));
+
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
       const direction = ship.direction;
-      const bow = ship.coordinates[0];
-      const bowX = bow[0];
-      const bowY = bow[1];
+      const [bowX, bowY] = ship.coordinates[0];
+
+      // GUARD CLAUSE: Validate coordinates BEFORE placing the ship
+      for (let j = 0; j < ship.length; j++) {
+        const currentX = direction === 'horizontal' ? bowX : bowX + j;
+        const currentY = direction === 'horizontal' ? bowY + j : bowY;
+
+        // Check 1: Is the coordinate outside 8x8 boundaries?
+        if (currentX >= row || currentX < 0 || 
+            currentY >= column || currentY < 0
+        ) {
+          console.error(`Error: Ship ${i} goes out of bounds!`);
+          return false;
+        }
+
+        // Check 2: Is there already a ship ('S') in this spot?
+        if (board[currentX][currentY] === 'S') {
+          console.error(`Error: Ships are overlapping at [${currentX}][${currentY}]!`);
+          return false;
+        }
+      }
     
       for (let j = 0; j < ship.length; j++) {
         if (direction === 'horizontal') {
@@ -121,15 +142,11 @@ function handleGameBoard() {
             const ship = list[i];
             
             for (let j = 0; j < ship.length; j++) {
-              const coordinates = ship.coordinates[j];
-              const coordinateX = coordinates[0];
-              const coordinateY = coordinates[1];
+              const [coordinateX, coordinateY] = ship.coordinates[j];
 
               if (x === coordinateX && y === coordinateY) {
                 for (let k = 0; k < ship.length; k++) {
-                  const coordinates = ship.coordinates[k];
-                  const coordinateX = coordinates[0];
-                  const coordinateY = coordinates[1];
+                  const [coordinateX, coordinateY] = ship.coordinates[k];
                   const coordinatesIndex = coordinateX * column + coordinateY;
                   coordinatesIndexArray.push(coordinatesIndex);
                   squareOnes[coordinatesIndex].classList.add('ship-hover');
@@ -159,15 +176,11 @@ function handleGameBoard() {
 
         for (let i = 0; i < list.length; i++) {
           const ship = list[i];
-          const bow = ship.coordinates[0];
-          const bowX = bow[0];
-          const bowY = bow[1];
+          const [bowX, bowY] = ship.coordinates[0];
 
           if (x === bowX && y === bowY) {
             for (let j = 0; j < ship.length; j++) {
-              const coordinates = ship.coordinates[j];
-              const coordinateX = coordinates[0];
-              const coordinateY = coordinates[1];
+              const [coordinateX, coordinateY] = ship.coordinates[j];
               const focusIndex = coordinateX * column + coordinateY;
               focusingArray.push(focusIndex);
               squareOnes[focusIndex].classList.add('square-one-focus');
@@ -184,7 +197,7 @@ function handleGameBoard() {
     });
   };
 
-  const rotateShip = (x, y, list, e) => {
+  const rotateShip = (x, y, list) => {
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
       const length = ship.length;
@@ -194,15 +207,11 @@ function handleGameBoard() {
       }
 
       for (let j = 0; j < length; j++) {
-        let coordinates = ship.coordinates[j];
-        let coordinateX = coordinates[0];
-        let coordinateY = coordinates[1];
+        let [coordinateX, coordinateY] = ship.coordinates[j];
         
         if (x === coordinateX && y === coordinateY) {
           const direction = ship.direction;
-          const bow = ship.coordinates[0];
-          const bowX = bow[0];
-          const bowY = bow[1];
+          const [bowX, bowY] = ship.coordinates[0];
           let cannotRotate;
 
           for (let k = 1; k < length; k++) {
@@ -249,9 +258,7 @@ function handleGameBoard() {
             const squares = document.querySelectorAll('.square-one');
 
             for (let k = 0; k < length; k++) {
-              coordinates = ship.coordinates[k];
-              coordinateX = coordinates[0];
-              coordinateY = coordinates[1];
+              [coordinateX, coordinateY] = ship.coordinates[k];
               
               squares.forEach((square) => {
                 const squareX = Number(square.getAttribute('x'));
@@ -300,7 +307,7 @@ function handleGameBoard() {
 
   let cannotMoveVertically;
 
-  function moveShip(x, y, x2, y2, ship, randomDirection) {
+  const moveShip = (x, y, x2, y2, ship, randomDirection) => {
     const length = ship.length;
     let direction = ship.direction;;
     
@@ -398,6 +405,7 @@ function handleGameBoard() {
     
       return cannotMove;
     } else {
+      ship.direction = direction;
       // Update the new coordinates when the ship can move.
       for (let i = 0; i < length; i++) {
         if (direction === 'horizontal') {
@@ -427,17 +435,13 @@ function handleGameBoard() {
       const ship = list[i];
       
       for (let j = 0; j < ship.length; j++) {
-        const coordinates = ship.coordinates[j];
-        const coordinateX = coordinates[0];
-        const coordinateY = coordinates[1];
+        const [coordinateX, coordinateY] = ship.coordinates[j];
         const startX = Number(startTarget.getAttribute('x'));
         const startY = Number(startTarget.getAttribute('Y'));
         
         if (coordinateX === startX && coordinateY === startY) {
           const direction = ship.direction;
-          const bow = ship.coordinates[0];
-          const bowX = bow[0];
-          const bowY = bow[1];
+          const [bowX, bowY] = ship.coordinates[0];
           const coordinatesIndex = j;
           let endX = Number(target.getAttribute('x'));
           let endY = Number(target.getAttribute('Y'));
@@ -455,9 +459,7 @@ function handleGameBoard() {
               const squareOnes = document.querySelectorAll('.square-one');
 
               for (let k = 0; k < ship.length; k++) {
-                const coordinates = ship.coordinates[k];
-                const coordinateX = coordinates[0];
-                const coordinateY = coordinates[1];
+                const [coordinateX, coordinateY] = ship.coordinates[k];
                 const index = coordinateX * column + coordinateY;
                 squareOnes[index].classList.add('caution');
 
@@ -496,9 +498,7 @@ function handleGameBoard() {
 
       for (let i = 0; i < list.length; i++) {
         const ship = list[i];
-        const coordinates = ship.coordinates[0];
-        const coordinateX = coordinates[0];
-        const coordinateY = coordinates[1];
+        const [coordinateX, coordinateY] = ship.coordinates[0];
         const squareX = Number(squareOnes[focusIndex].getAttribute('x'));
         const squareY = Number(squareOnes[focusIndex].getAttribute('y'));
         const direction = ship.direction;
@@ -508,7 +508,7 @@ function handleGameBoard() {
         }
       }
 
-      function sendMovingLocation(adjustmentNum) {
+      const sendMovingLocation = (adjustmentNum) => {
         setMovingLocation(squareOnes[focusIndex]);
         cannotMove = setMovingLocation(squareOnes[focusIndex + adjustmentNum], list);
 
@@ -536,28 +536,24 @@ function handleGameBoard() {
 
   const deployRandom = (list) => {
     board = Array.from({ length: row }, () => Array(column).fill(0));
-
+    
     for (let i = 0; i < list.length; i++) {
       const ship = list[i];
-      const bow = ship.coordinates[0];
-      const bowX = bow[0];
-      const bowY = bow[1];
+      const [bowX, bowY] = ship.coordinates[0];
       
-      function getRandomLocation() {
+      while (true) {
         const endX = Math.floor(Math.random() * row);
         const endY = Math.floor(Math.random() * column);
+        
         const directions = ['horizontal', 'vertical'];
-        const randomIndex = Math.floor(Math.random() * 2);
-        const direction = directions[randomIndex];
+        const direction = directions[Math.floor(Math.random() * 2)];
+        
         const cannotMove = moveShip(bowX, bowY, endX, endY, ship, direction);
-        ship.direction = direction;
-        // Run repeatedly until getting proper location.
-        if (cannotMove) {
-          getRandomLocation();
+        
+        if (!cannotMove) {
+          break;
         }
       }
-      
-      getRandomLocation();
     }
   };
 
@@ -568,48 +564,58 @@ function handleGameBoard() {
     const columns = document.querySelectorAll('.column');
     const rows = document.querySelectorAll('.row');
 
-    function loseFocus() {
+    const loseFocus = () => {
       columns.forEach((column) => column.classList.remove('target-line'));
       rows.forEach((row) => row.classList.remove('target-line'));
-
       squares.forEach((square) => {
         square.classList.remove('target');
         square.classList.remove('on-target');
       });
-    }
+    };
 
     if (!otherBoard) {
       loseFocus();
       return;
     }
-    
+
     squares.forEach((square) => {
-      function getFocus(action) {
-        const x = Number(square.getAttribute('x'));
-        const y = Number(square.getAttribute('y'));
-        const squareOnBoard = otherBoard[x][y];
-        
-        if (currentMode !== action) {
+      const x = Number(square.getAttribute('x'));
+      const y = Number(square.getAttribute('y'));
+      const squareOnBoard = otherBoard[x][y];
+
+      square.addEventListener('mouseenter', () => {
+        if (currentMode !== 'hover') {
           loseFocus();
         }
-        
-        currentMode = action;
 
-        if (currentMode === 'hover') {
-          squareIndex = x * column + y;
-          square.focus();
-        }
-        
+        currentMode = 'hover';
+
+        squareIndex = x * column + y;
+        square.focus();
+
         if (squareOnBoard === 0 || squareOnBoard === 'S') {
           columns[y].classList.add('target-line');
           rows[x].classList.add('target-line');
           square.classList.add('target');
           square.classList.add('on-target');
         }
-      }
+      });
 
-      square.addEventListener('mouseenter', () => getFocus('hover'));
-      square.addEventListener('focus', () => getFocus('focus'));
+      square.addEventListener('focus', () => {
+        if (currentMode !== 'focus') {
+          loseFocus();
+        }
+
+        currentMode = 'focus';
+
+        if (squareOnBoard === 0 || squareOnBoard === 'S') {
+          columns[y].classList.add('target-line');
+          rows[x].classList.add('target-line');
+          square.classList.add('target');
+          square.classList.add('on-target');
+        }
+      });
+
       square.addEventListener('mouseleave', () => loseFocus());
       square.addEventListener('blur', () => loseFocus());
     });
@@ -632,50 +638,63 @@ function handleGameBoard() {
 
     const squareTwos = document.querySelectorAll('.square-two');
 
-    function moveSquare() {
-      if (!e || e.key === 'ArrowRight') {
-        squareIndex += 1;
-      } else if (e.key === 'ArrowLeft') {
-        squareIndex -= 1;
-      } else if (e.key === 'ArrowDown') {
-        squareIndex += column;
-      } else if (e.key === 'ArrowUp') {
-        squareIndex -= column;
-      }
+    // 1. Determine the step size based on the key pressed
+    let step = 0;
 
-      if (squareIndex >= squareTwos.length) {
-        squareIndex -= squareTwos.length;
-      } else if (squareIndex < 0) {
-        squareIndex += squareTwos.length;
-      }
+    if (!e || e.key === 'ArrowRight') {
+      step = 1;
+    } else if (e.key === 'ArrowLeft') {
+      step = -1;
+    } else if (e.key === 'ArrowDown') {
+      step = column;
+    } else if (e.key === 'ArrowUp') {
+      step = -column;
     }
 
+    // 2. Move the index initially (if it was already initialized)
     if (squareIndex === -1) {
       squareIndex = 0;
     } else {
-      moveSquare();
+      squareIndex += step;
     }
 
-    let squareRow = Math.floor(squareIndex / column);
-    let squareColumn = squareIndex % column;
-
-    if (board[squareRow][squareColumn] !== 0 && board[squareRow][squareColumn] !== 'S') {
-      for (let i = 0; i < row * column - 1; i++) {
-        squareRow = Math.floor(squareIndex / column);
-        squareColumn = squareIndex % column;
-
-        if (board[squareRow][squareColumn] !== 0 && board[squareRow][squareColumn] !== 'S') {
-          moveSquare();
-        } else {
-          break;
-        }
+    // Helper utility to safely wrap indices around the board boundaries
+    const wrapIndex = (index, length) => {
+      if (index >= length) {
+        return index - length;
       }
+      
+      if (index < 0) {
+        return index + length;
+      }
+      
+      return index;
+    };
+
+    squareIndex = wrapIndex(squareIndex, squareTwos.length);
+
+    // 3. Scan for obstacles using the INTENDED movement direction step
+    for (let i = 0; i < row * column; i++) {
+      const squareRow = Math.floor(squareIndex / column);
+      const squareColumn = squareIndex % column;
+      const currentSquare = board[squareRow][squareColumn];
+
+      // Valid landing spot found! Stop scanning.
+      if (currentSquare === 0 || currentSquare === 'S') {
+        break;
+      }
+
+      // Hit an obstacle! Continue moving in the player's intended direction
+      // If the original move was 'Up', it keeps skipping 'Up' (-column)
+      // If the original move was 'Left', it keeps skipping 'Left' (-1)
+      squareIndex = wrapIndex(squareIndex + step, squareTwos.length);
     }
     
+    // Focus the verified valid square
     squareTwos[squareIndex].focus();
   };
 
-  function splashOnBoard(x, y, ship) {
+  const splashOnBoard = (x, y, ship) => {
     // Put splash after hitting.
     if (board[x - 1]) {
       if (board[x - 1][y - 1] === 0) {
@@ -702,10 +721,8 @@ function handleGameBoard() {
       const sunkCoordinates = [];
 
       for (let i = 0; i < ship.length; i++) {
-        const coordinates = ship.coordinates[i];
-        const coordinateX = coordinates[0];
-        const coordinateY = coordinates[1];
-        sunkCoordinates.push(coordinates);
+        const [coordinateX, coordinateY] = ship.coordinates[i];
+        sunkCoordinates.push([coordinateX, coordinateY]);
 
         if (board[coordinateX - 1]) {
           if (board[coordinateX - 1][coordinateY] === 0) {
@@ -748,9 +765,7 @@ function handleGameBoard() {
         const ship = list[i];
         
         for (let j = 0; j < ship.length; j++) {
-          const coordinates = ship.coordinates[j];
-          const coordinateX = coordinates[0];
-          const coordinateY = coordinates[1];
+          const [coordinateX, coordinateY] = ship.coordinates[j];
           
           if (coordinateX === x && coordinateY === y) {
             result = 'hit';
@@ -787,20 +802,20 @@ function handleGameBoard() {
       }
     }
 
-    const info = handleInfo();
+    const game = GameController();
     const shipType = ['submarine', 'destroyer', 'cruiser', 'battleship'];
 
     if (result === 'hit') {
       if (playerNo === 2) {
-        info.updateMessage('Hit!');
+        game.updateMessage('Hit!');
       } else {
-        info.updateMessage('Ouch!');
+        game.updateMessage('Ouch!');
       }
     } else if (result === 'sunk') {
       if (playerNo === 2) {
-        info.updateMessage('Got ' + shipType[length - 1] + '!');
+        game.updateMessage('Got ' + shipType[length - 1] + '!');
       } else {
-        info.updateMessage('Lost ' + shipType[length - 1] + '!');
+        game.updateMessage('Lost ' + shipType[length - 1] + '!');
       }
     }
     
@@ -1100,7 +1115,32 @@ function handleGameBoard() {
   };
 }
 
-function handleInfo() {
+function GameController() {
+  const randomBtn = document.querySelector('.random-btn');
+  const playBtn = document.querySelector('.play-btn');
+
+  const setUpGame = (playerOne, playerTwo) => {
+    const customSet = playerOne.ship.getDeploySet(playerOne);
+
+    playerOne.ship.deployShip(customSet);
+    playerTwo.ship.deployShip();
+    playerOne.board.deployBoard(playerOne.ship.getList());
+    playerTwo.board.deployBoard(playerTwo.ship.getList());
+    playerTwo.board.deployRandom(playerTwo.ship.getList());
+    setCurrentTurn(playerOne, 0);
+    updateRecords(playerOne);
+    updateMessage('deploy');
+    updateBtn(playerOne.currentTurn);
+    playerOne.board.renderBoard();
+    playerOne.board.addTabIndex(playerOne.ship.getList());
+
+    if (playerOne.finishedGame) {
+      setFinished();
+    }
+  }
+
+  const setCurrentTurn = (playerOne, turn) => playerOne.currentTurn = turn;
+
   const updateRecords = (playerOne, score, notRender) => {
     if (score === 'hit') {
       playerOne.currentScore += 500;
@@ -1187,6 +1227,39 @@ function handleInfo() {
     }
   };
 
+  const addHoverOnShip = (playerOne) => {
+    const currentTurn = playerOne.currentTurn;
+
+    if (currentTurn === 0) {
+      playerOne.board.hoverShip(playerOne.ship.getList());
+    }
+  }
+
+  const sendRotatingLocation = (e, playerOne) => {
+    if (e instanceof KeyboardEvent) {
+      if (e.key !== 'Enter' && e.key !== ' ') {
+        return;
+      }
+    }
+
+    const currentTurn = playerOne.currentTurn;
+    
+    if (currentTurn === 0 && e.target.classList.contains('ship')) {
+      const x = Number(e.target.getAttribute('x'));
+      const y = Number(e.target.getAttribute('y'));
+      playerOne.board.rotateShip(x, y, playerOne.ship.getList(), e);
+      playerOne.board.addTabIndex(playerOne.ship.getList(), x, y);
+    }
+  }
+
+  const preventDefault = (e, playerOne) => {
+    const currentTurn = playerOne.currentTurn;
+
+    if (currentTurn === 0) {
+      e.preventDefault();
+    }
+  }
+
   const updateBtn = (currentTurn) => {
     const randomBtn = document.querySelector('.random-btn');
     const playBtn = document.querySelector('.play-btn');
@@ -1203,9 +1276,60 @@ function handleInfo() {
     }
   };
 
-  const setCurrentTurn = (playerOne, turn) => playerOne.currentTurn = turn;
+  const handleResetConfirmation = (e, playerOne, playerTwo) => {
+    if (e instanceof KeyboardEvent) {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) {
+        e.preventDefault();
+        const cancelBtn = document.querySelector('.cancel-btn');
+        cancelBtn.focus();
+      }
+    } else {
+      playerOne.board.focusWithArrowKey('confirmation-off');
+      updateRecords(playerOne, 'reset');
+      setUpGame(playerOne, playerTwo);
+    }
+  }
 
-  const displayConfirmation = () => {
+  const handleResetCancellation = (e, playerOne, playerTwo) => {
+    if (e instanceof KeyboardEvent) {
+      if(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) {
+        e.preventDefault();
+        const doResetBtn = document.querySelector('.do-reset-btn');
+        doResetBtn.focus();
+      }
+    } else {
+      playerOne.board.focusWithArrowKey('confirmation-off');
+      playerOne.board.renderBoard(1, playerTwo.board.getBoard());
+      playerOne.board.markupTarget(playerTwo.board.getBoard());
+    }
+  }
+
+  const randomOrReset = (e, playerOne, playerTwo) => {
+    if (e instanceof KeyboardEvent) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        playBtn.focus();
+      }
+
+      if (e.key === ' ') {
+        e.preventDefault();
+      } else {
+        return;
+      }
+    }
+    
+    const currentTurn = playerOne.currentTurn;
+    
+    if (currentTurn === 0) {
+      playerOne.board.deployRandom(playerOne.ship.getList());
+      playerOne.board.renderBoard();
+      playerOne.board.addTabIndex(playerOne.ship.getList());
+    } else if (currentTurn === 1) {
+      playerOne.board.focusWithArrowKey('confirmation-on');
+      openResetDialog(playerOne, playerTwo);
+    }
+  }
+
+  const openResetDialog = (playerOne, playerTwo) => {
     const boardContainerOne = document.querySelector('.board-container-one');
 
     const confirmationHTML = `
@@ -1219,9 +1343,201 @@ function handleInfo() {
     `;
 
     boardContainerOne.innerHTML = confirmationHTML;
+
+    const doResetBtn = document.querySelector('.do-reset-btn');
+    const cancelBtn = document.querySelector('.cancel-btn');
+
+    doResetBtn.addEventListener('click', (e) => handleResetConfirmation(e, playerOne, playerTwo));
+    doResetBtn.addEventListener('keydown', (e) => handleResetConfirmation(e, playerOne, playerTwo));
+      
+    cancelBtn.addEventListener('click', (e) => handleResetCancellation(e, playerOne, playerTwo));
+    cancelBtn.addEventListener('keydown', (e) => handleResetCancellation(e, playerOne, playerTwo));
+
+    cancelBtn.focus();
   };
 
-  function getTotalBonus(list) {
+  const focusRandomBtn = (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      randomBtn.focus();
+    }
+  }
+
+  const addHoverOnPlayBtn = (playerOne) => {
+    const currentTurn = playerOne.currentTurn;
+
+    if (currentTurn === 0) {
+      playBtn.classList.add('play-btn-hover');
+    }
+  }
+
+  const removeHoverOnPlayBtn = (playerOne) => {
+    const currentTurn = playerOne.currentTurn;
+
+    if (currentTurn === 0) {
+      playBtn.classList.remove('play-btn-hover');
+    }
+  }
+
+  const startGame = (playerOne, playerTwo) => {
+    const currentTurn = playerOne.currentTurn;
+    
+    if (currentTurn === 0) {
+      const currentVictory = playerOne.currentVictory;
+
+      setCurrentTurn(playerOne, 1);
+      updateMessage('start');
+      updateBtn(playerOne.currentTurn);
+      playerOne.board.renderBoard(1, playerTwo.board.getBoard(), '', currentVictory);
+      playerOne.board.markupTarget(playerTwo.board.getBoard());
+    }
+  }
+
+  const handleGame = (e, playerOne, playerTwo) => {
+    const currentTurn = playerOne.currentTurn;
+    
+    if (currentTurn === 1) {
+      if (e instanceof KeyboardEvent) {
+        if (e.key !== 'Enter' && e.key !==' ') {
+          return;
+        }
+      }
+
+      if (e.target.classList.contains('board-container-two')) {
+        return;
+      }
+
+      const x = Number(e.target.getAttribute('x'));
+      const y = Number(e.target.getAttribute('y'));
+      const result = playerTwo.board.receiveAttack(x, y, 2, playerTwo.ship.getList(), playerOne.board.getBoard());
+      
+      if (result === 'hit' || result === 'sunk') {
+        updateRecords(playerOne, 'hit');
+        const winner = playerTwo.board.checkTheWinner(1, playerTwo.ship.getList());
+
+        if (winner) {
+          handleGameOver(playerOne, playerTwo);
+        } else {
+          playerOne.board.markupTarget(playerTwo.board.getBoard());
+        }
+      } else if (result === 'miss') {
+        executeComputerTurn(e, playerOne, playerTwo);
+      }
+    }
+  }
+
+  const executeComputerTurn = ((e, playerOne, playerTwo) => {
+    // Callback for setTimeout.
+    const waitComputerMove = (winner) => {
+      if (winner) {
+        // Callback for setTimeout.
+        const waitRender = () => {
+          const tryAgainBtn = document.querySelector('.try-again-btn');
+          tryAgainBtn.focus();
+
+          const tryAgain = (e) => {
+            if (e instanceof KeyboardEvent) {
+              if (e.key !== 'Enter' && e.key !==' ') {
+                return;
+              }
+            }
+
+            updateRecords(playerOne, 'reset');
+            setUpGame(playerOne, playerTwo);
+          }
+          
+          tryAgainBtn.addEventListener('click', tryAgain);
+          tryAgainBtn.addEventListener('keydown', tryAgain);
+        }
+
+        setCurrentTurn(playerOne, 3);
+        displayResult(2, waitRender, '', playerOne.currentVictory);
+      } else {
+        setCurrentTurn(playerOne, 1);
+        updateMessage('Your turn');
+        playerOne.board.markupTarget(playerTwo.board.getBoard());
+
+        if (e instanceof KeyboardEvent) {
+          playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard());
+        }
+      }
+    }
+
+    setCurrentTurn(playerOne, 2);
+    updateMessage('Computer\'s turn');
+    playerOne.board.markupTarget();
+    playerOne.board.getComputerMove(waitComputerMove, playerOne.ship.getList(), playerTwo.board.getBoard());
+  });
+
+  const handleGameOver = ((playerOne, playerTwo) => {
+    // Callback for setTimeout.
+    const waitRender = (totalBonus) => {
+      updateRecords(playerOne, totalBonus, 'notRender');
+      rotateEmblem();
+      
+      const moveOnBtn = document.querySelector('.move-on-btn');
+      moveOnBtn.focus();
+
+      const moveOn = (e) => {
+        if (e instanceof KeyboardEvent) {
+          if (e.key !== 'Enter' && e.key !==' ') {
+            return;
+          }
+        }
+        
+        const boardContainerOne = document.querySelector('.board-container-one');
+        boardContainerOne.classList.remove('erase-board', 'display-board');
+        rotateEmblem();
+        const currentVictory = playerOne.currentVictory;
+        
+        if (currentVictory === 20) {
+          displayResult('finish');
+          updateRecords(playerOne);
+
+          const finaleBtn = document.querySelector('.finale-btn');
+          finaleBtn.focus();
+
+          const finale = (e) => {
+            if (e instanceof KeyboardEvent) {
+              if (e.key !== 'Enter' && e.key !==' ') {
+                return;
+              }
+            }
+
+            rotateEmblem();
+            updateRecords(playerOne, 'reset');
+            setFinished(playerOne);
+            setUpGame(playerOne, playerTwo);
+          }
+
+          finaleBtn.addEventListener('click', finale);
+          finaleBtn.addEventListener('keydown', finale);
+        } else {
+          setUpGame(playerOne, playerTwo);
+        }
+      }
+
+      moveOnBtn.addEventListener('click', moveOn);
+      moveOnBtn.addEventListener('keydown', moveOn);
+    }
+
+    setCurrentTurn(playerOne, 3);
+    playerOne.board.markupTarget();
+    displayResult(1, waitRender, playerOne.ship.getList());
+  });
+
+  const rotateEmblem = () => {
+    const emblems = document.querySelectorAll('.emblem');
+
+    emblems.forEach((emblem) => {
+      emblem.classList.add('rotate-emblem');
+
+      setTimeout(() => {
+        emblem.classList.remove('rotate-emblem');
+      }, 1000);
+    });
+  };
+
+  const getTotalBonus = (list) => {
     const bonusScoreBoards = document.querySelectorAll('.bonus-score-board');
     const totalBonusScoreBoard = document.querySelector('.total-bonus-score-board');
     let totalBonus = 0;
@@ -1240,18 +1556,6 @@ function handleInfo() {
 
     totalBonusScoreBoard.textContent = totalBonus;
     return totalBonus;
-  };
-
-  const rotateEmblem = () => {
-    const emblems = document.querySelectorAll('.emblem');
-
-    emblems.forEach((emblem) => {
-      emblem.classList.add('rotate-emblem');
-
-      setTimeout(() => {
-        emblem.classList.remove('rotate-emblem');
-      }, 1000);
-    });
   };
 
   const displayResult = (playerNo, waitRender, list, currentVictory) => {
@@ -1368,31 +1672,81 @@ function handleInfo() {
     }
   };
 
+  const handleKeyDown = (e, playerOne, playerTwo) => {
+    const currentTurn = playerOne.currentTurn;
+
+    if (currentTurn === 0) {
+      const currentFocus = document.activeElement;
+
+      if (currentFocus === document.body) {
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+          randomBtn.focus();
+          return;
+        }
+      }
+
+      if (e.key === 'Tab') {
+        playerOne.board.focusShip(playerOne.ship.getList());
+      }
+
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) {
+        playerOne.board.moveWithArrowKey(e, playerOne.ship.getList());
+      }
+    } else if (currentTurn === 1) {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        playerOne.board.focusWithArrowKey('', playerTwo.board.getBoard(), e);
+      }
+    } else if (currentTurn === 3) {
+      e.preventDefault();
+      return;
+    }
+
+  if (e.key === 'r') {
+      randomOrReset('', playerOne, playerTwo);
+    } else if (e.key === 'p') {
+      startGame(playerOne, playerTwo);
+    }
+  }
+
   return {
-    updateRecords,
+    setUpGame,
     updateMessage,
-    updateBtn,
-    setCurrentTurn,
-    displayConfirmation,
-    rotateEmblem,
-    displayResult,
-    setFinished,
+    addHoverOnShip,
+    sendRotatingLocation,
+    preventDefault,
+    randomOrReset,
+    addHoverOnPlayBtn,
+    removeHoverOnPlayBtn,
+    focusRandomBtn,
+    startGame,
+    handleGame,
+    handleKeyDown,
   }
 }
 
-export function createPlayer(playerNo, playerType, currentScore, hiScore, currentVictory, highestVictory, finishedGame, customSet) {
+export function createPlayer({
+  playerNo,
+  playerType,
+  currentTurn,
+  currentScore,
+  hiScore,
+  currentVictory,
+  highestVictory,
+  finishedGame,
+  customSet,
+}) {
   return {
     playerNo,
     playerType,
-    currentTurn: 0,
+    currentTurn,
     currentScore,
     hiScore,
     currentVictory,
     highestVictory,
     finishedGame,
     customSet,
-    ship: handleShip(),
-    board: handleGameBoard(),
-    info: handleInfo(),
+    ship: Ship(),
+    board: GameBoard(),
+    game: GameController(),
   };
 }
