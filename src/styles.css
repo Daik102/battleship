@@ -7,8 +7,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-weight: 400;
-  font-family: BlackOpsOne, Arial, Helvetica, sans-serif;
 }
 
 :root {
@@ -52,7 +50,14 @@
 }
 
 html {
-  font-size: 10px;
+  font-size: 50%;
+  font-weight: 400;
+  font-family: BlackOpsOne, Arial, Helvetica, sans-serif;
+}
+
+button {
+  font-weight: inherit;
+  font-family: inherit;
 }
 
 body {
@@ -64,9 +69,10 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 44rem;
   min-height: 100vh;
+  min-height: 100svh;
   margin: 0 auto;
+  padding: 4rem 0;
   background-color: var(--wrapper-theme);
 }
 
@@ -78,6 +84,7 @@ body {
 }
 
 .title {
+  font-weight: 400;
   font-size: 2.6rem;
   text-shadow: 0.4rem 0.4rem 0 var(--text-shadow-theme);
   color: var(--text-theme);
@@ -129,13 +136,14 @@ body {
   justify-content: center;
   align-items: center;
   width: 100%;
+  max-width: 30rem;
   margin:1.2rem 0;
 }
 
 .victory-row {
   display: flex;
   justify-content: space-between;
-  width: 30rem;
+  width: 100%;
 }
 
 .victory-row div {
@@ -159,7 +167,7 @@ body {
 .score-board-row {
   display: flex;
   justify-content: space-between;
-  width: 30rem;
+  width: 100%;
   margin: -0.4rem 0 0.8rem;
 }
 
@@ -172,7 +180,7 @@ body {
 .message-row {
   display: flex;
   justify-content: space-between;
-  width: 30rem;
+  width: 100%;
 }
 
 .message-row button {
@@ -586,83 +594,22 @@ body {
 .link:hover {
   color: var(--target-theme);
 }
-/* For smartphones in portrait mode */
-@media screen and (orientation: portrait) {
+
+/* Middle and Large Smartphones */
+@media screen and (min-width: 24.25em) {
   html {
-    font-size: 6.5px;
+    font-size: 56.25%;
+  }
+}
+
+/* Tablets and Desktops */
+@media screen and (min-width: 48em) {
+  html {
+    font-size: 62.5%;
   }
 
   .wrapper {
-    width: 100%;
-  }
-}
-
-@media screen and (orientation: portrait) and (min-width: 22.5em) {
-  html {
-    font-size: 7.5px;
-  }
-}
-
-@media screen and (orientation: portrait) and (min-width: 24.3em) {
-  html {
-    font-size: 8px;
-  }
-}
-
-@media screen and (orientation: portrait) and (min-width: 25.75em) {
-  html {
-    font-size: 8.5px;
-  }
-}
-
-@media screen and (orientation: portrait) and (min-width: 26.75em) {
-  html {
-    font-size: 8.75px;
-  }
-}
-/* For tablets in portrait mode */
-@media screen and (orientation: portrait) and (min-width: 48em) {
-  html {
-    font-size: 10px;
-  }
-}
-/* For smartphones in landscape mode */
-@media screen and (orientation: landscape) {
-  html {
-    font-size: 6.5px;
-  }
-
-  .wrapper {
+    max-width: 44rem;
     padding: 6rem 0;
-  }
-}
-
-@media screen and (orientation: landscape) and (min-width: 41.6em) {
-  html {
-    font-size: 7.5px;
-  }
-}
-
-@media screen and (orientation: landscape) and (min-width: 50em) {
-  html {
-    font-size: 8px;
-  }
-}
-
-@media screen and (orientation: landscape) and (min-width: 55.75em) {
-  html {
-    font-size: 8.5px;
-  }
-}
-
-@media screen and (orientation: landscape) and (min-width: 58em) {
-  html {
-    font-size: 8.75px;
-  }
-}
-/* For tablets in landscape mode, laptops, and desktops */
-@media screen and (orientation: landscape) and (min-width: 64em) {
-  html {
-    font-size: 10px;
   }
 }
